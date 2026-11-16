@@ -1,0 +1,52 @@
+@import '@fontsource-variable/outfit';
+@import '@fontsource-variable/plus-jakarta-sans';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 247 250 252;
+  --surface: 242 245 247;
+  --card: 255 255 255;
+  --ink: 31 41 55;
+  --body: 88 100 116;
+  --hairline: 224 229 235;
+  --primary: 183 72 31;
+  --primary-soft: 255 233 227;
+  --navy: 19 41 68;
+  --gold: 243 189 73;
+  --ok: 22 163 74;
+  --danger: 186 26 26;
+  color-scheme: light;
+}
+.dark {
+  --bg: 19 14 12;
+  --surface: 26 21 20;
+  --card: 33 28 27;
+  --ink: 252 248 246;
+  --body: 163 159 157;
+  --hairline: 57 53 51;
+  --primary: 218 86 37;
+  --primary-soft: 81 20 0;
+  --navy: 19 41 68;
+  --gold: 243 189 73;
+  --ok: 74 222 128;
+  --danger: 248 113 113;
+  color-scheme: dark;
+}
+
+html, body, #root { height: 100%; }
+body { @apply bg-bg font-sans text-body antialiased; }
+h1, h2, h3, h4 { @apply font-display text-ink; }
+
+@layer components {
+  .card { @apply rounded-3xl border border-hairline bg-card shadow-soft; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-display text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn bg-primary text-white shadow-md shadow-primary/20 hover:brightness-110; }
+  .btn-ghost { @apply btn border border-hairline bg-card text-ink hover:bg-surface; }
+  .btn-navy { @apply btn bg-navy text-white hover:brightness-125; }
+  .icon-btn { @apply inline-flex h-9 w-9 items-center justify-center rounded-full text-body transition hover:bg-surface hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50; }
+  .eyebrow { @apply font-display text-xs font-bold uppercase tracking-[0.12em] text-primary; }
+  .input { @apply w-full rounded-full border border-hairline bg-surface px-5 py-3 text-ink placeholder:text-body/70 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-body; }
+}

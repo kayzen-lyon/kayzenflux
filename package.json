@@ -1,0 +1,16 @@
+{
+  "name": "kayzen-flux",
+  "private": true,
+  "version": "0.1.0",
+  "description": "KAYZEN Flux — téléchargeur et convertisseur multimédia local-first (moteur yt-dlp)",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "start": "node apps/daemon/dist/server.js",
+    "dev": "pnpm --parallel -r dev"
+  },
+  "engines": { "node": ">=22" },
+  "packageManager": "pnpm@10.0.0"
+}
