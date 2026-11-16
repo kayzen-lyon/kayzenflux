@@ -49,7 +49,7 @@ export class EngineError extends Error {
 }
 
 /** Exécute une commande courte et renvoie stdout (stderr gardé pour les erreurs). */
-function capture(binary: string, args: string[], timeoutMs: number): Promise<{ code: number | null; stdout: string; stderr: string }> {
+export function capture(binary: string, args: string[], timeoutMs: number): Promise<{ code: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve) => {
     const child = spawn(binary, args, { shell: false, windowsHide: true });
     let stdout = '';

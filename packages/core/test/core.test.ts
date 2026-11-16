@@ -169,6 +169,12 @@ describe('parseEngineLine', () => {
     const ev = parseEngineLine(`${PROGRESS_PREFIX}downloading|250|NA|1000|NA|NA|2`);
     expect(ev).toMatchObject({ total: 1000, percent: 25, playlistIndex: 2 });
   });
+  it('lit les métadonnées émises avant le téléchargement', () => {
+    const ev = parseEngineLine('KZM|{"title": "Titre | spécial", "uploader": null, "channel": "Chaîne", "thumbnail": "https://i/x.jpg", "duration": 12.5, "extractor_key": "Vimeo"}');
+    expect(ev).toEqual({ type: 'meta', title: 'Titre | spécial', author: 'Chaîne', thumbnail: 'https://i/x.jpg', durationSec: 12.5, site: 'Vimeo' });
+    expect(parseEngineLine('KZM|{invalide').type).toBe('log');
+  });
+
   it('reconnaît fichier, erreur et phases', () => {
     expect(parseEngineLine('KZF|/tmp/a.mp3')).toEqual({ type: 'file', path: '/tmp/a.mp3' });
     expect(parseEngineLine('ERROR: [x] Private video')).toEqual({ type: 'error', message: '[x] Private video' });

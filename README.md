@@ -1,98 +1,68 @@
-# KAYZEN Flux — version 0.1 (MVP desktop)
+# KAYZEN Flux 1.0
 
-Téléchargeur et convertisseur multimédia **local-first**, propulsé par [yt-dlp](https://github.com/yt-dlp/yt-dlp).
-Tout s'exécute sur l'ordinateur de l'utilisateur : aucun média ne transite par un serveur KAYZEN.
+Téléchargeur et convertisseur multimédia **local-first**, sans publicité ni pistage, propulsé par
+[yt-dlp](https://github.com/yt-dlp/yt-dlp). Application de bureau (Windows, macOS, Linux), extension
+navigateur de lecture sans pub, site vitrine avec vente et livraison automatique des licences.
 
-> Usage personnel uniquement, pour des contenus que l'utilisateur a le droit de copier.
-> Les contenus protégés par DRM sont systématiquement refusés.
+> Usage personnel, pour des contenus que l'utilisateur a le droit de copier. Les contenus protégés par DRM sont refusés.
+> **Avant publication : suivre [`docs/MISE-EN-PRODUCTION.md`](docs/MISE-EN-PRODUCTION.md).**
 
-## Ce qui fonctionne dans cette version
+## Contenu du dépôt
 
-| Écran | Fonctions |
-| --- | --- |
-| Accueil & Convertisseur | Coller un lien (ou le coller n'importe où sur la page), aperçu (titre, durée, définition max, débit audio source, licence Creative Commons), 7 formats, SponsorBlock, métadonnées + pochette, sous-titres, playlists |
-| Téléchargements | File locale en parallèle, progression en direct (vitesse, temps restant, étape de conversion), annuler, réessayer, ouvrir le dossier |
-| Bibliothèque & Lecteur | Historique local, recherche, filtres audio/vidéo/favoris, export JSON, lecteur audio/vidéo hors connexion (mini-fenêtre vidéo), suppression du fichier ou de l'entrée |
-| Moteur & Paramètres | Dossier, format par défaut, options, parallélisme, versions de yt-dlp/ffmpeg, mise à jour du moteur |
-| Raccourcis | Ctrl+K, G puis H/D/B/S, Espace/J/L/M dans le lecteur, `?` |
+| Dossier | Rôle | Tests |
+| --- | --- | --- |
+| `packages/core` | Logique pure : URL, formats, arguments yt-dlp, progression, DRM, erreurs, transcription, flux | 47 |
+| `apps/daemon` | Moteur local (127.0.0.1) : file de tâches, temps réel, bibliothèque, licences, abonnements | 18 (dont 6 téléchargements réels) |
+| `apps/ui` | Interface React + Tailwind (maquette Stitch Kayzen, clair/sombre) | — (vérifiée par captures) |
+| `apps/desktop` | Application Electron : moteur intégré, binaires embarqués vérifiés, lien `kayzenflux://` | 8 |
+| `apps/extension` | Extension MV3 Chrome/Edge/Firefox : lecture sans pub, SponsorBlock, « Envoyer vers » | 12 + test dans Chrome |
+| `apps/site` | Site vitrine statique + pages légales + webhook Stripe → licence par e-mail | 5 |
+| `tools/license.mjs` | Création des clés et émission des licences (Ed25519) | — |
 
-Mode clair et sombre, interface en français, navigation au clavier, compatible mobile.
+## Fonctions
 
-## Démarrage
+**Gratuit** : MP3, M4A, Opus, MP4 jusqu'en 1080p · SponsorBlock · titre/artiste/pochette · sous-titres ·
+playlists de 25 éléments · 2 téléchargements en parallèle · bibliothèque, recherche, favoris, export ·
+lecteur audio/vidéo hors connexion · modèles de nom de fichier · raccourcis clavier · mode sombre.
 
-Prérequis : **Node.js 22+**, **pnpm**, **yt-dlp**, **ffmpeg** (et idéalement **Deno**, recommandé par yt-dlp pour certains sites).
+**Premium** (licence signée, vérifiée hors ligne) : 4K, FLAC · playlists illimitées · 6 en parallèle ·
+abonnements à des chaînes, playlists ou podcasts (téléchargement automatique des nouveautés) ·
+un fichier par chapitre · volume normalisé (EBU R128) · transcription Markdown horodatée.
+
+**Extension** : blocage des publicités (requêtes, emplacements, données du lecteur, filet de sécurité),
+saut des segments sponsorisés (requête anonymisée par préfixe de hachage), masquage des Shorts,
+bouton et menu contextuel « Envoyer vers KAYZEN Flux ». Aucune collecte de données, aucun téléchargement.
+
+## Développement
+
+Prérequis : Node.js 22+, pnpm 10, et pour les tests de bout en bout `yt-dlp` + `ffmpeg` dans le PATH.
 
 ```bash
-# Windows : winget install yt-dlp.yt-dlp Gyan.FFmpeg DenoLand.Deno
-# macOS   : brew install yt-dlp ffmpeg deno
-# Linux   : pipx install yt-dlp && sudo apt install ffmpeg
-
 pnpm install
-pnpm build
-pnpm start          # → http://127.0.0.1:49152/
-```
-
-Développement avec rechargement à chaud : `pnpm --filter @kayzen-flux/daemon dev` puis
-`pnpm --filter @kayzen-flux/ui dev` (ouvrir l'URL Vite avec `?token=` copié depuis la page du démon).
-
-### Variables d'environnement
-
-| Variable | Rôle | Défaut |
-| --- | --- | --- |
-| `KAYZEN_PORT` | Port local | `49152` |
-| `KAYZEN_DOWNLOAD_DIR` | Dossier de téléchargement initial | `~/Downloads/KAYZEN Flux` |
-| `KAYZEN_DATA_DIR` | Réglages et bibliothèque (JSON) | `~/.kayzen-flux` |
-| `KAYZEN_YTDLP` / `KAYZEN_FFMPEG` | Chemins des binaires | `yt-dlp` / `ffmpeg` du PATH |
-| `KAYZEN_TIER` | `premium` pour tester l'offre payante (sera remplacé par la licence, phase 3) | `free` |
-| `KAYZEN_ALLOW_LOCAL` | `1` = accepte les URL locales (tests uniquement) | désactivé |
-
-## Architecture
-
-```
-packages/core   Logique pure et testée : validation d'URL, préréglages, construction des
-                arguments yt-dlp (tableau, URL après « -- »), lecture JSON, progression,
-                détection DRM, messages d'erreur en français.
-apps/daemon     Serveur Node lié à 127.0.0.1 : file de tâches, flux temps réel (SSE),
-                bibliothèque JSON, lecture des médias avec Range. Sert l'interface.
-apps/ui         React + Tailwind (jetons de la maquette Stitch Kayzen), polices auto-hébergées.
-```
-
-### Sécurité du démon local
-
-- Écoute **uniquement** sur `127.0.0.1` ; en-tête `Host` vérifié (anti *DNS rebinding*).
-- Jeton de session aléatoire injecté dans la page, exigé sur toute l'API (un site tiers ne peut pas piloter le démon).
-- Requêtes d'écriture en `application/json` uniquement (bloque les requêtes CSRF simples) ; corps limité à 64 Ko.
-- yt-dlp lancé sans shell, arguments en tableau, `--ignore-config`, URL validée (http/https, pas d'identifiants, pas d'adresses privées) et placée après `--`.
-- Seuls les fichiers enregistrés dans la bibliothèque peuvent être lus (aucun chemin arbitraire).
-- CSP stricte, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`.
-
-## Tests
-
-```bash
-pnpm test        # 36 tests moteur + 10 tests démon (dont 2 téléchargements réels de bout en bout)
+pnpm test                      # tous les tests
 pnpm typecheck
+pnpm build                     # core, démon, interface, application, extension
+
+pnpm start                     # version navigateur : http://127.0.0.1:49152
+pnpm --filter @kayzen-flux/desktop start        # application de bureau (dev)
+pnpm --filter @kayzen-flux/extension build      # extension → apps/extension/dist/{chromium,firefox}
+KAYZEN_ALLOW_DEV_KEY=1 pnpm --filter @kayzen-flux/desktop dist:linux   # AppImage + .deb de TEST
 ```
 
-Les tests de bout en bout génèrent une vidéo avec ffmpeg, la servent en local puis la font
-télécharger et convertir (MP3 et MP4) par le vrai yt-dlp.
+Licence de test (clé de développement) : `node tools/license.mjs issue moi@exemple.fr`.
+Forcer Premium sans licence (dev) : `KAYZEN_TIER=premium`.
 
-## Écarts volontaires avec la maquette Stitch
+## Sécurité
 
-| Maquette | Choix retenu | Raison |
-| --- | --- | --- |
-| « KayzenTube », « Coller une URL YouTube », « 1-Clic YouTube » | « KAYZEN Flux », « Collez un lien » | Pas de marque tierce dans le nom ni l'interface |
-| « contournement des restrictions », « Bypass Anti-Bot », « Déchiffrement n-sig » | Supprimé | Aucun contournement de mesure technique |
-| « FLAC 24-bit », « Dolby Atmos », « Qualité master » | « FLAC (conteneur) » avec avertissement | Un conteneur sans perte n'ajoute pas de qualité à une source compressée |
-| Paroles synchronisées (texte d'un poème protégé) | Non repris | Droit d'auteur |
-| « Flux de découverte » de morceaux populaires | Non repris | Pas de catalogue incitant au téléchargement |
-| iOS via AltStore | Non proposé | Règle 5.2.3 de l'App Store |
-| Interface CLI, raccourcis personnalisables | Reportés | Non implémentés : rien n'est affiché qui n'existe pas |
+- Démon : écoute sur 127.0.0.1 uniquement, en-tête Host vérifié, jeton de session sur toute l'API, JSON obligatoire en écriture, CSP stricte, seuls les fichiers de la bibliothèque sont lisibles.
+- yt-dlp lancé sans shell, arguments en tableau, `--ignore-config`, URL validée et placée après `--`, adresses privées refusées.
+- Application : fenêtre isolée (sandbox, sans Node), navigation externe ouverte dans le navigateur, binaires embarqués vérifiés par SHA-256 au démarrage, aucun appel réseau implicite.
+- Licences : Ed25519, clé privée jamais dans l'application ; build de distribution bloqué avec la clé de développement.
+- Webhook : signature Stripe vérifiée (HMAC, tolérance 5 min), contenu de l'e-mail échappé.
 
-## Prochaines étapes (roadmap)
+## Limites connues
 
-1. Emballer en application Tauri (installeurs signés), embarquer yt-dlp/ffmpeg LGPL/Deno en *sidecars* avec empreintes SHA-256.
-2. Extension navigateur (lecture sans pub + bouton « Envoyer vers KAYZEN Flux »).
-3. Licences Premium signées, site, paiement, mentions légales.
-4. Abonnements de chaînes, transcription Whisper locale, résumé IA, tags musicaux avancés.
-
-Voir `CLAUDE.md` pour le prompt maître et les règles non négociables.
+- Taille de l'installeur (~330 Mo) : ffmpeg et Deno embarqués en versions complètes. Piste : build ffmpeg minimal.
+- Les sites vidéo changent souvent : prévoir des mises à jour régulières du moteur (un clic dans l'app) et de l'extension.
+- Android : non livré dans cette version.
+- Mise à jour automatique de l'application elle-même : non activée (nécessite un serveur de publication).

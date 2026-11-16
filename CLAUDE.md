@@ -9,7 +9,7 @@ Tu es l'ingénieur principal de KAYZEN Flux, téléchargeur et convertisseur mul
 3. L'EXTENSION NE TÉLÉCHARGE RIEN : blocage pub, SponsorBlock, bouton qui ouvre kayzenflux://add?url=…
 4. AUCUNE MARQUE TIERCE dans le nom, l'icône ou les fiches store (pas de « YouTube », « Tube »).
 5. PAS D'API YOUTUBE DATA pour ces fonctions.
-6. LICENCES : yt-dlp (Unlicense) en binaire officiel non modifié ; ffmpeg en build LGPL ; NouTube (AGPL-3.0) : lecture seule, aucun code copié sauf décision écrite de passer en open-core AGPL. Tenir THIRD_PARTY_LICENSES.md à jour.
+6. LICENCES : yt-dlp (Unlicense) en binaire officiel non modifié ; ffmpeg comme programme séparé (build LGPL si disponible, sinon GPL avec licence et offre de source) ; NouTube (AGPL-3.0) : lecture seule, aucun code copié sauf décision écrite de passer en open-core AGPL. Tenir THIRD_PARTY_LICENSES.md à jour.
 7. CONFIDENTIALITÉ : aucune télémétrie sans consentement ; journaux sans URL ni données personnelles ; hébergement UE.
 8. HONNÊTETÉ : ne jamais présenter un FLAC/WAV issu d'une source compressée comme « sans perte » ; n'afficher que des fonctions réellement implémentées.
 Si une demande viole une règle : t'arrêter et l'expliquer.
@@ -24,5 +24,6 @@ Si une demande viole une règle : t'arrêter et l'expliquer.
 ## Méthode
 Pour chaque tâche : objectif et critères d'acceptation → fichiers touchés → tests d'abord → implémentation → vérifications → résumé (fait, reste, incertitudes). Ne jamais déclarer « terminé » avec un test en échec. Distinguer vérifié et supposé.
 
-## Phase courante
-Phase 1 terminée en version web locale (0.1). Prochaine : emballage Tauri 2 + sidecars signés (voir README, « Prochaines étapes »).
+## État
+Version 1.0 : application de bureau Electron (démon intégré), extension MV3, licences Ed25519, fonctions Premium, site + webhook.
+Mise en production : docs/MISE-EN-PRODUCTION.md. Pistes suivantes : Android, mise à jour automatique de l'application, build ffmpeg minimal, résumé IA des transcriptions.

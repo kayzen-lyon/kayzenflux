@@ -7,7 +7,8 @@ import type { MediaInfo, PresetId } from '../types';
 import { JobCard } from '../components/JobCard';
 
 export function HomePage() {
-  const { status, settings, jobs, toast, go, urlInputRef } = useApp();
+  const { status, settings, jobs, toast, go, urlInputRef, pendingUrl, consumePendingUrl } = useApp();
+  const premium = status?.tier === 'premium';
   const [url, setUrl] = useState('');
   const [info, setInfo] = useState<MediaInfo | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,9 @@ export function HomePage() {
   const [embedMetadata, setEmbedMetadata] = useState(true);
   const [subtitles, setSubtitles] = useState(false);
   const [playlist, setPlaylist] = useState(false);
+  const [splitChapters, setSplitChapters] = useState(false);
+  const [normalizeAudio, setNormalizeAudio] = useState(false);
+  const [transcript, setTranscript] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -25,7 +29,20 @@ export function HomePage() {
     setSponsorBlock(settings.sponsorBlock);
     setEmbedMetadata(settings.embedMetadata);
     setSubtitles(settings.subtitles);
+    setNormalizeAudio(settings.normalizeAudio);
+    setTranscript(settings.transcript);
   }, [settings]);
+
+  // Lien envoyé par l'extension navigateur : analyse immédiate.
+  useEffect(() => {
+    if (!pendingUrl) return;
+    const u = consumePendingUrl();
+    if (u) {
+      setUrl(u);
+      void analyse(u, false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingUrl]);
 
   const analyse = async (target = url, asPlaylist = playlist) => {
     const clean = target.trim();
@@ -48,7 +65,17 @@ export function HomePage() {
   const download = async () => {
     setSubmitting(true);
     try {
-      await api.createJob({ url: url.trim(), preset, sponsorBlock, embedMetadata, subtitles, playlist, info });
+      const isAudio = status?.presets.find((p) => p.id === preset)?.kind === 'audio';
+      await api.createJob({
+        url: url.trim(),
+        preset,
+        sponsorBlock,
+        embedMetadata,
+        subtitles,
+        playlist,
+        info,
+        ...(premium ? { splitChapters, normalizeAudio: normalizeAudio && isAudio, transcript } : {}),
+      });
       toast('Ajouté à la file de téléchargement.', 'success');
       setInfo(null);
       setUrl('');
@@ -185,6 +212,15 @@ export function HomePage() {
                   />
                 )}
               </div>
+              <p className="eyebrow mt-5 flex items-center gap-1.5">Options Premium {!premium && <Lock className="h-3 w-3" />}</p>
+              <div className={`mt-2 grid gap-2 rounded-2xl border border-dashed border-hairline p-3 sm:grid-cols-2 ${premium ? '' : 'opacity-60'}`}>
+                <Check label="Un fichier par chapitre" checked={splitChapters} onChange={setSplitChapters} disabled={!premium} />
+                <Check label="Normaliser le volume (audio)" checked={normalizeAudio} onChange={setNormalizeAudio} disabled={!premium || presets.find((p) => p.id === preset)?.kind !== 'audio'} />
+                <Check label="Transcription texte (Markdown)" checked={transcript} onChange={setTranscript} disabled={!premium} />
+                {!premium && (
+                  <button className="text-left text-xs font-bold text-primary" onClick={() => go('settings')}>Débloquer avec une licence Premium →</button>
+                )}
+              </div>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <button className="btn-primary px-7 py-3 text-base" onClick={download} disabled={submitting}>
                   {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />} Télécharger
@@ -220,10 +256,10 @@ export function HomePage() {
   );
 }
 
-function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Check({ label, checked, onChange, disabled = false }: { label: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2.5 rounded-xl px-2 py-1.5 text-sm font-medium text-ink">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded accent-[rgb(var(--primary))]" />
+    <label className={`flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-sm font-medium text-ink ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+      <input type="checkbox" disabled={disabled} checked={checked && !disabled} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded accent-[rgb(var(--primary))]" />
       {label}
     </label>
   );

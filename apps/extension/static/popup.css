@@ -1,0 +1,27 @@
+:root { --primary: #b7481f; --ink: #1f2937; --body: #586474; --surface: #f2f5f7; --line: #e0e5eb; --navy: #132944; color-scheme: light dark; }
+@media (prefers-color-scheme: dark) { :root { --ink: #fcf8f6; --body: #a39f9d; --surface: #211c1b; --line: #393533; --primary: #da5625; } body { background: #130e0c; } }
+* { box-sizing: border-box; }
+body { margin: 0; width: 340px; padding: 16px; font: 14px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: var(--body); background: #fff; }
+header { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+header img { border-radius: 9px; }
+h1 { margin: 0; font-size: 17px; color: var(--ink); letter-spacing: -0.3px; }
+h1 span { color: var(--primary); }
+header p { margin: 0; font-size: 12px; }
+h2 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); }
+.card { background: var(--surface); border-radius: 16px; padding: 12px 14px; margin: 12px 0; }
+.welcome p { margin: 0; font-size: 13px; }
+.primary { width: 100%; border: 0; border-radius: 9999px; padding: 11px 14px; background: var(--primary); color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; }
+.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.primary:focus-visible, input:focus-visible { outline: 3px solid #f3bd49; outline-offset: 2px; }
+.hint { font-size: 11.5px; margin: 6px 4px 0; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; color: var(--ink); font-weight: 500; cursor: pointer; }
+input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--primary); }
+fieldset { border: 1px solid var(--line); border-radius: 12px; margin: 4px 0 8px; padding: 6px 10px 8px; }
+legend { font-size: 11.5px; padding: 0 4px; }
+fieldset label { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink); padding: 2px 0; cursor: pointer; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stats div { background: var(--surface); border-radius: 14px; padding: 10px; text-align: center; }
+.stats strong { display: block; font-size: 22px; color: var(--ink); }
+.stats span { font-size: 11.5px; }
+footer { margin-top: 12px; font-size: 11.5px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+footer a { color: var(--primary); text-decoration: none; font-weight: 600; }

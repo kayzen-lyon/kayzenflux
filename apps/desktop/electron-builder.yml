@@ -1,0 +1,50 @@
+appId: fr.kayzen.flux
+productName: KAYZEN Flux
+executableName: kayzen-flux
+copyright: Copyright © 2026 KAYZEN — Tarek Belhadj
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**
+  - package.json
+extraResources:
+  - from: ../ui/dist
+    to: ui
+  - from: sidecars/${platform}-${arch}
+    to: bin
+  - from: ../../THIRD_PARTY_LICENSES.md
+    to: THIRD_PARTY_LICENSES.md
+protocols:
+  - name: KAYZEN Flux
+    schemes: [kayzenflux]
+asar: true
+artifactName: kayzen-flux-${version}-${os}-${arch}.${ext}
+linux:
+  target: [AppImage, deb]
+  maintainer: KAYZEN <contact@kayzen-lyon.fr>
+  vendor: KAYZEN
+  category: AudioVideo
+  icon: build/icon.png
+  synopsis: Téléchargeur et convertisseur multimédia local, sans publicité
+  mimeTypes: [x-scheme-handler/kayzenflux]
+deb:
+  packageName: kayzen-flux
+  depends: [libnss3, libgtk-3-0]
+win:
+  target: [nsis]
+  icon: build/icon.png
+  # Signature : renseigner CSC_LINK / CSC_KEY_PASSWORD (certificat de signature de code) dans la CI.
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  language: '1036'
+  shortcutName: KAYZEN Flux
+mac:
+  target: [dmg]
+  icon: build/icon.png
+  category: public.app-category.video
+  hardenedRuntime: true
+  # Notarisation : renseigner APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID dans la CI.
+publish: null

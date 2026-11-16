@@ -25,11 +25,14 @@ interface AppState {
   dark: boolean;
   toggleDark: () => void;
   urlInputRef: React.MutableRefObject<HTMLInputElement | null>;
+  refreshStatus: () => Promise<void>;
+  pendingUrl: string | null;
+  consumePendingUrl: () => string | null;
 }
 
 const Ctx = createContext<AppState | null>(null);
 
-const PAGES: Page[] = ['home', 'downloads', 'library', 'settings', 'shortcuts'];
+const PAGES: Page[] = ['home', 'downloads', 'library', 'subscriptions', 'settings', 'shortcuts'];
 const readHash = (): Page => {
   const h = location.hash.replace('#/', '') as Page;
   return PAGES.includes(h) ? h : 'home';
@@ -56,6 +59,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [playing, setPlaying] = useState<LibraryItem | null>(null);
   const [dark, setDark] = useState(readDark);
   const urlInputRef = useRef<HTMLInputElement | null>(null);
+  const [pendingUrl, setPendingUrl] = useState<string | null>(null);
+  const pendingRef = useRef<string | null>(null);
   const toastId = useRef(0);
 
   const toast = useCallback((text: string, kind: Toast['kind'] = 'info') => {
@@ -91,11 +96,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [toast]);
 
+  const refreshStatus = useCallback(async () => {
+    try {
+      setStatus(await api.status());
+    } catch (e) {
+      toast((e as Error).message, 'error');
+    }
+  }, [toast]);
+
   useEffect(() => {
-    api.status().then(setStatus).catch((e: Error) => toast(e.message, 'error'));
+    void refreshStatus();
     api.settings().then(setSettings).catch(() => undefined);
     void refreshLibrary();
-  }, [refreshLibrary, toast]);
+  }, [refreshLibrary, refreshStatus]);
 
   // Flux temps réel (Server-Sent Events) depuis le démon local.
   useEffect(() => {
@@ -123,8 +136,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const item: LibraryItem = JSON.parse((e as MessageEvent).data);
       setLibrary((list) => [item, ...list.filter((x) => x.id !== item.id && x.filePath !== item.filePath)]);
     });
+    es.addEventListener('license', () => void refreshStatus());
+    // Lien reçu depuis l'extension navigateur (via l'application de bureau).
+    es.addEventListener('deeplink', (e) => {
+      const { url } = JSON.parse((e as MessageEvent).data) as { url: string };
+      pendingRef.current = url;
+      setPendingUrl(url);
+      location.hash = '#/home';
+      toast('Lien reçu depuis le navigateur.', 'info');
+    });
     return () => es.close();
-  }, [toast]);
+  }, [toast, refreshStatus]);
 
   const value = useMemo<AppState>(
     () => ({
@@ -144,8 +166,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       dark,
       toggleDark: () => setDark((d) => !d),
       urlInputRef,
+      refreshStatus,
+      pendingUrl,
+      consumePendingUrl: () => {
+        const u = pendingRef.current;
+        pendingRef.current = null;
+        setPendingUrl(null);
+        return u;
+      },
     }),
-    [page, go, status, settings, jobs, library, refreshLibrary, connected, toasts, toast, playing, dark],
+    [page, go, status, settings, jobs, library, refreshLibrary, connected, toasts, toast, playing, dark, refreshStatus, pendingUrl],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

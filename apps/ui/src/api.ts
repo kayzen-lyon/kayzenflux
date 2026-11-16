@@ -1,4 +1,4 @@
-import type { Job, LibraryItem, MediaInfo, PresetId, Settings, Status } from './types';
+import type { Job, LibraryItem, LicenseState, MediaInfo, PresetId, Settings, Status, Subscription } from './types';
 
 const token = document.querySelector<HTMLMetaElement>('meta[name="kayzen-token"]')?.content ?? '';
 // En développement (Vite), le jeton peut être fourni par ?token= dans l'URL.
@@ -34,6 +34,9 @@ export interface JobInput {
   subtitles: boolean;
   playlist: boolean;
   info: MediaInfo | null;
+  splitChapters?: boolean;
+  normalizeAudio?: boolean;
+  transcript?: boolean;
 }
 
 export const api = {
@@ -51,6 +54,14 @@ export const api = {
   openFolder: () => call<{ ok: true }>('POST', '/api/folder/open', {}),
   settings: () => call<Settings>('GET', '/api/settings'),
   saveSettings: (s: Partial<Settings>) => call<Settings>('PUT', '/api/settings', s),
+  activateLicense: (key: string) => call<LicenseState>('POST', '/api/license', { key }),
+  deactivateLicense: () => call<LicenseState>('DELETE', '/api/license'),
+  subscriptions: () => call<Subscription[]>('GET', '/api/subscriptions'),
+  addSubscription: (s: { url: string; preset: PresetId; intervalHours: number; downloadLatest: number }) => call<Subscription>('POST', '/api/subscriptions', s),
+  updateSubscription: (id: string, patch: Partial<Pick<Subscription, 'enabled' | 'preset' | 'intervalHours'>>) => call<Subscription>('PATCH', `/api/subscriptions/${id}`, patch),
+  removeSubscription: (id: string) => call<{ ok: true }>('DELETE', `/api/subscriptions/${id}`),
+  checkSubscription: (id: string) => call<{ found: number }>('POST', `/api/subscriptions/${id}/check`, {}),
+  transcript: (id: string) => call<{ markdown: string; path: string }>('GET', `/api/library/${id}/transcript`),
   updateEngine: () => call<{ ok: boolean; output: string }>('POST', '/api/engine/update', {}),
 };
 

@@ -4,12 +4,14 @@ import { readFile, stat, unlink } from 'node:fs/promises';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { PRESETS, PRESET_IDS, TIER_LIMITS, isPresetAllowed, isPresetId, validateUrl } from '@kayzen-flux/core';
-import { loadConfig, type DaemonConfig } from './config.js';
+import { FILENAME_TEMPLATES, PRESETS, PRESET_IDS, TIER_LIMITS, isPresetAllowed, isPresetId, validateUrl } from '@kayzen-flux/core';
+import type { DaemonConfig } from './config.js';
 import { EngineError, engineVersion, fetchInfo, ffmpegVersion, updateEngine } from './engine.js';
 import { JobQueue } from './jobs.js';
 import { JsonStore } from './store.js';
+import { LicenseManager } from './license.js';
+import { SubscriptionManager } from './subscriptions.js';
+import { LICENSE_KEY_IS_DEV } from './license-key.js';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -41,6 +43,8 @@ export interface DaemonHandle {
   server: Server;
   url: string;
   token: string;
+  /** Envoie un événement à l'interface (ex. lien reçu depuis l'extension). */
+  notify: (event: string, data: unknown) => void;
   close: () => Promise<void>;
 }
 
@@ -53,16 +57,31 @@ export async function startDaemon(config: DaemonConfig): Promise<DaemonHandle> {
     embedMetadata: true,
     subtitles: false,
     maxParallel: 2,
+    filenameTemplate: 'title-id',
+    normalizeAudio: false,
+    transcript: false,
   });
   await store.init();
+  const license = new LicenseManager(config.dataDir, config.envTier, config.licensePublicKey);
+  await license.init();
+  const getTier = () => license.tier;
   const queue = new JobQueue({
     binary: config.ytdlpPath,
     ffmpegPath: config.ffmpegPath,
-    tier: config.tier,
+    getTier,
     allowLocal: config.allowLocalUrls,
     store,
     dataDir: config.dataDir,
   });
+  const subscriptions = new SubscriptionManager({
+    binary: config.ytdlpPath,
+    store,
+    queue,
+    getTier,
+    allowLocal: config.allowLocalUrls,
+    tickMs: config.subscriptionTickMs,
+  });
+  await subscriptions.init();
 
   const sseClients = new Set<ServerResponse>();
   const broadcast = (event: string, data: unknown) => {
@@ -73,7 +92,8 @@ export async function startDaemon(config: DaemonConfig): Promise<DaemonHandle> {
   queue.on('removed', (id) => broadcast('removed', { id }));
   queue.on('library', (item) => broadcast('library', item));
 
-  const allowedHosts = new Set([`127.0.0.1:${config.port}`, `localhost:${config.port}`]);
+  // Rempli après l'écoute (le port peut être choisi par le système si config.port = 0).
+  const allowedHosts = new Set<string>();
 
   const checkToken = (req: IncomingMessage, url: URL) => {
     const given = String(req.headers['x-kayzen-token'] ?? url.searchParams.get('token') ?? '');
@@ -117,9 +137,12 @@ export async function startDaemon(config: DaemonConfig): Promise<DaemonHandle> {
         app: config.appVersion,
         engine: ytdlp,
         ffmpeg,
-        tier: config.tier,
-        limits: TIER_LIMITS[config.tier],
-        presets: PRESET_IDS.map((id) => ({ ...PRESETS[id], args: undefined, allowed: isPresetAllowed(id, config.tier) })),
+        tier: getTier(),
+        limits: TIER_LIMITS[getTier()],
+        license: license.getState(),
+        devLicenseKey: LICENSE_KEY_IS_DEV,
+        presets: PRESET_IDS.map((id) => ({ ...PRESETS[id], args: undefined, allowed: isPresetAllowed(id, getTier()) })),
+        templates: Object.entries(FILENAME_TEMPLATES).map(([id, t]) => ({ id, label: t.label })),
       });
     }
     if (m === 'GET' && p === '/api/events') {
@@ -151,6 +174,7 @@ export async function startDaemon(config: DaemonConfig): Promise<DaemonHandle> {
       const body = await readBody(req);
       const settings = store.getSettings();
       const preset = isPresetId(body.preset) ? body.preset : settings.defaultPreset;
+      const premium = getTier() === 'premium';
       try {
         const job = queue.enqueue({
           url: String(body.url ?? ''),
@@ -158,6 +182,9 @@ export async function startDaemon(config: DaemonConfig): Promise<DaemonHandle> {
           sponsorBlock: bool(body.sponsorBlock, settings.sponsorBlock),
           embedMetadata: bool(body.embedMetadata, settings.embedMetadata),
           subtitles: bool(body.subtitles, settings.subtitles),
+          splitChapters: bool(body.splitChapters, false),
+          normalizeAudio: bool(body.normalizeAudio, premium && settings.normalizeAudio),
+          transcript: bool(body.transcript, premium && settings.transcript),
           playlist: body.playlist === true,
           info: sanitizeInfo(body.info),
         });
@@ -204,10 +231,58 @@ export async function startDaemon(config: DaemonConfig): Promise<DaemonHandle> {
     if (m === 'GET' && p === '/api/settings') return json(res, 200, store.getSettings());
     if (m === 'PUT' && p === '/api/settings') {
       const body = await readBody(req);
-      if (isPresetId(body.defaultPreset) && !isPresetAllowed(body.defaultPreset, config.tier)) {
+      if (isPresetId(body.defaultPreset) && !isPresetAllowed(body.defaultPreset, getTier())) {
         throw new HttpError(400, 'Ce format est réservé à l’offre Premium.');
       }
+      if (getTier() !== 'premium' && (body.normalizeAudio === true || body.transcript === true)) {
+        throw new HttpError(400, 'Cette option est réservée à l’offre Premium.');
+      }
       return json(res, 200, await store.updateSettings(body));
+    }
+    if (m === 'GET' && p === '/api/license') return json(res, 200, license.getState());
+    if (m === 'POST' && p === '/api/license') {
+      const body = await readBody(req);
+      try {
+        const state = await license.activate(String(body.key ?? ''));
+        broadcast('license', state);
+        return json(res, 200, state);
+      } catch (err) {
+        throw new HttpError(400, (err as Error).message, 'invalid_license');
+      }
+    }
+    if (m === 'DELETE' && p === '/api/license') {
+      const state = await license.deactivate();
+      broadcast('license', state);
+      return json(res, 200, state);
+    }
+    if (p.startsWith('/api/subscriptions')) {
+      try {
+        if (m === 'GET' && p === '/api/subscriptions') return json(res, 200, subscriptions.list());
+        if (m === 'POST' && p === '/api/subscriptions') {
+          const body = await readBody(req);
+          return json(res, 201, await subscriptions.add({ url: String(body.url ?? ''), preset: body.preset, intervalHours: body.intervalHours, downloadLatest: body.downloadLatest }));
+        }
+        if (m === 'POST' && (match = /^\/api\/subscriptions\/([\w-]+)\/check$/.exec(p))) {
+          return json(res, 200, { found: await subscriptions.checkNow(match[1]!) });
+        }
+        if (m === 'PATCH' && (match = /^\/api\/subscriptions\/([\w-]+)$/.exec(p))) {
+          return json(res, 200, await subscriptions.update(match[1]!, await readBody(req)));
+        }
+        if (m === 'DELETE' && (match = /^\/api\/subscriptions\/([\w-]+)$/.exec(p))) {
+          await subscriptions.remove(match[1]!);
+          return json(res, 200, { ok: true });
+        }
+      } catch (err) {
+        if (err instanceof EngineError) throw new HttpError(err.code === 'not_found' ? 404 : err.code === 'premium' ? 403 : 400, err.message, err.code);
+        throw err;
+      }
+    }
+    if (m === 'GET' && (match = /^\/api\/library\/([\w-]+)\/transcript$/.exec(p))) {
+      const item = store.getItem(match[1]!);
+      if (!item?.transcriptPath) throw new HttpError(404, 'Aucune transcription pour ce fichier.');
+      const text = await readFile(item.transcriptPath, 'utf8').catch(() => null);
+      if (text === null) throw new HttpError(404, 'Transcription déplacée ou supprimée.');
+      return json(res, 200, { markdown: text, path: item.transcriptPath });
     }
     if (m === 'POST' && p === '/api/engine/update') return json(res, 200, await updateEngine(config.ytdlpPath));
     throw new HttpError(404, 'Route inconnue.');
@@ -278,13 +353,18 @@ export async function startDaemon(config: DaemonConfig): Promise<DaemonHandle> {
     server.once('error', ko);
     server.listen(config.port, config.host, () => ok());
   });
+  const addr = server.address();
+  const port = typeof addr === 'object' && addr ? addr.port : config.port;
+  allowedHosts.add(`127.0.0.1:${port}`).add(`localhost:${port}`);
 
   return {
     server,
     token,
-    url: `http://127.0.0.1:${config.port}/`,
+    notify: broadcast,
+    url: `http://127.0.0.1:${port}/`,
     close: () =>
       new Promise((ok) => {
+        subscriptions.stop();
         for (const c of sseClients) c.end();
         server.close(() => ok());
       }),
@@ -353,19 +433,4 @@ function openFolder(dir: string) {
   } catch {
     /* pas d'environnement graphique */
   }
-}
-
-// Lancement direct : `node dist/server.js`
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-if (isMain) {
-  const here = dirname(fileURLToPath(import.meta.url));
-  const uiDir = process.env.KAYZEN_UI_DIR ?? resolve(here, '../../ui/dist');
-  startDaemon(loadConfig(process.env, uiDir))
-    .then((h) => {
-      console.log(`\n  KAYZEN Flux est prêt : ${h.url}\n  (accessible uniquement depuis cet ordinateur)\n`);
-    })
-    .catch((err: NodeJS.ErrnoException) => {
-      console.error(err.code === 'EADDRINUSE' ? 'Le port est déjà utilisé : KAYZEN Flux tourne peut-être déjà.' : err);
-      process.exit(1);
-    });
 }

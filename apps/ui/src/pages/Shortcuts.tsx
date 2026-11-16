@@ -9,6 +9,7 @@ const GROUPS: Array<{ title: string; items: Array<[string, string[]]> }> = [
       ['Accueil', ['G', 'puis', 'H']],
       ['Téléchargements', ['G', 'puis', 'D']],
       ['Bibliothèque', ['G', 'puis', 'B']],
+      ['Abonnements', ['G', 'puis', 'A']],
       ['Paramètres', ['G', 'puis', 'S']],
       ['Raccourcis', ['?']],
     ],

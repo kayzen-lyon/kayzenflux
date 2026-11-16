@@ -1,4 +1,4 @@
-import { FILE_PREFIX, PROGRESS_PREFIX } from './args.js';
+import { FILE_PREFIX, META_PREFIX, PROGRESS_PREFIX } from './args.js';
 
 export type Phase = 'queued' | 'fetching' | 'downloading' | 'processing' | 'done' | 'error' | 'cancelled';
 
@@ -15,6 +15,7 @@ export type EngineEvent =
     }
   | { type: 'phase'; phase: Phase; label: string }
   | { type: 'file'; path: string }
+  | { type: 'meta'; title: string | null; author: string | null; thumbnail: string | null; durationSec: number | null; site: string | null }
   | { type: 'error'; message: string }
   | { type: 'log'; line: string };
 
@@ -55,6 +56,22 @@ export function parseEngineLine(rawLine: string): EngineEvent {
     };
   }
   if (line.startsWith(FILE_PREFIX)) return { type: 'file', path: line.slice(FILE_PREFIX.length) };
+  if (line.startsWith(META_PREFIX)) {
+    try {
+      const m = JSON.parse(line.slice(META_PREFIX.length)) as Record<string, unknown>;
+      const s = (v: unknown) => (typeof v === 'string' && v ? v : null);
+      return {
+        type: 'meta',
+        title: s(m.title),
+        author: s(m.uploader) ?? s(m.channel),
+        thumbnail: s(m.thumbnail) && /^https?:\/\//.test(m.thumbnail as string) ? (m.thumbnail as string) : null,
+        durationSec: typeof m.duration === 'number' ? m.duration : null,
+        site: s(m.extractor_key),
+      };
+    } catch {
+      return { type: 'log', line };
+    }
+  }
   if (line.startsWith('ERROR:')) return { type: 'error', message: line.slice(6).trim() };
   for (const [re, label] of PHASE_MARKERS) {
     if (re.test(line)) return { type: 'phase', phase: 'processing', label };

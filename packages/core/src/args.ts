@@ -1,9 +1,11 @@
 import { PRESETS, TIER_LIMITS, isPresetAllowed, type PresetId, type Tier } from './presets.js';
 import { validateUrl } from './url.js';
+import { FILENAME_TEMPLATES, LOUDNORM_FILTER, type FilenameTemplateId } from './premium.js';
 
 /** Préfixes des lignes machine émises par yt-dlp et lues par le démon. */
 export const PROGRESS_PREFIX = 'KZP|';
 export const FILE_PREFIX = 'KZF|';
+export const META_PREFIX = 'KZM|';
 
 export const PROGRESS_TEMPLATE =
   'download:' +
@@ -25,7 +27,17 @@ export interface DownloadOptions {
   /** Fichier d'archive pour reprendre une playlist sans re-télécharger. */
   archiveFile?: string;
   allowLocal?: boolean;
+  /** Premium : découpe un fichier par chapitre (dans un sous-dossier). */
+  splitChapters?: boolean;
+  /** Premium : normalisation du volume (audio uniquement). */
+  normalizeAudio?: boolean;
+  /** Premium : récupère les sous-titres (y compris automatiques) pour produire une transcription. */
+  transcript?: boolean;
+  filenameTemplate?: FilenameTemplateId;
 }
+
+/** Options réservées à l'offre Premium. */
+export const PREMIUM_OPTIONS = ['splitChapters', 'normalizeAudio', 'transcript'] as const;
 
 export class ArgsError extends Error {
   constructor(message: string) {
@@ -46,6 +58,11 @@ export function buildDownloadArgs(opts: DownloadOptions): string[] {
     throw new ArgsError(`Le format « ${PRESETS[opts.preset].label} » est réservé à l’offre Premium.`);
   }
   if (!opts.outputDir || opts.outputDir.startsWith('-')) throw new ArgsError('Dossier de sortie invalide.');
+  if (opts.tier !== 'premium') {
+    const used = PREMIUM_OPTIONS.filter((k) => opts[k]);
+    if (used.length) throw new ArgsError('Chapitres, normalisation du volume et transcription sont réservés à l’offre Premium.');
+  }
+  const nameTemplate = FILENAME_TEMPLATES[opts.filenameTemplate ?? 'title-id']?.template ?? FILENAME_TEMPLATES['title-id'].template;
 
   const preset = PRESETS[opts.preset];
   const args: string[] = [
@@ -56,11 +73,13 @@ export function buildDownloadArgs(opts: DownloadOptions): string[] {
     '--progress-template',
     PROGRESS_TEMPLATE,
     '--print',
+    `video:${META_PREFIX}%(.{title,uploader,channel,thumbnail,duration,extractor_key})j`,
+    '--print',
     `after_move:${FILE_PREFIX}%(filepath)s`,
     '-P',
     opts.outputDir,
     '-o',
-    '%(title).150B [%(id)s].%(ext)s',
+    nameTemplate,
     '--windows-filenames',
     ...preset.args,
   ];
@@ -79,9 +98,17 @@ export function buildDownloadArgs(opts: DownloadOptions): string[] {
   if (opts.embedMetadata) {
     args.push('--embed-metadata', '--embed-thumbnail', '--convert-thumbnails', 'jpg');
   }
-  if (opts.subtitles) {
-    args.push('--write-subs', '--sub-langs', 'fr.*,en.*', '--convert-subs', 'srt');
-    if (preset.kind === 'video') args.push('--embed-subs');
+  if (opts.subtitles || opts.transcript) {
+    args.push('--write-subs', '--sub-langs', 'fr.*,en.*,-live_chat', '--convert-subs', 'srt');
+    if (opts.transcript) args.push('--write-auto-subs');
+    // Les sous-titres intégrés à la vidéo sont supprimés du disque : on les garde si une transcription est demandée.
+    if (preset.kind === 'video' && opts.subtitles && !opts.transcript) args.push('--embed-subs');
+  }
+  if (opts.normalizeAudio && preset.kind === 'audio') {
+    args.push('--postprocessor-args', `ExtractAudio:-af ${LOUDNORM_FILTER}`);
+  }
+  if (opts.splitChapters) {
+    args.push('--split-chapters', '-o', 'chapter:%(title).80B - chapitres/%(section_number)02d - %(section_title).100B.%(ext)s');
   }
   if (opts.ffmpegLocation) args.push('--ffmpeg-location', opts.ffmpegLocation);
 

@@ -8,6 +8,7 @@ import { DownloadsPage } from './pages/Downloads';
 import { LibraryPage } from './pages/Library';
 import { SettingsPage } from './pages/Settings';
 import { ShortcutsPage } from './pages/Shortcuts';
+import { SubscriptionsPage } from './pages/Subscriptions';
 import type { Page } from './types';
 
 function GlobalShortcuts() {
@@ -15,7 +16,7 @@ function GlobalShortcuts() {
   useEffect(() => {
     let pendingG = false;
     let timer: number | undefined;
-    const map: Record<string, Page> = { h: 'home', d: 'downloads', b: 'library', s: 'settings' };
+    const map: Record<string, Page> = { h: 'home', d: 'downloads', b: 'library', a: 'subscriptions', s: 'settings' };
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -49,6 +50,8 @@ function Router() {
       return <DownloadsPage />;
     case 'library':
       return <LibraryPage />;
+    case 'subscriptions':
+      return <SubscriptionsPage />;
     case 'settings':
       return <SettingsPage />;
     case 'shortcuts':

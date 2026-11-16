@@ -1,4 +1,4 @@
-import { Download, FolderDown, Keyboard, Library, Moon, Settings2, Sun, WifiOff, CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
+import { BellRing, Download, FolderDown, Keyboard, Library, Moon, Settings2, Sun, WifiOff, CheckCircle2, AlertTriangle, Info, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useApp } from '../state';
 import type { Page } from '../types';
@@ -9,6 +9,7 @@ const NAV: Array<{ id: Page; label: string; icon: typeof Download }> = [
   { id: 'home', label: 'Accueil & Convertisseur', icon: Download },
   { id: 'downloads', label: 'Téléchargements', icon: FolderDown },
   { id: 'library', label: 'Bibliothèque & Lecteur', icon: Library },
+  { id: 'subscriptions', label: 'Abonnements', icon: BellRing },
   { id: 'settings', label: 'Moteur & Paramètres', icon: Settings2 },
   { id: 'shortcuts', label: 'Raccourcis clavier', icon: Keyboard },
 ];

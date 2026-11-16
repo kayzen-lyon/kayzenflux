@@ -1,0 +1,33 @@
+{
+  "name": "@kayzen-flux/desktop",
+  "productName": "KAYZEN Flux",
+  "version": "1.0.0",
+  "description": "KAYZEN Flux — téléchargeur et convertisseur multimédia local, sans publicité",
+  "author": { "name": "KAYZEN — Tarek Belhadj", "email": "contact@kayzen-lyon.fr" },
+  "homepage": "https://flux.kayzen-lyon.com",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "esbuild src/main.ts --bundle --platform=node --format=cjs --target=node20 --external:electron --outfile=dist/main.cjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "icons": "python3 scripts/make-icon.py build/icon.png",
+    "sidecars": "node scripts/fetch-sidecars.mjs",
+    "start": "pnpm build && electron .",
+    "dist:linux": "pnpm build && node scripts/fetch-sidecars.mjs linux-x64 && node scripts/check-release.mjs && electron-builder --linux --x64",
+    "dist:win": "pnpm build && node scripts/fetch-sidecars.mjs win-x64 && node scripts/check-release.mjs && electron-builder --win --x64",
+    "dist:mac": "pnpm build && node scripts/fetch-sidecars.mjs mac-arm64 && node scripts/fetch-sidecars.mjs mac-x64 && node scripts/check-release.mjs && electron-builder --mac --arm64 --x64"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@kayzen-flux/core": "workspace:*",
+    "@kayzen-flux/daemon": "workspace:*",
+    "@types/node": "^22.10.0",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  }
+}

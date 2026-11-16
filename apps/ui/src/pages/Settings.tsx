@@ -1,12 +1,29 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Chrome, Cpu, FolderOpen, Laptop, Loader2, RefreshCw, Save, Smartphone, XCircle, Crown } from 'lucide-react';
+import { CheckCircle2, Chrome, Cpu, FolderOpen, KeyRound, Laptop, Loader2, Lock, RefreshCw, Save, Smartphone, XCircle, Crown } from 'lucide-react';
 import { api } from '../api';
 import { useApp } from '../state';
 import { Toggle } from '../components/Shell';
 import type { Settings } from '../types';
 
 export function SettingsPage() {
-  const { status, settings, setSettings, toast } = useApp();
+  const { status, settings, setSettings, toast, refreshStatus } = useApp();
+  const premium = status?.tier === 'premium';
+  const [licenseKey, setLicenseKey] = useState('');
+  const [activating, setActivating] = useState(false);
+
+  const activate = async () => {
+    setActivating(true);
+    try {
+      const st = await api.activateLicense(licenseKey);
+      toast(`Premium activé${st.email ? ` pour ${st.email}` : ''}. Merci !`, 'success');
+      setLicenseKey('');
+      await refreshStatus();
+    } catch (e) {
+      toast((e as Error).message, 'error');
+    } finally {
+      setActivating(false);
+    }
+  };
   const [draft, setDraft] = useState<Settings | null>(settings);
   const [saving, setSaving] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -83,6 +100,15 @@ export function SettingsPage() {
             <Toggle checked={draft.sponsorBlock} onChange={(v) => set('sponsorBlock', v)} label="SponsorBlock" hint="Retire les passages sponsorisés, autopromotions et rappels d'abonnement (base communautaire)." />
             <Toggle checked={draft.embedMetadata} onChange={(v) => set('embedMetadata', v)} label="Métadonnées & pochette" hint="Titre, artiste et vignette intégrés au fichier." />
             <Toggle checked={draft.subtitles} onChange={(v) => set('subtitles', v)} label="Sous-titres" hint="Récupère les pistes français et anglais existantes (.srt)." />
+            <Toggle checked={premium && draft.normalizeAudio} onChange={(v) => premium && set('normalizeAudio', v)} label={`Normaliser le volume ${premium ? '' : '· Premium'}`} hint="Niveau sonore homogène entre les morceaux (EBU R128, environ -16 LUFS)." />
+            <Toggle checked={premium && draft.transcript} onChange={(v) => premium && set('transcript', v)} label={`Transcription automatique ${premium ? '' : '· Premium'}`} hint="Crée un fichier texte horodaté à partir des sous-titres disponibles." />
+          </div>
+
+          <div>
+            <label htmlFor="tpl" className="font-display text-[15px] font-semibold text-ink">Nom des fichiers</label>
+            <select id="tpl" className="input mt-2 py-2.5" value={draft.filenameTemplate} onChange={(e) => set('filenameTemplate', e.target.value)}>
+              {status?.templates.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
           </div>
 
           <div>
@@ -119,13 +145,33 @@ export function SettingsPage() {
           </section>
 
           <section className="card p-6" aria-labelledby="plan">
-            <h2 id="plan" className="flex items-center gap-2 text-lg font-bold"><Crown className="h-5 w-5 text-gold" /> Offre {status?.tier === 'premium' ? 'Premium' : 'Gratuite'}</h2>
-            <ul className="mt-3 space-y-1.5 text-sm">
-              <li>Playlists : {status?.limits.maxPlaylistItems} éléments max</li>
-              <li>Parallèle : {status?.limits.maxParallelJobs} téléchargements</li>
-              <li>Formats Premium : 4K, FLAC</li>
-            </ul>
-            {status?.tier !== 'premium' && <p className="mt-3 rounded-2xl bg-surface p-3 text-xs">L'offre Premium (licence) arrive à la phase 3 de la roadmap.</p>}
+            <h2 id="plan" className="flex items-center gap-2 text-lg font-bold"><Crown className="h-5 w-5 text-gold" /> Offre {premium ? 'Premium' : 'Gratuite'}</h2>
+            {premium ? (
+              <div className="mt-3 space-y-1.5 text-sm">
+                {status?.license.source === 'env' ? <p>Mode développement (variable KAYZEN_TIER).</p> : (
+                  <>
+                    <p>Licence au nom de <strong className="text-ink">{status?.license.name ?? status?.license.email}</strong></p>
+                    <p>{status?.license.expiresAt ? `Valable jusqu'au ${new Date(status.license.expiresAt).toLocaleDateString('fr-FR')}` : 'Licence à vie'}</p>
+                    <button className="mt-2 text-xs font-bold text-danger" onClick={() => window.confirm('Retirer la licence de cet ordinateur ?') && api.deactivateLicense().then(refreshStatus)}>Retirer la licence de cet ordinateur</button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <>
+                <ul className="mt-3 space-y-1.5 text-sm">
+                  <li className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-gold" /> 4K et FLAC</li>
+                  <li className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-gold" /> Playlists illimitées, 6 en parallèle</li>
+                  <li className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-gold" /> Abonnements automatiques</li>
+                  <li className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-gold" /> Chapitres, volume normalisé, transcription</li>
+                </ul>
+                <label htmlFor="lic" className="mt-4 block font-display text-sm font-semibold text-ink">Clé de licence</label>
+                <textarea id="lic" rows={3} className="input mt-1 rounded-2xl font-mono text-xs" placeholder="KZF1.…" value={licenseKey} onChange={(e) => setLicenseKey(e.target.value)} />
+                <button className="btn-primary mt-2 w-full" onClick={activate} disabled={activating || !licenseKey.trim()}>
+                  {activating ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />} Activer Premium
+                </button>
+                <p className="mt-2 text-[11px]">Vérification hors ligne : aucune donnée n'est envoyée.</p>
+              </>
+            )}
           </section>
         </aside>
       </div>
@@ -134,9 +180,9 @@ export function SettingsPage() {
         <p className="eyebrow">Écosystème</p>
         <h2 id="eco" className="mt-1 text-2xl font-bold">Applications & extension</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <Platform icon={<Laptop className="h-5 w-5" />} title="KAYZEN Flux Desktop" status="Disponible (version 1)" ok text="Ce que vous utilisez : moteur local + interface. Installateurs Windows, macOS et Linux signés à venir." />
-          <Platform icon={<Smartphone className="h-5 w-5" />} title="KAYZEN Flux Android" status="Phase 5" text="APK distribué depuis le site. Pas de version iPhone avec téléchargement (règles de l'App Store)." />
-          <Platform icon={<Chrome className="h-5 w-5" />} title="Extension navigateur" status="Phase 2" text="Lecture sans publicité, SponsorBlock, et bouton « Envoyer vers KAYZEN Flux ». L'extension ne télécharge rien elle-même." />
+          <Platform icon={<Laptop className="h-5 w-5" />} title="KAYZEN Flux Desktop" status="Disponible" ok text="Windows, macOS et Linux. Moteur yt-dlp et ffmpeg intégrés, mises à jour du moteur en un clic." />
+          <Platform icon={<Chrome className="h-5 w-5" />} title="Extension navigateur" status="Disponible" ok text="Chrome, Edge, Brave, Firefox : lecture sans publicité, SponsorBlock et bouton « Envoyer vers KAYZEN Flux ». L'extension ne télécharge rien elle-même." />
+          <Platform icon={<Smartphone className="h-5 w-5" />} title="KAYZEN Flux Android" status="Prochainement" text="APK distribué depuis le site. Pas de version iPhone avec téléchargement (règles de l'App Store)." />
         </div>
       </section>
     </div>

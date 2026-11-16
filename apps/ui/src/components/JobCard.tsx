@@ -42,6 +42,8 @@ export function JobCard({ job, compact = false }: { job: Job; compact?: boolean 
         <div className="flex flex-wrap items-center gap-2">
           <span className="chip bg-primary-soft text-primary dark:text-white">{job.presetLabel}</span>
           {job.playlist && <span className="chip">Playlist · {job.playlistIndex ?? 0}/{job.entryCount}</span>}
+          {job.subscriptionId && <span className="chip">Abonnement</span>}
+          {job.options?.map((o) => <span key={o} className="chip">{o}</span>)}
           <StatusChip job={job} />
         </div>
         <h3 className="mt-1.5 truncate text-[15px] font-bold" title={job.title}>{job.title}</h3>

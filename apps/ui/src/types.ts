@@ -17,6 +17,31 @@ export interface Status {
   tier: Tier;
   limits: { maxPlaylistItems: number; maxParallelJobs: number };
   presets: PresetView[];
+  license: LicenseState;
+  devLicenseKey: boolean;
+  templates: Array<{ id: string; label: string }>;
+}
+
+export interface LicenseState {
+  tier: Tier;
+  source: 'license' | 'env' | 'none';
+  email: string | null;
+  name: string | null;
+  expiresAt: string | null;
+  error: string | null;
+}
+
+export interface Subscription {
+  id: string;
+  url: string;
+  title: string;
+  preset: PresetId;
+  intervalHours: number;
+  enabled: boolean;
+  lastCheck: string | null;
+  lastError: string | null;
+  lastNew: number;
+  createdAt: string;
 }
 
 export interface Job {
@@ -43,6 +68,9 @@ export interface Job {
   error: string | null;
   createdAt: string;
   finishedAt: string | null;
+  options: string[];
+  subscriptionId: string | null;
+  transcripts: string[];
 }
 
 export interface LibraryItem {
@@ -59,6 +87,7 @@ export interface LibraryItem {
   sourceUrl: string;
   createdAt: string;
   favorite: boolean;
+  transcriptPath?: string | null;
 }
 
 export interface Settings {
@@ -68,6 +97,9 @@ export interface Settings {
   embedMetadata: boolean;
   subtitles: boolean;
   maxParallel: number;
+  filenameTemplate: string;
+  normalizeAudio: boolean;
+  transcript: boolean;
 }
 
-export type Page = 'home' | 'downloads' | 'library' | 'settings' | 'shortcuts';
+export type Page = 'home' | 'downloads' | 'library' | 'subscriptions' | 'settings' | 'shortcuts';

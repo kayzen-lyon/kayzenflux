@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KAYZEN Flux</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <img src="icons/icon-48.png" alt="" width="32" height="32" />
+    <div>
+      <h1>KAYZEN <span>Flux</span></h1>
+      <p>Lecture sans publicité</p>
+    </div>
+  </header>
+
+  <section id="welcome" hidden class="card welcome">
+    <h2>Bienvenue !</h2>
+    <p>L'extension est active sur les pages vidéo. Pour télécharger ou convertir une vidéo, installez l'application de bureau KAYZEN Flux puis utilisez le bouton « Envoyer vers KAYZEN Flux ».</p>
+  </section>
+
+  <button id="send" class="primary" type="button">Envoyer cette page vers KAYZEN Flux</button>
+  <p class="hint">Ouvre l'application de bureau avec l'adresse pré-remplie. L'extension ne télécharge rien elle-même.</p>
+
+  <section class="card" aria-labelledby="opts">
+    <h2 id="opts">Options</h2>
+    <label class="row"><span>Bloquer les publicités</span><input type="checkbox" id="blockAds" /></label>
+    <label class="row"><span>Sauter les segments sponsorisés</span><input type="checkbox" id="sponsorBlock" /></label>
+    <fieldset id="cats"><legend>Segments à sauter</legend></fieldset>
+    <label class="row"><span>Masquer les Shorts</span><input type="checkbox" id="hideShorts" /></label>
+    <label class="row"><span>Bouton « Envoyer vers KAYZEN Flux »</span><input type="checkbox" id="sendButton" /></label>
+  </section>
+
+  <section class="stats" aria-label="Statistiques locales">
+    <div><strong id="statAds">0</strong><span>publicités évitées</span></div>
+    <div><strong id="statSeg">0</strong><span>segments passés</span></div>
+  </section>
+
+  <footer>
+    <a href="https://flux.kayzen-lyon.com" target="_blank" rel="noopener">Télécharger l'application</a>
+    <span>·</span>
+    <a href="https://sponsor.ajay.app" target="_blank" rel="noopener">Données SponsorBlock (CC BY-NC-SA)</a>
+  </footer>
+  <script src="popup.js"></script>
+</body>
+</html>

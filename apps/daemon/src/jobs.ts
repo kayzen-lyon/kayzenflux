@@ -1,10 +1,12 @@
 import { EventEmitter } from 'node:events';
 import { randomUUID } from 'node:crypto';
-import { mkdir, stat } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { basename, dirname, extname, join } from 'node:path';
 import {
   buildDownloadArgs,
+  buildTranscript,
   classifyEngineError,
+  parseSubtitles,
   parseEngineLine,
   PRESETS,
   TIER_LIMITS,
@@ -23,6 +25,11 @@ export interface JobRequest {
   embedMetadata: boolean;
   playlist: boolean;
   subtitles: boolean;
+  splitChapters?: boolean;
+  normalizeAudio?: boolean;
+  transcript?: boolean;
+  /** Abonnement à l'origine de la tâche (téléchargement automatique). */
+  subscriptionId?: string | null;
   info?: Pick<MediaInfo, 'title' | 'author' | 'thumbnail' | 'durationSec' | 'site' | 'entryCount'> | null;
 }
 
@@ -50,12 +57,15 @@ export interface Job {
   error: string | null;
   createdAt: string;
   finishedAt: string | null;
+  options: string[];
+  subscriptionId: string | null;
+  transcripts: string[];
 }
 
 interface Deps {
   binary: string;
   ffmpegPath?: string;
-  tier: Tier;
+  getTier: () => Tier;
   allowLocal: boolean;
   store: JsonStore;
   dataDir: string;
@@ -66,6 +76,7 @@ export class JobQueue extends EventEmitter {
   private jobs = new Map<string, Job>();
   private handles = new Map<string, RunHandle>();
   private requests = new Map<string, JobRequest>();
+  private pendingLibrary = new Map<string, Promise<void>[]>();
 
   constructor(private readonly deps: Deps) {
     super();
@@ -87,8 +98,11 @@ export class JobQueue extends EventEmitter {
       url: req.url,
       preset: req.preset,
       outputDir: settings.downloadDir,
-      tier: this.deps.tier,
+      tier: this.deps.getTier(),
       allowLocal: this.deps.allowLocal,
+      splitChapters: req.splitChapters,
+      normalizeAudio: req.normalizeAudio,
+      transcript: req.transcript,
     });
     const job: Job = {
       id: randomUUID(),
@@ -114,6 +128,15 @@ export class JobQueue extends EventEmitter {
       error: null,
       createdAt: new Date().toISOString(),
       finishedAt: null,
+      options: [
+        req.sponsorBlock && 'SponsorBlock',
+        req.normalizeAudio && PRESETS[req.preset].kind === 'audio' && 'Volume normalisé',
+        req.splitChapters && 'Chapitres',
+        req.transcript && 'Transcription',
+        req.subtitles && 'Sous-titres',
+      ].filter((x): x is string => typeof x === 'string'),
+      subscriptionId: req.subscriptionId ?? null,
+      transcripts: [],
     };
     this.jobs.set(job.id, job);
     this.requests.set(job.id, req);
@@ -152,7 +175,7 @@ export class JobQueue extends EventEmitter {
 
   private pump(): void {
     const settings = this.deps.store.getSettings();
-    const max = Math.min(settings.maxParallel, TIER_LIMITS[this.deps.tier].maxParallelJobs);
+    const max = Math.min(settings.maxParallel, TIER_LIMITS[this.deps.getTier()].maxParallelJobs);
     // Ordre d'insertion = premier arrivé, premier servi.
     for (const job of this.jobs.values()) {
       if (this.running() >= max) return;
@@ -175,7 +198,11 @@ export class JobQueue extends EventEmitter {
         url: req.url,
         preset: req.preset,
         outputDir: settings.downloadDir,
-        tier: this.deps.tier,
+        tier: this.deps.getTier(),
+        filenameTemplate: settings.filenameTemplate,
+        splitChapters: req.splitChapters,
+        normalizeAudio: req.normalizeAudio,
+        transcript: req.transcript,
         sponsorBlock: req.sponsorBlock,
         embedMetadata: req.embedMetadata,
         playlist: req.playlist,
@@ -208,9 +235,22 @@ export class JobQueue extends EventEmitter {
           job.phase = 'processing';
           job.label = ev.label;
           break;
-        case 'file':
+        case 'file': {
           job.files.push(ev.path);
-          void this.addToLibrary(job, req, ev.path);
+          const pending = this.pendingLibrary.get(job.id) ?? [];
+          pending.push(this.addToLibrary(job, req, ev.path));
+          this.pendingLibrary.set(job.id, pending);
+          break;
+        }
+        case 'meta':
+          // Complète les informations quand la tâche a été créée sans aperçu (abonnements, extension).
+          if (!job.playlist) {
+            if (ev.title && job.title === job.url) job.title = ev.title;
+            job.author = job.author ?? ev.author;
+            job.thumbnail = job.thumbnail ?? ev.thumbnail;
+            if (ev.site && !job.site) job.site = ev.site;
+            req.info = { title: job.title, author: job.author, thumbnail: job.thumbnail, durationSec: req.info?.durationSec ?? ev.durationSec, site: job.site, entryCount: job.entryCount };
+          }
           break;
         case 'error':
           lastError = ev.message;
@@ -229,7 +269,16 @@ export class JobQueue extends EventEmitter {
     this.handles.delete(job.id);
 
     if (cancelled) this.finish(job, 'cancelled', 'Annulé');
-    else if (code === 0) this.finish(job, 'done', 'Terminé');
+    else if (code === 0) {
+      await Promise.all(this.pendingLibrary.get(job.id) ?? []);
+      if (req.transcript) {
+        job.phase = 'processing';
+        job.label = 'Création de la transcription';
+        this.emitJob(job);
+        await this.writeTranscripts(job);
+      }
+      this.finish(job, 'done', 'Terminé');
+    }
     else this.finish(job, 'error', 'Échec', classifyEngineError(lastError ?? '').message);
     this.pump();
   }
@@ -260,6 +309,41 @@ export class JobQueue extends EventEmitter {
     this.emitJob(job);
   }
 
+  /** Convertit les sous-titres téléchargés en transcription Markdown (fr en priorité). */
+  private async writeTranscripts(job: Job): Promise<void> {
+    for (const [i, file] of job.files.entries()) {
+      const dir = dirname(file);
+      const stem = basename(file, extname(file));
+      let names: string[] = [];
+      try {
+        names = await readdir(dir);
+      } catch {
+        continue;
+      }
+      const subs = names
+        .filter((n) => n.startsWith(`${stem}.`) && /\.(srt|vtt)$/i.test(n))
+        .sort((a, b) => rank(a) - rank(b));
+      const chosen = subs[0];
+      if (!chosen) continue;
+      const lang = chosen.slice(stem.length + 1).replace(/\.(srt|vtt)$/i, '');
+      try {
+        const cues = parseSubtitles(await readFile(join(dir, chosen), 'utf8'));
+        if (!cues.length) continue;
+        const target = join(dir, `${stem}.transcription.md`);
+        await writeFile(target, buildTranscript(cues, { title: job.title, source: job.url, lang }), 'utf8');
+        job.transcripts.push(target);
+        const libId = job.libraryIds[i];
+        if (libId) {
+          const updated = await this.deps.store.patchItem(libId, { transcriptPath: target });
+          if (updated) this.emit('library', { ...updated });
+        }
+      } catch {
+        /* sous-titres illisibles : on continue */
+      }
+    }
+    if (!job.transcripts.length) job.label = 'Aucun sous-titre disponible pour la transcription';
+  }
+
   private finish(job: Job, phase: Phase, label: string, error: string | null = null): void {
     job.phase = phase;
     job.label = label;
@@ -270,6 +354,14 @@ export class JobQueue extends EventEmitter {
   }
 
   private emitJob(job: Job): void {
+    if (job.phase === 'done' || job.phase === 'error' || job.phase === 'cancelled') this.pendingLibrary.delete(job.id);
     this.emit('job', { ...job });
   }
+}
+
+function rank(name: string): number {
+  const n = name.toLowerCase();
+  if (/\.fr[.-]/.test(n) || n.includes('.fr.')) return n.includes('orig') ? 0 : 1;
+  if (/\.en[.-]/.test(n) || n.includes('.en.')) return 2;
+  return 3;
 }

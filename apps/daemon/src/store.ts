@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { isPresetId, type PresetId } from '@kayzen-flux/core';
+import { isFilenameTemplateId, isPresetId, type FilenameTemplateId, type PresetId } from '@kayzen-flux/core';
 
 export interface Settings {
   downloadDir: string;
@@ -10,6 +10,9 @@ export interface Settings {
   embedMetadata: boolean;
   subtitles: boolean;
   maxParallel: number;
+  filenameTemplate: FilenameTemplateId;
+  normalizeAudio: boolean;
+  transcript: boolean;
 }
 
 export interface LibraryItem {
@@ -26,6 +29,7 @@ export interface LibraryItem {
   sourceUrl: string;
   createdAt: string;
   favorite: boolean;
+  transcriptPath?: string | null;
 }
 
 /** Stockage local en fichiers JSON (écriture atomique). Rien ne quitte l'appareil. */
@@ -69,10 +73,11 @@ export class JsonStore {
     return full;
   }
 
-  async patchItem(id: string, patch: Pick<Partial<LibraryItem>, 'favorite'>): Promise<LibraryItem | undefined> {
+  async patchItem(id: string, patch: Pick<Partial<LibraryItem>, 'favorite' | 'transcriptPath'>): Promise<LibraryItem | undefined> {
     const item = this.getItem(id);
     if (!item) return undefined;
     if (typeof patch.favorite === 'boolean') item.favorite = patch.favorite;
+    if (typeof patch.transcriptPath === 'string') item.transcriptPath = patch.transcriptPath;
     await this.persist('library.json', this.library);
     return item;
   }
@@ -88,6 +93,14 @@ export class JsonStore {
   async clearLibrary(): Promise<void> {
     this.library = [];
     await this.persist('library.json', this.library);
+  }
+
+  async readJsonFile<T>(name: string, fallback: T): Promise<T> {
+    return this.readJson(name, fallback);
+  }
+
+  writeJsonFile(name: string, data: unknown): Promise<void> {
+    return this.persist(name, data);
   }
 
   private async readJson<T>(name: string, fallback: T): Promise<T> {
@@ -121,5 +134,8 @@ export function sanitizeSettings(input: Partial<Settings>, defaults: Settings): 
     embedMetadata: typeof input.embedMetadata === 'boolean' ? input.embedMetadata : defaults.embedMetadata,
     subtitles: typeof input.subtitles === 'boolean' ? input.subtitles : defaults.subtitles,
     maxParallel: Number.isInteger(par) && par >= 1 && par <= 10 ? par : defaults.maxParallel,
+    filenameTemplate: isFilenameTemplateId(input.filenameTemplate) ? input.filenameTemplate : defaults.filenameTemplate,
+    normalizeAudio: typeof input.normalizeAudio === 'boolean' ? input.normalizeAudio : defaults.normalizeAudio,
+    transcript: typeof input.transcript === 'boolean' ? input.transcript : defaults.transcript,
   };
 }
