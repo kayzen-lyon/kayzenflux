@@ -4,7 +4,7 @@ import { readFile, stat, unlink } from 'node:fs/promises';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { FILENAME_TEMPLATES, PRESETS, PRESET_IDS, TIER_LIMITS, isPresetAllowed, isPresetId, validateUrl } from '@kayzen-flux/core';
+import { FILENAME_TEMPLATES, PRESETS, PRESET_IDS, TIER_LIMITS, UPDATE_UNAVAILABLE, isPresetAllowed, isPresetId, validateUrl } from '@kayzen-flux/core';
 import type { DaemonConfig } from './config.js';
 import { EngineError, engineVersion, fetchInfo, ffmpegVersion, updateEngine } from './engine.js';
 import { JobQueue } from './jobs.js';
@@ -12,6 +12,7 @@ import { JsonStore } from './store.js';
 import { LicenseManager } from './license.js';
 import { SubscriptionManager } from './subscriptions.js';
 import { LICENSE_KEY_IS_DEV } from './license-key.js';
+import type { DaemonHooks } from './updates.js';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -48,7 +49,7 @@ export interface DaemonHandle {
   close: () => Promise<void>;
 }
 
-export async function startDaemon(config: DaemonConfig): Promise<DaemonHandle> {
+export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {}): Promise<DaemonHandle> {
   const token = randomBytes(24).toString('hex');
   const store = new JsonStore(config.dataDir, {
     downloadDir: config.defaultDownloadDir,
@@ -60,8 +61,12 @@ export async function startDaemon(config: DaemonConfig): Promise<DaemonHandle> {
     filenameTemplate: 'title-id',
     normalizeAudio: false,
     transcript: false,
+    autoUpdate: null,
   });
   await store.init();
+  const updater = hooks.updater;
+  // Aucune vérification de mise à jour tant que l'utilisateur n'a pas dit oui.
+  updater?.setConsent(store.getSettings().autoUpdate);
   const license = new LicenseManager(config.dataDir, config.envTier, config.licensePublicKey);
   await license.init();
   const getTier = () => license.tier;
@@ -237,7 +242,22 @@ export async function startDaemon(config: DaemonConfig): Promise<DaemonHandle> {
       if (getTier() !== 'premium' && (body.normalizeAudio === true || body.transcript === true)) {
         throw new HttpError(400, 'Cette option est réservée à l’offre Premium.');
       }
-      return json(res, 200, await store.updateSettings(body));
+      const before = store.getSettings().autoUpdate;
+      const saved = await store.updateSettings(body);
+      if (saved.autoUpdate !== before) updater?.setConsent(saved.autoUpdate);
+      return json(res, 200, saved);
+    }
+    if (m === 'GET' && p === '/api/update') return json(res, 200, updater?.getState() ?? UPDATE_UNAVAILABLE);
+    if (m === 'POST' && p === '/api/update/check') {
+      const state = updater?.getState();
+      if (!updater || !state || state.status === 'unavailable' || state.status === 'manual') {
+        throw new HttpError(409, 'La mise à jour automatique n’est pas disponible pour cette installation.', 'update_unavailable');
+      }
+      return json(res, 200, await updater.checkNow());
+    }
+    if (m === 'POST' && p === '/api/update/install') {
+      if (!updater?.install()) throw new HttpError(409, 'Aucune mise à jour prête à installer.', 'update_not_ready');
+      return json(res, 200, { ok: true });
     }
     if (m === 'GET' && p === '/api/license') return json(res, 200, license.getState());
     if (m === 'POST' && p === '/api/license') {

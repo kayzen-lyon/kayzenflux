@@ -1,5 +1,5 @@
-import type { MediaInfo, Phase, PresetId, Tier } from '@kayzen-flux/core';
-export type { MediaInfo, Phase, PresetId, Tier };
+import type { MediaInfo, Phase, PresetId, Tier, UpdateState, UpdateStatus } from '@kayzen-flux/core';
+export type { MediaInfo, Phase, PresetId, Tier, UpdateState, UpdateStatus };
 
 export interface PresetView {
   id: PresetId;
@@ -100,6 +100,8 @@ export interface Settings {
   filenameTemplate: string;
   normalizeAudio: boolean;
   transcript: boolean;
+  /** Mise à jour automatique : null tant que l'utilisateur n'a pas répondu. */
+  autoUpdate: boolean | null;
 }
 
 export type Page = 'home' | 'downloads' | 'library' | 'subscriptions' | 'settings' | 'shortcuts';

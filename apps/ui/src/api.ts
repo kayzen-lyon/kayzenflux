@@ -1,4 +1,4 @@
-import type { Job, LibraryItem, LicenseState, MediaInfo, PresetId, Settings, Status, Subscription } from './types';
+import type { Job, LibraryItem, LicenseState, MediaInfo, PresetId, Settings, Status, Subscription, UpdateState } from './types';
 
 const token = document.querySelector<HTMLMetaElement>('meta[name="kayzen-token"]')?.content ?? '';
 // En développement (Vite), le jeton peut être fourni par ?token= dans l'URL.
@@ -63,6 +63,9 @@ export const api = {
   checkSubscription: (id: string) => call<{ found: number }>('POST', `/api/subscriptions/${id}/check`, {}),
   transcript: (id: string) => call<{ markdown: string; path: string }>('GET', `/api/library/${id}/transcript`),
   updateEngine: () => call<{ ok: boolean; output: string }>('POST', '/api/engine/update', {}),
+  appUpdate: () => call<UpdateState>('GET', '/api/update'),
+  checkAppUpdate: () => call<UpdateState>('POST', '/api/update/check', {}),
+  installAppUpdate: () => call<{ ok: true }>('POST', '/api/update/install', {}),
 };
 
 export const mediaUrl = (id: string) => `/media/${encodeURIComponent(id)}?token=${encodeURIComponent(sessionToken)}`;

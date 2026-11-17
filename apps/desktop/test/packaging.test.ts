@@ -34,3 +34,24 @@ describe('outils embarqués par plateforme', () => {
     expect(block).toMatch(/to: bin/);
   });
 });
+
+describe('mise à jour automatique', () => {
+  const config = readFileSync(join(__dirname, '..', 'electron-builder.yml'), 'utf8');
+  const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8')) as { scripts: Record<string, string> };
+
+  it('publie via un fournisseur generic en https, à l’adresse par défaut documentée', async () => {
+    const { DEFAULT_UPDATE_URL, parseFeedUrl } = await import('../src/update-policy.js');
+    const block = config.split(/^publish:\s*$/m)[1]?.split(/^\S/m)[0] ?? '';
+    const yml = block.replace(/^\s+/gm, '');
+    expect(parseFeedUrl(yml)).toBe(DEFAULT_UPDATE_URL);
+  });
+
+  it('produit le zip macOS requis par electron-updater', () => {
+    const mac = config.split(/^mac:\s*$/m)[1]?.split(/^\S/m)[0] ?? '';
+    expect(mac).toMatch(/target: \[dmg, zip\]/);
+  });
+
+  it('ne publie jamais automatiquement depuis les scripts de distribution', () => {
+    for (const name of ['dist:linux', 'dist:win', 'dist:mac']) expect(pkg.scripts[name]).toMatch(/--publish never$/);
+  });
+});

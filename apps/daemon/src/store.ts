@@ -13,6 +13,11 @@ export interface Settings {
   filenameTemplate: FilenameTemplateId;
   normalizeAudio: boolean;
   transcript: boolean;
+  /**
+   * Mise à jour automatique de l'application de bureau : `null` tant que l'utilisateur n'a pas
+   * répondu (aucune vérification), puis son choix explicite.
+   */
+  autoUpdate: boolean | null;
 }
 
 export interface LibraryItem {
@@ -53,7 +58,9 @@ export class JsonStore {
   }
 
   async updateSettings(patch: Partial<Settings>): Promise<Settings> {
-    this.settings = sanitizeSettings({ ...this.settings, ...patch }, this.defaults);
+    // Une valeur invalide conserve le réglage actuel (et non la valeur par défaut) :
+    // un consentement déjà donné ou refusé n'est jamais effacé par une requête mal formée.
+    this.settings = sanitizeSettings({ ...this.settings, ...patch }, this.settings);
     await this.persist('settings.json', this.settings);
     return this.getSettings();
   }
@@ -137,5 +144,6 @@ export function sanitizeSettings(input: Partial<Settings>, defaults: Settings): 
     filenameTemplate: isFilenameTemplateId(input.filenameTemplate) ? input.filenameTemplate : defaults.filenameTemplate,
     normalizeAudio: typeof input.normalizeAudio === 'boolean' ? input.normalizeAudio : defaults.normalizeAudio,
     transcript: typeof input.transcript === 'boolean' ? input.transcript : defaults.transcript,
+    autoUpdate: typeof input.autoUpdate === 'boolean' || input.autoUpdate === null ? input.autoUpdate : defaults.autoUpdate,
   };
 }

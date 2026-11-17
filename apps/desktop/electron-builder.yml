@@ -54,9 +54,18 @@ mac:
   extraResources:
     - from: sidecars/darwin-${arch}
       to: bin
-  target: [dmg]
+  # zip : requis par la mise à jour automatique sous macOS (le .dmg sert à la première installation).
+  target: [dmg, zip]
   icon: build/icon.png
   category: public.app-category.video
   hardenedRuntime: true
   # Notarisation : renseigner APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID dans la CI.
-publish: null
+# Mise à jour automatique (electron-updater) : fournisseur « generic ».
+# electron-builder écrit cette adresse dans resources/app-update.yml (lu par src/updater.ts) et
+# produit latest.yml / latest-mac.yml / latest-linux.yml (+ .blockmap) à déposer à cette adresse
+# avec les installeurs. Autre adresse : electron-builder -c.publish.url=https://exemple.fr/maj/
+# L'application refuse toute adresse non https et ne vérifie qu'avec l'accord de l'utilisateur.
+# Les installeurs ne sont jamais envoyés automatiquement (scripts dist:* : --publish never).
+publish:
+  provider: generic
+  url: https://flux.kayzen-lyon.com/updates/

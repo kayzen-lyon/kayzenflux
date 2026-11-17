@@ -5,3 +5,4 @@ export * from './info.js';
 export * from './progress.js';
 export * from './errors.js';
 export * from './premium.js';
+export * from './update.js';

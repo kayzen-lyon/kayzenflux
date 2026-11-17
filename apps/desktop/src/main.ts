@@ -5,6 +5,8 @@ import { delimiter, join } from 'node:path';
 import { loadConfig } from '../../daemon/src/config.js';
 import { startDaemon, type DaemonHandle } from '../../daemon/src/server.js';
 import { parseDeepLink } from './deeplink.js';
+import { createUpdater } from './updater.js';
+import type { UpdateBridge } from '../../daemon/src/updates.js';
 
 const PROTOCOL = 'kayzenflux';
 const isWin = process.platform === 'win32';
@@ -13,6 +15,7 @@ const exe = isWin ? '.exe' : '';
 let win: BrowserWindow | null = null;
 let daemon: DaemonHandle | null = null;
 let pendingLinks: string[] = [];
+let updater: UpdateBridge | null = null;
 
 // Une seule instance : un lien profond reçu par une 2e instance est transmis à la première.
 if (!app.requestSingleInstanceLock()) {
@@ -103,11 +106,13 @@ async function boot() {
   const uiDir = app.isPackaged ? join(process.resourcesPath, 'ui') : join(__dirname, '../../ui/dist');
   const config = loadConfig(env, uiDir);
   config.appVersion = app.getVersion();
+  // Mise à jour automatique : l'état est transmis à l'interface par le flux d'événements du démon.
+  updater ??= createUpdater((state) => daemon?.notify('update', state));
   try {
-    daemon = await startDaemon(config);
+    daemon = await startDaemon(config, { updater });
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code !== 'EADDRINUSE') throw err;
-    daemon = await startDaemon({ ...config, port: 0 }); // port occupé : le système en choisit un autre
+    daemon = await startDaemon({ ...config, port: 0 }, { updater }); // port occupé : le système en choisit un autre
   }
 
   win = new BrowserWindow({

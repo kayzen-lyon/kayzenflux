@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { api, eventsUrl } from './api';
-import type { Job, LibraryItem, Page, Settings, Status } from './types';
+import type { Job, LibraryItem, Page, Settings, Status, UpdateState } from './types';
 
 interface Toast {
   id: number;
@@ -28,6 +28,9 @@ interface AppState {
   refreshStatus: () => Promise<void>;
   pendingUrl: string | null;
   consumePendingUrl: () => string | null;
+  /** Mise à jour de l'application de bureau (null avant la première réponse du démon). */
+  appUpdate: UpdateState | null;
+  setAppUpdate: (s: UpdateState) => void;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -60,6 +63,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [dark, setDark] = useState(readDark);
   const urlInputRef = useRef<HTMLInputElement | null>(null);
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
+  const [appUpdate, setAppUpdate] = useState<UpdateState | null>(null);
   const pendingRef = useRef<string | null>(null);
   const toastId = useRef(0);
 
@@ -108,6 +112,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void refreshStatus();
     api.settings().then(setSettings).catch(() => undefined);
     void refreshLibrary();
+    api.appUpdate().then(setAppUpdate).catch(() => undefined);
   }, [refreshLibrary, refreshStatus]);
 
   // Flux temps réel (Server-Sent Events) depuis le démon local.
@@ -137,6 +142,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLibrary((list) => [item, ...list.filter((x) => x.id !== item.id && x.filePath !== item.filePath)]);
     });
     es.addEventListener('license', () => void refreshStatus());
+    es.addEventListener('update', (e) => setAppUpdate(JSON.parse((e as MessageEvent).data) as UpdateState));
     // Lien reçu depuis l'extension navigateur (via l'application de bureau).
     es.addEventListener('deeplink', (e) => {
       const { url } = JSON.parse((e as MessageEvent).data) as { url: string };
@@ -174,8 +180,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setPendingUrl(null);
         return u;
       },
+      appUpdate,
+      setAppUpdate,
     }),
-    [page, go, status, settings, jobs, library, refreshLibrary, connected, toasts, toast, playing, dark, refreshStatus, pendingUrl],
+    [page, go, status, settings, jobs, library, refreshLibrary, connected, toasts, toast, playing, dark, refreshStatus, pendingUrl, appUpdate],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
