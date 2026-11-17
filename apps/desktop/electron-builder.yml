@@ -8,6 +8,7 @@ directories:
 files:
   - dist/**
   - package.json
+  - build/icon.png
 extraResources:
   - from: ../ui/dist
     to: ui

@@ -16,7 +16,7 @@ const FormatSchema = z
     filesize_approx: z.number().nullish(),
     has_drm: z.union([z.boolean(), z.literal('maybe')]).nullish(),
   })
-  .passthrough();
+  .loose();
 
 const EntrySchema = z
   .object({
@@ -25,7 +25,7 @@ const EntrySchema = z
     url: z.string().nullish(),
     duration: z.number().nullish(),
   })
-  .passthrough();
+  .loose();
 
 export const RawInfoSchema = z
   .object({
@@ -45,7 +45,7 @@ export const RawInfoSchema = z
     entries: z.array(EntrySchema.nullable()).nullish(),
     has_drm: z.boolean().nullish(),
   })
-  .passthrough();
+  .loose();
 
 export type RawInfo = z.infer<typeof RawInfoSchema>;
 
