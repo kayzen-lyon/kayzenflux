@@ -9,6 +9,6 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
-  "dependencies": { "zod": "^3.24.1" },
+  "dependencies": { "zod": "^4.6.6" },
   "devDependencies": { "typescript": "^5.7.3", "vitest": "^3.0.5" }
 }
