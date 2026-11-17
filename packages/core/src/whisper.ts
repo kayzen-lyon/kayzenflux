@@ -11,7 +11,7 @@
  * Aucun binaire officiel en ligne de commande n'est publié pour macOS (seulement un xcframework) :
  * la fonction n'est donc pas proposée sur cette plate-forme.
  */
-import { parseSubtitles, type TranscriptCue } from './premium.js';
+import { parseSubtitles, type TranscriptCue } from './features.js';
 
 export const WHISPER_RELEASE = 'b5454';
 const RELEASE_BASE = `https://github.com/ggml-org/whisper.cpp/releases/download/${WHISPER_RELEASE}`;
@@ -286,7 +286,6 @@ export function whisperTranscriptNote(model: WhisperModelId): string {
 // ---------- Erreurs typées (codes partagés démon / interface) ----------
 
 export type TranscriptionErrorCode =
-  | 'premium'
   | 'unsupported_platform'
   | 'not_installed'
   | 'confirmation_required'
@@ -303,7 +302,6 @@ export type TranscriptionErrorCode =
   | 'missing_file';
 
 export const TRANSCRIPTION_MESSAGES: Record<TranscriptionErrorCode, string> = {
-  premium: 'La transcription locale est réservée à l’offre Premium.',
   unsupported_platform: 'La transcription locale n’est pas disponible sur cette plate-forme.',
   not_installed: 'Le moteur ou le modèle de transcription n’est pas installé (Paramètres > Transcription locale).',
   confirmation_required: 'Confirmation requise : la taille du téléchargement doit être acceptée.',

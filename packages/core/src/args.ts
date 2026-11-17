@@ -1,6 +1,6 @@
-import { PRESETS, TIER_LIMITS, isPresetAllowed, type PresetId, type Tier } from './presets.js';
+import { LIMITS, PRESETS, type PresetId } from './presets.js';
 import { validateUrl } from './url.js';
-import { FILENAME_TEMPLATES, LOUDNORM_FILTER, type FilenameTemplateId } from './premium.js';
+import { FILENAME_TEMPLATES, LOUDNORM_FILTER, type FilenameTemplateId } from './features.js';
 
 /** Préfixes des lignes machine émises par yt-dlp et lues par le démon. */
 export const PROGRESS_PREFIX = 'KZP|';
@@ -16,28 +16,24 @@ export interface DownloadOptions {
   url: string;
   preset: PresetId;
   outputDir: string;
-  tier: Tier;
   sponsorBlock?: boolean;
   embedMetadata?: boolean;
   playlist?: boolean;
-  /** Nombre max d'éléments de playlist ; plafonné par l'offre. */
+  /** Nombre max d'éléments de playlist ; plafonné par LIMITS.maxPlaylistItems. */
   playlistLimit?: number;
   subtitles?: boolean;
   ffmpegLocation?: string;
   /** Fichier d'archive pour reprendre une playlist sans re-télécharger. */
   archiveFile?: string;
   allowLocal?: boolean;
-  /** Premium : découpe un fichier par chapitre (dans un sous-dossier). */
+  /** Découpe un fichier par chapitre (dans un sous-dossier). */
   splitChapters?: boolean;
-  /** Premium : normalisation du volume (audio uniquement). */
+  /** Normalisation du volume (audio uniquement). */
   normalizeAudio?: boolean;
-  /** Premium : récupère les sous-titres (y compris automatiques) pour produire une transcription. */
+  /** Récupère les sous-titres (y compris automatiques) pour produire une transcription. */
   transcript?: boolean;
   filenameTemplate?: FilenameTemplateId;
 }
-
-/** Options réservées à l'offre Premium. */
-export const PREMIUM_OPTIONS = ['splitChapters', 'normalizeAudio', 'transcript'] as const;
 
 export class ArgsError extends Error {
   constructor(message: string) {
@@ -54,14 +50,7 @@ export class ArgsError extends Error {
 export function buildDownloadArgs(opts: DownloadOptions): string[] {
   const check = validateUrl(opts.url, { allowLocal: opts.allowLocal });
   if (!check.ok) throw new ArgsError(check.reason);
-  if (!isPresetAllowed(opts.preset, opts.tier)) {
-    throw new ArgsError(`Le format « ${PRESETS[opts.preset].label} » est réservé à l’offre Premium.`);
-  }
   if (!opts.outputDir || opts.outputDir.startsWith('-')) throw new ArgsError('Dossier de sortie invalide.');
-  if (opts.tier !== 'premium') {
-    const used = PREMIUM_OPTIONS.filter((k) => opts[k]);
-    if (used.length) throw new ArgsError('Chapitres, normalisation du volume et transcription sont réservés à l’offre Premium.');
-  }
   const nameTemplate = FILENAME_TEMPLATES[opts.filenameTemplate ?? 'title-id']?.template ?? FILENAME_TEMPLATES['title-id'].template;
 
   const preset = PRESETS[opts.preset];
@@ -85,7 +74,7 @@ export function buildDownloadArgs(opts: DownloadOptions): string[] {
   ];
 
   if (opts.playlist) {
-    const cap = TIER_LIMITS[opts.tier].maxPlaylistItems;
+    const cap = LIMITS.maxPlaylistItems;
     const limit = Math.max(1, Math.min(opts.playlistLimit ?? cap, cap));
     args.push('--yes-playlist', '--playlist-items', `1:${limit}`);
     args.push('-o', '%(playlist_title).80B/%(playlist_index)03d - %(title).120B [%(id)s].%(ext)s');

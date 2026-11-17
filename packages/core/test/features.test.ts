@@ -3,37 +3,37 @@ import { ArgsError, buildDownloadArgs, buildFeedArgs, buildTranscript, parseFeed
 
 const base = { url: 'https://example.com/v/1', outputDir: '/tmp/out' };
 
-describe('options Premium', () => {
-  it('sont refusées en offre gratuite', () => {
+describe('fonctions avancées (gratuites pour tous)', () => {
+  it('sont disponibles sans aucune licence', () => {
     for (const opt of ['splitChapters', 'normalizeAudio', 'transcript'] as const) {
-      expect(() => buildDownloadArgs({ ...base, tier: 'free', preset: 'mp3-320', [opt]: true })).toThrow(ArgsError);
+      expect(() => buildDownloadArgs({ ...base, preset: 'mp3-320', [opt]: true })).not.toThrow(ArgsError);
     }
   });
 
   it('normalise le volume pour l’audio uniquement', () => {
-    const audio = buildDownloadArgs({ ...base, tier: 'premium', preset: 'mp3-320', normalizeAudio: true });
+    const audio = buildDownloadArgs({ ...base, preset: 'mp3-320', normalizeAudio: true });
     expect(audio).toContain('--postprocessor-args');
     expect(audio.join(' ')).toContain('loudnorm');
-    const video = buildDownloadArgs({ ...base, tier: 'premium', preset: 'mp4-1080', normalizeAudio: true });
+    const video = buildDownloadArgs({ ...base, preset: 'mp4-1080', normalizeAudio: true });
     expect(video).not.toContain('--postprocessor-args');
   });
 
   it('découpe par chapitres dans un sous-dossier', () => {
-    const args = buildDownloadArgs({ ...base, tier: 'premium', preset: 'm4a', splitChapters: true });
+    const args = buildDownloadArgs({ ...base, preset: 'm4a', splitChapters: true });
     expect(args).toContain('--split-chapters');
     expect(args.find((a) => a.startsWith('chapter:'))).toMatch(/chapitres\//);
   });
 
   it('garde les sous-titres sur le disque quand une transcription est demandée', () => {
-    const args = buildDownloadArgs({ ...base, tier: 'premium', preset: 'mp4-1080', subtitles: true, transcript: true });
+    const args = buildDownloadArgs({ ...base, preset: 'mp4-1080', subtitles: true, transcript: true });
     expect(args).toContain('--write-auto-subs');
     expect(args).not.toContain('--embed-subs');
   });
 
   it('applique un modèle de nom de la liste fermée', () => {
-    const args = buildDownloadArgs({ ...base, tier: 'free', preset: 'm4a', filenameTemplate: 'author-title' });
+    const args = buildDownloadArgs({ ...base, preset: 'm4a', filenameTemplate: 'author-title' });
     expect(args[args.indexOf('-o') + 1]).toMatch(/^%\(uploader/);
-    const fallback = buildDownloadArgs({ ...base, tier: 'free', preset: 'm4a', filenameTemplate: '../../etc' as never });
+    const fallback = buildDownloadArgs({ ...base, preset: 'm4a', filenameTemplate: '../../etc' as never });
     expect(fallback[fallback.indexOf('-o') + 1]).toBe('%(title).150B [%(id)s].%(ext)s');
   });
 });

@@ -1,40 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createServer, request, type Server } from 'node:http';
-import { generateKeyPairSync, sign } from 'node:crypto';
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createReadStream } from 'node:fs';
-import { verifyLicense } from '../src/license.js';
 import { startDaemon, type DaemonHandle } from '../src/server.js';
 import { loadConfig } from '../src/config.js';
 
-const { privateKey, publicKey } = generateKeyPairSync('ed25519');
-const PUB = publicKey.export({ type: 'spki', format: 'pem' }).toString();
-
-function issue(payload: Record<string, unknown>, key = privateKey): string {
-  const body = Buffer.from(JSON.stringify({ v: 1, id: 'x', plan: 'premium', issuedAt: new Date().toISOString(), expiresAt: null, ...payload })).toString('base64url');
-  return `KZF1.${body}.${sign(null, Buffer.from(`KZF1.${body}`), key).toString('base64url')}`;
-}
-
-describe('verifyLicense', () => {
-  it('accepte une licence signée', () => {
-    const r = verifyLicense(issue({ email: 'a@b.fr' }), PUB);
-    expect(r.valid).toBe(true);
-  });
-  it('refuse une licence falsifiée, signée par une autre clé ou expirée', () => {
-    const good = issue({ email: 'a@b.fr' });
-    const [p, , s] = good.split('.');
-    const forged = `${p}.${Buffer.from(JSON.stringify({ v: 1, email: 'pirate@x.fr', plan: 'premium' })).toString('base64url')}.${s}`;
-    expect(verifyLicense(forged, PUB).valid).toBe(false);
-    expect(verifyLicense(issue({ email: 'a@b.fr' }, generateKeyPairSync('ed25519').privateKey), PUB).valid).toBe(false);
-    expect(verifyLicense(issue({ email: 'a@b.fr', expiresAt: '2020-01-01T00:00:00Z' }), PUB)).toMatchObject({ valid: false, reason: expect.stringMatching(/expirée/) });
-    expect(verifyLicense('nimportequoi', PUB).valid).toBe(false);
-  });
-});
-
-// ---------- Bout en bout : licence, normalisation, transcription, abonnements ----------
+// ---------- Bout en bout : normalisation, transcription, abonnements (gratuits pour tous) ----------
 let media: Server;
 let daemon: DaemonHandle;
 let root = '';
@@ -74,7 +48,7 @@ const item = (id: string, n: number) =>
   `<item><title>Épisode ${n}</title><guid>${id}</guid><link>${MEDIA}/demo.mp4?e=${n}</link><enclosure url="${MEDIA}/demo.mp4?e=${n}" type="video/mp4"/></item>`;
 
 beforeAll(async () => {
-  root = await mkdtemp(join(tmpdir(), 'kzf-premium-'));
+  root = await mkdtemp(join(tmpdir(), 'kzf-features-'));
   const src = join(root, 'src');
   await mkdir(src);
   execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'testsrc=duration=3:size=320x240:rate=25', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=3', '-shortest', '-c:v', 'libx264', '-c:a', 'aac', join(src, 'demo.mp4')]);
@@ -104,7 +78,7 @@ beforeAll(async () => {
   await mkdir(ui);
   await writeFile(join(ui, 'index.html'), 'ok');
   const config = loadConfig({ KAYZEN_PORT: String(PORT), KAYZEN_DATA_DIR: join(root, 'data'), KAYZEN_DOWNLOAD_DIR: join(root, 'out'), KAYZEN_ALLOW_LOCAL: '1' }, ui);
-  daemon = await startDaemon({ ...config, licensePublicKey: PUB, subscriptionTickMs: 3_600_000 });
+  daemon = await startDaemon({ ...config, subscriptionTickMs: 3_600_000 });
 }, 30_000);
 
 afterAll(async () => {
@@ -112,20 +86,28 @@ afterAll(async () => {
   media?.close();
 });
 
-describe('licence et fonctions Premium (bout en bout)', () => {
-  it('refuse les fonctions Premium sans licence', async () => {
-    expect((await call('POST', '/api/jobs', { url: `${MEDIA}/demo.mp4`, preset: 'mp3-320', normalizeAudio: true })).status).toBe(400);
-    expect((await call('POST', '/api/subscriptions', { url: `${MEDIA}/feed.xml` })).status).toBe(403);
+describe('fonctions avancées gratuites (bout en bout)', () => {
+  it('expose tout le catalogue sans licence ni offre', async () => {
+    const status = await call('GET', '/api/status');
+    expect(status.status).toBe(200);
+    expect(status.data).not.toHaveProperty('tier');
+    expect(status.data).not.toHaveProperty('license');
+    expect(status.data).not.toHaveProperty('devLicenseKey');
+    expect(status.data.limits).toEqual({ maxPlaylistItems: 5000, maxParallelJobs: 6 });
+    expect(status.data.presets.every((p: { allowed: boolean; tier?: unknown }) => p.allowed && p.tier === undefined)).toBe(true);
   });
 
-  it('refuse une licence invalide puis active une licence valide', async () => {
-    expect((await call('POST', '/api/license', { key: 'KZF1.faux.faux' })).status).toBe(400);
-    const r = await call('POST', '/api/license', { key: issue({ email: 'client@exemple.fr', name: 'Client' }) });
+  it('ne connaît plus la route de licence', async () => {
+    expect((await call('GET', '/api/license')).status).toBe(404);
+    expect((await call('POST', '/api/license', { key: 'KZF1.a.b' })).status).toBe(404);
+    expect((await call('DELETE', '/api/license')).status).toBe(404);
+  });
+
+  it('accepte les réglages autrefois réservés (FLAC, normalisation, transcription)', async () => {
+    const r = await call('PUT', '/api/settings', { defaultPreset: 'flac', normalizeAudio: true, transcript: true });
     expect(r.status).toBe(200);
-    expect(r.data).toMatchObject({ tier: 'premium', email: 'client@exemple.fr' });
-    const status = await call('GET', '/api/status');
-    expect(status.data.tier).toBe('premium');
-    expect(status.data.presets.every((p: any) => p.allowed)).toBe(true);
+    expect(r.data).toMatchObject({ defaultPreset: 'flac', normalizeAudio: true, transcript: true });
+    await call('PUT', '/api/settings', { defaultPreset: 'mp3-320', normalizeAudio: false, transcript: false });
   });
 
   it('normalise le volume d’un MP3', async () => {
@@ -170,9 +152,4 @@ describe('licence et fonctions Premium (bout en bout)', () => {
     expect((await call('DELETE', `/api/subscriptions/${sub.data.id}`)).status).toBe(200);
     expect((await call('GET', '/api/subscriptions')).data).toHaveLength(0);
   }, 120_000);
-
-  it('désactive la licence', async () => {
-    const r = await call('DELETE', '/api/license');
-    expect(r.data.tier).toBe('free');
-  });
 });

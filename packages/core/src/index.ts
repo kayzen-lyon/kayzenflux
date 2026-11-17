@@ -4,7 +4,7 @@ export * from './args.js';
 export * from './info.js';
 export * from './progress.js';
 export * from './errors.js';
-export * from './premium.js';
+export * from './features.js';
 export * from './update.js';
 export * from './whisper.js';
 export * from './summary.js';

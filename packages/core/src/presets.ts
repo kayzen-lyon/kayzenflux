@@ -3,7 +3,6 @@
  * (FLAC/WAV) ne restaure jamais la qualité d'une source déjà compressée.
  */
 
-export type Tier = 'free' | 'premium';
 export type MediaKind = 'audio' | 'video';
 
 export interface Preset {
@@ -11,7 +10,6 @@ export interface Preset {
   kind: MediaKind;
   label: string;
   hint: string;
-  tier: Tier;
   /** Arguments yt-dlp propres au préréglage. */
   args: readonly string[];
 }
@@ -33,7 +31,6 @@ export const PRESETS: Record<PresetId, Preset> = {
     kind: 'audio',
     label: 'MP3 (320 kbps)',
     hint: 'Compatible partout. Qualité plafonnée par la source.',
-    tier: 'free',
     args: ['-f', 'ba/b', '-x', '--audio-format', 'mp3', '--audio-quality', '320K'],
   },
   m4a: {
@@ -41,7 +38,6 @@ export const PRESETS: Record<PresetId, Preset> = {
     kind: 'audio',
     label: 'M4A (AAC)',
     hint: 'Idéal iPhone et Apple Music.',
-    tier: 'free',
     args: ['-f', 'ba[ext=m4a]/ba/b', '-x', '--audio-format', 'm4a'],
   },
   opus: {
@@ -49,7 +45,6 @@ export const PRESETS: Record<PresetId, Preset> = {
     kind: 'audio',
     label: 'Opus (flux d’origine)',
     hint: 'Souvent le flux audio d’origine, sans réencodage.',
-    tier: 'free',
     args: ['-f', 'ba[acodec^=opus]/ba/b', '-x', '--audio-format', 'opus'],
   },
   flac: {
@@ -57,7 +52,6 @@ export const PRESETS: Record<PresetId, Preset> = {
     kind: 'audio',
     label: 'FLAC (conteneur)',
     hint: 'Pour logiciels de montage ou DJ. N’ajoute aucune qualité à la source.',
-    tier: 'premium',
     args: ['-f', 'ba/b', '-x', '--audio-format', 'flac'],
   },
   'mp4-720': {
@@ -65,7 +59,6 @@ export const PRESETS: Record<PresetId, Preset> = {
     kind: 'video',
     label: 'MP4 (720p)',
     hint: 'Léger, pour téléphone.',
-    tier: 'free',
     args: ['-f', 'bv*[height<=?720]+ba/b[height<=?720]', '-S', 'vcodec:h264,res,acodec:m4a', '--merge-output-format', 'mp4'],
   },
   'mp4-1080': {
@@ -73,7 +66,6 @@ export const PRESETS: Record<PresetId, Preset> = {
     kind: 'video',
     label: 'MP4 (1080p)',
     hint: 'Full HD, compatible partout (H.264 privilégié).',
-    tier: 'free',
     args: ['-f', 'bv*[height<=?1080]+ba/b[height<=?1080]', '-S', 'vcodec:h264,res,acodec:m4a', '--merge-output-format', 'mp4'],
   },
   'mp4-2160': {
@@ -81,7 +73,6 @@ export const PRESETS: Record<PresetId, Preset> = {
     kind: 'video',
     label: 'MP4 (4K)',
     hint: 'Meilleure définition disponible jusqu’à 2160p.',
-    tier: 'premium',
     args: ['-f', 'bv*[height<=?2160]+ba/b', '-S', 'res,fps', '--merge-output-format', 'mp4'],
   },
 };
@@ -90,12 +81,8 @@ export function isPresetId(value: unknown): value is PresetId {
   return typeof value === 'string' && (PRESET_IDS as readonly string[]).includes(value);
 }
 
-export function isPresetAllowed(id: PresetId, tier: Tier): boolean {
-  return tier === 'premium' || PRESETS[id].tier === 'free';
-}
-
-/** Limites par offre (cf. roadmap, matrice gratuit/premium). */
-export const TIER_LIMITS: Record<Tier, { maxPlaylistItems: number; maxParallelJobs: number }> = {
-  free: { maxPlaylistItems: 25, maxParallelJobs: 2 },
-  premium: { maxPlaylistItems: 5000, maxParallelJobs: 6 },
-};
+/**
+ * Limites techniques communes (application entièrement gratuite) : garde-fous
+ * contre les playlists démesurées et la saturation de la machine.
+ */
+export const LIMITS = { maxPlaylistItems: 5000, maxParallelJobs: 6 } as const;
