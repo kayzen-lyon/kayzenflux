@@ -23,15 +23,14 @@ node tools/license.mjs keygen
 - Met à jour `apps/daemon/src/license-key.ts` avec la clé publique. Le build de distribution refuse de partir tant que la clé de développement est présente.
 - Émettre une licence à la main (cadeau, support) : `node tools/license.mjs issue client@exemple.fr --name "Nom" --days 370` (sans `--days` : à vie).
 
-## 2. Dépôt GitHub et installeurs
+## 2. Dépôt GitHub et installeurs — FAIT (17/11/2026)
 
-1. Crée un dépôt **privé** `kayzen-lyon/kayzen-flux` et pousse le code.
-2. Dans *Settings > Secrets and variables > Actions*, ajoute `KAYZEN_LICENSE_PUBLIC_KEY_TS` (contenu complet de `apps/daemon/src/license-key.ts`).
-3. Signature (recommandé, sinon Windows et macOS affichent des avertissements) :
-   - Windows : certificat de signature de code → secrets `WIN_CSC_LINK` (fichier .pfx en base64) et `WIN_CSC_KEY_PASSWORD`.
-   - macOS : Apple Developer Program → certificat « Developer ID Application » (`CSC_LINK`, `CSC_KEY_PASSWORD`) + notarisation (`APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`).
-4. Crée l'étiquette `v1.0.0` : la CI lance les tests, construit Windows (.exe), macOS (.dmg), Linux (.AppImage, .deb) et l'extension, puis prépare un **brouillon** de version. Relis-le, puis publie-le.
-5. Les installeurs doivent être téléchargeables publiquement : publie-les dans les « Releases » d'un dépôt public dédié (ex. `kayzen-lyon/kayzen-flux-releases`) ou sur un stockage public, puis renseigne les liens dans `apps/site/public/assets/config.js`.
+- Dépôt privé : https://github.com/kayzenlyon-ai/kayzen-flux
+- La chaîne GitHub Actions (`.github/workflows/release.yml`) teste puis fabrique Windows (.exe), macOS Apple Silicon et Intel (.dmg), Linux (.AppImage, .deb) et l'extension, et dépose le tout dans un **brouillon de version**.
+- Nouvelle version : augmenter `version` dans `apps/desktop/package.json` (et `apps/extension/package.json`), pousser, puis *Actions > release > Run workflow* (ou pousser une étiquette `vX.Y.Z`).
+- La clé publique de production est dans le dépôt : aucun secret n'est obligatoire.
+- Signature (recommandée, sinon avertissements Windows SmartScreen / macOS Gatekeeper) : ajouter les secrets `WIN_CSC_LINK`, `WIN_CSC_KEY_PASSWORD` (certificat Windows), `CSC_LINK`, `CSC_KEY_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` (Apple Developer Program). Ils sont pris en compte automatiquement.
+- Le dépôt étant privé, ses fichiers de version ne sont pas téléchargeables par le public : pour le site, publier les installeurs dans un dépôt public dédié (ex. `kayzenlyon-ai/kayzen-flux-releases`) ou un stockage public, puis renseigner les liens dans `apps/site/public/assets/config.js`.
 
 ## 3. Paiement (Stripe)
 
