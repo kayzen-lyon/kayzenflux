@@ -4,177 +4,238 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KAYZEN Flux — Téléchargez et convertissez vos vidéos et musiques, sans pub ni pistage</title>
-  <meta name="description" content="KAYZEN Flux : application de bureau pour télécharger et convertir vidéos et musiques en MP3, M4A, FLAC ou MP4, sans publicité ni pistage. Tout se passe sur votre ordinateur. Extension de lecture sans pub incluse." />
+  <meta name="description" content="KAYZEN Flux : application libre et gratuite pour télécharger et convertir vidéos et musiques en MP3, M4A, Opus, FLAC ou MP4, sans publicité ni pistage. Tout se passe sur votre ordinateur. Extension de lecture sans pub incluse." />
   <link rel="canonical" href="https://flux.kayzen-lyon.com/" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#0f2238" />
   <meta property="og:title" content="KAYZEN Flux — sans pub ni pistage" />
-  <meta property="og:description" content="Téléchargez et convertissez localement, au format de votre choix. Gratuit, Premium dès 3,99 €/mois." />
+  <meta property="og:description" content="Téléchargez et convertissez sur votre ordinateur, au format de votre choix. Gratuit et libre (licence MIT)." />
   <meta property="og:image" content="https://flux.kayzen-lyon.com/assets/capture-convertisseur.webp" />
   <meta property="og:locale" content="fr_FR" />
   <link rel="preload" href="/assets/outfit.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/jakarta.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="/assets/style.css" />
   <script src="/assets/config.js" defer></script>
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"KAYZEN Flux","operatingSystem":"Windows, macOS, Linux","applicationCategory":"MultimediaApplication","offers":[{"@type":"Offer","price":"0","priceCurrency":"EUR","name":"Gratuit"},{"@type":"Offer","price":"3.99","priceCurrency":"EUR","name":"Premium mensuel"},{"@type":"Offer","price":"29","priceCurrency":"EUR","name":"Premium annuel"},{"@type":"Offer","price":"59","priceCurrency":"EUR","name":"Premium à vie"}],"publisher":{"@type":"Organization","name":"KAYZEN","url":"https://kayzen-lyon.com"}}
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"KAYZEN Flux","operatingSystem":"Windows, Linux, Android","applicationCategory":"MultimediaApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"license":"https://opensource.org/licenses/MIT","isAccessibleForFree":true,"codeRepository":"https://github.com/kayzen-lyon/kayzenflux","publisher":{"@type":"Organization","name":"KAYZEN","url":"https://kayzen-lyon.com"}}
   </script>
 </head>
 <body>
 <a class="skip" href="#contenu">Aller au contenu</a>
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="/"><img src="/assets/icon.png" alt="" width="36" height="36" />KAYZEN <span>Flux</span></a>
-    <nav class="main" aria-label="Navigation">
+    <a class="logo" href="/"><img src="/assets/icon.png" alt="" width="34" height="34" />KAYZEN <span>Flux</span></a>
+    <nav class="main-nav" aria-label="Navigation principale">
       <a href="#fonctions">Fonctions</a>
-      <a href="#comparatif">Comparatif</a>
-      <a href="#tarifs">Tarifs</a>
+      <a href="#extension">Extension</a>
+      <a href="#libre">Libre et gratuit</a>
       <a href="#faq">FAQ</a>
     </nav>
-    <a class="btn btn-primary" href="#telecharger">Télécharger</a>
+    <a class="btn btn-clay btn-small" href="#telecharger">Télécharger</a>
   </div>
 </header>
 
 <main id="contenu">
-  <div class="wrap hero">
-    <span class="pill"><i></i> Moteur local · Rien ne passe par nos serveurs</span>
-    <h1>Téléchargez et convertissez, <em>sans pub ni pistage</em>.</h1>
-    <p class="lead">Collez un lien vers une vidéo ou un son : KAYZEN Flux le récupère directement sur votre ordinateur, en MP3, M4A, FLAC ou MP4. Pas de pop-up, pas de file d'attente, pas de compte.</p>
-    <div class="ctas">
-      <a class="btn btn-primary" href="#telecharger">Télécharger gratuitement</a>
-      <a class="btn btn-ghost" href="#tarifs">Voir Premium</a>
-    </div>
-    <small>Windows · macOS · Linux — et extension Chrome, Edge, Firefox</small>
-    <div class="shot"><img src="/assets/capture-convertisseur.webp" alt="Écran du convertisseur KAYZEN Flux : aperçu d'une vidéo, choix du format et options" width="1400" height="1296" /></div>
-  </div>
-
-  <section id="fonctions">
+  <section class="hero on-dark" aria-labelledby="titre">
     <div class="wrap">
-      <p class="eyebrow">Pourquoi KAYZEN Flux</p>
-      <h2>Le geste simple d'un convertisseur en ligne, sans ses défauts.</h2>
-      <p class="intro">Les sites de conversion vivent de la publicité et de vos données. KAYZEN Flux est une application : elle travaille chez vous, vite, et ne vous montre rien d'autre que ce que vous avez demandé.</p>
-      <div class="grid3">
-        <div class="card"><div class="ico" aria-hidden="true">⦸</div><h3>100 % sans publicité</h3><p>Ni bannières, ni fausses alertes, ni redirections. Le modèle économique, c'est l'offre Premium, rien d'autre.</p></div>
-        <div class="card"><div class="ico" aria-hidden="true">⌂</div><h3>Tout reste chez vous</h3><p>Téléchargement et conversion se font sur votre ordinateur. Votre historique est un fichier local. Aucun compte, aucun cookie de suivi.</p></div>
-        <div class="card"><div class="ico" aria-hidden="true">⚡</div><h3>Rapide et à jour</h3><p>Moteur open source yt-dlp intégré (plus de 1 700 sites), mis à jour en un clic, plusieurs téléchargements en parallèle.</p></div>
-        <div class="card"><div class="ico" aria-hidden="true">♫</div><h3>Formats propres</h3><p>MP3, M4A, Opus, FLAC, MP4 jusqu'en 4K. Titre, artiste et pochette intégrés. SponsorBlock pour couper les passages sponsorisés.</p></div>
-        <div class="card"><div class="ico" aria-hidden="true">✎</div><h3>Transcription</h3><p>Premium : un fichier texte horodaté créé à partir des sous-titres, idéal pour citer un passage ou réviser un cours.</p></div>
-        <div class="card"><div class="ico" aria-hidden="true">↻</div><h3>Abonnements</h3><p>Premium : suivez une chaîne ou un podcast, les nouveautés arrivent toutes seules dans votre dossier.</p></div>
+      <div class="hero-copy">
+        <h1 id="titre">Vos vidéos et vos sons, convertis chez vous.</h1>
+        <p class="lead">Collez un lien dans l'application : KAYZEN Flux récupère le fichier et le convertit sur votre ordinateur, en MP3, M4A, Opus, FLAC ou MP4. Gratuit, libre (licence MIT), sans publicité, sans pistage, sans compte.</p>
+        <div class="ctas">
+          <a class="btn btn-clay" href="#telecharger">Télécharger gratuitement</a>
+          <a class="btn btn-line" href="https://github.com/kayzen-lyon/kayzenflux">Voir le code source</a>
+        </div>
+        <p class="platforms">Windows et Linux, APK Android. macOS bientôt. Extension pour Chrome, Edge et Firefox.</p>
       </div>
+      <figure class="hero-shot frame">
+        <div class="frame-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+        <img src="/assets/capture-convertisseur.webp" alt="Écran du convertisseur KAYZEN Flux : champ de lien, choix du format d'export (MP3, M4A, Opus, FLAC, MP4) et options SponsorBlock, métadonnées et sous-titres" width="1400" height="1296" fetchpriority="high" />
+      </figure>
     </div>
   </section>
 
-  <section class="dark">
-    <div class="wrap grid2">
+  <section class="route" aria-labelledby="trajet">
+    <div class="wrap">
+      <h2 id="trajet">Le trajet d'un fichier s'arrête sur votre ordinateur.</h2>
+      <p class="sub">Les convertisseurs en ligne font passer vos fichiers par leurs serveurs et vivent souvent de la publicité. KAYZEN Flux est une application : tout le travail se fait chez vous.</p>
+      <ol class="route-line">
+        <li><strong>Vous collez un lien</strong><span>Dans l'application, ou depuis l'extension avec le bouton « Envoyer vers KAYZEN Flux ».</span></li>
+        <li><strong>Votre ordinateur fait le travail</strong><span>yt-dlp récupère le média, FFmpeg le convertit. Les deux tournent en local.</span></li>
+        <li><strong>Le fichier arrive dans votre dossier</strong><span>Avec titre, artiste et pochette, et il apparaît dans la bibliothèque.</span></li>
+      </ol>
+      <p class="route-never"><strong>Serveurs KAYZEN</strong><span>Aucun média n'y transite, n'y est stocké ni mis en cache. Ce site ne télécharge rien : tout se fait dans l'application.</span></p>
+    </div>
+  </section>
+
+  <section id="fonctions" class="section section-paper" aria-labelledby="titre-fonctions">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="titre-fonctions">Le geste simple d'un convertisseur, sans ses défauts.</h2>
+        <p>Toutes les fonctions sont gratuites, pour tout le monde. Une seule règle : vos médias ne quittent pas votre appareil.</p>
+      </div>
+      <ul class="benefits">
+        <li><h3>Aucune publicité</h3><p>Ni bannière, ni pop-up, ni redirection. Le logiciel est libre et gratuit, il n'a rien à vous vendre.</p></li>
+        <li><h3>Rien ne sort de chez vous</h3><p>Téléchargement et conversion se font sur votre ordinateur. Votre historique est un fichier local. Pas de compte, pas de cookie de suivi.</p></li>
+        <li><h3>Des formats propres</h3><p>MP3, M4A, Opus, FLAC et MP4 jusqu'en 4K. Titre, artiste, pochette et chapitres intégrés, volume normalisé si vous le souhaitez.</p></li>
+        <li><h3>Segments sponsorisés coupés</h3><p>Activez SponsorBlock à l'export : les passages sponsorisés signalés par la communauté sont retirés du fichier.</p></li>
+        <li><h3>Transcription et résumé locaux</h3><p>Un texte horodaté créé à partir des sous-titres, ou par reconnaissance vocale sur votre ordinateur (Whisper) quand il n'y en a pas. Résumé local avec Ollama, s'il est installé.</p></li>
+        <li><h3>Playlists et abonnements</h3><p>Playlists sans limite de taille. Suivez une chaîne ou un podcast : les nouveautés arrivent toutes seules dans votre dossier.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="extension" class="section section-dark on-dark" aria-labelledby="titre-extension">
+    <div class="wrap ext">
       <div>
-        <p class="eyebrow" style="color:var(--gold)">Extension navigateur incluse</p>
-        <h2>Regardez sans publicité, envoyez en un clic.</h2>
-        <p class="intro">L'extension KAYZEN Flux bloque les publicités pendant la lecture, saute automatiquement les segments sponsorisés et ajoute un bouton « Envoyer vers KAYZEN Flux » qui ouvre l'application avec le lien pré-rempli. Elle ne collecte aucune donnée.</p>
-        <p><a class="btn btn-primary" href="#telecharger" style="margin-top:16px">Installer l'extension</a></p>
+        <h2 id="titre-extension">Regardez sans publicité, envoyez en un clic.</h2>
+        <p class="lead">L'extension KAYZEN Flux accompagne l'application dans votre navigateur.</p>
+        <ul class="ext-points">
+          <li><strong>Lecture sans pub</strong><span>Les publicités sont bloquées pendant la lecture.</span></li>
+          <li><strong>SponsorBlock</strong><span>Les segments sponsorisés sont sautés automatiquement.</span></li>
+          <li><strong>Envoi direct</strong><span>Le bouton « Envoyer vers KAYZEN Flux » ouvre l'application avec le lien déjà rempli.</span></li>
+        </ul>
+        <p class="ext-note">L'extension ne télécharge rien elle-même et ne transmet aucune donnée à KAYZEN.</p>
+        <div class="ctas">
+          <a class="btn btn-clay" href="#telecharger">Télécharger l'extension</a>
+          <a class="btn btn-line" href="/installer-extension">Guide d'installation</a>
+        </div>
       </div>
-      <img src="/assets/capture-extension.webp" alt="Fenêtre de l'extension KAYZEN Flux : options de blocage des publicités et de SponsorBlock" width="340" height="723" style="max-width:340px;margin:auto;border-radius:20px" loading="lazy" />
+      <figure class="ext-shot">
+        <img src="/assets/capture-extension.webp" alt="Fenêtre de l'extension KAYZEN Flux : réglages du blocage des publicités et de SponsorBlock" width="340" height="717" loading="lazy" />
+      </figure>
     </div>
   </section>
 
-  <section id="comparatif">
+  <section id="comparatif" class="section" aria-labelledby="titre-comparatif">
     <div class="wrap">
-      <p class="eyebrow">Comparatif</p>
-      <h2>Ce qui change par rapport aux convertisseurs en ligne.</h2>
-      <table class="cmp">
-        <thead><tr><th scope="col"></th><th scope="col">Convertisseurs en ligne habituels</th><th scope="col">KAYZEN Flux</th></tr></thead>
-        <tbody>
-          <tr><td>Publicités, pop-ups</td><td>Fréquents</td><td class="yes">Aucune</td></tr>
-          <tr><td>Où le fichier est traité</td><td>Sur leurs serveurs</td><td class="yes">Sur votre ordinateur</td></tr>
-          <tr><td>File d'attente</td><td>Selon l'affluence</td><td class="yes">Aucune</td></tr>
-          <tr><td>Playlists</td><td>Souvent limitées</td><td class="yes">25 gratuites, illimitées en Premium</td></tr>
-          <tr><td>Bibliothèque et lecteur hors ligne</td><td>Non</td><td class="yes">Oui</td></tr>
-          <tr><td>Abonnements automatiques</td><td>Non</td><td class="yes">Premium</td></tr>
-          <tr><td>Transcription texte</td><td>Outil externe</td><td class="yes">Premium, intégrée</td></tr>
-        </tbody>
-      </table>
+      <h2 id="titre-comparatif">Ce qui change par rapport aux convertisseurs en ligne.</h2>
+      <div class="table-scroll" role="region" aria-labelledby="titre-comparatif" tabindex="0">
+        <table class="cmp">
+          <thead><tr><th scope="col"><span class="visually-hidden">Critère</span></th><th scope="col">Convertisseurs en ligne habituels</th><th scope="col" class="us">KAYZEN Flux</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Publicités, pop-ups</th><td>Fréquents</td><td class="us">Aucune</td></tr>
+            <tr><th scope="row">Où le fichier est traité</th><td>Sur leurs serveurs</td><td class="us">Sur votre ordinateur</td></tr>
+            <tr><th scope="row">Prix</th><td>Souvent gratuits, avec publicité</td><td class="us">Gratuit et libre (licence MIT)</td></tr>
+            <tr><th scope="row">File d'attente</th><td>Selon l'affluence</td><td class="us">Aucune</td></tr>
+            <tr><th scope="row">Playlists</th><td>Souvent limitées</td><td class="us">Sans limite de taille</td></tr>
+            <tr><th scope="row">Bibliothèque et lecteur hors ligne</th><td>Non</td><td class="us">Oui</td></tr>
+            <tr><th scope="row">Abonnements automatiques</th><td>Non</td><td class="us">Oui</td></tr>
+            <tr><th scope="row">Transcription texte</th><td>Outil externe</td><td class="us">Intégrée, sur votre ordinateur</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
-  <section style="padding-top:0">
-    <div class="wrap grid2">
-      <img class="shot" style="margin:0" src="/assets/capture-bibliotheque.webp" alt="Bibliothèque KAYZEN Flux avec lecteur vidéo intégré" width="1400" height="972" loading="lazy" />
+  <section id="bibliotheque" class="section section-paper" aria-labelledby="titre-bibliotheque">
+    <div class="wrap library">
       <div>
-        <p class="eyebrow">Bibliothèque & lecteur</p>
-        <h2>Tout ce que vous avez récupéré, au même endroit.</h2>
-        <p class="intro">Recherche, favoris, filtres audio ou vidéo, lecteur intégré avec vitesse de lecture et mini-fenêtre. Exportez votre historique en un clic, videz-le quand vous voulez.</p>
+        <h2 id="titre-bibliotheque">Tout ce que vous avez récupéré, au même endroit.</h2>
+        <p class="lead">La bibliothèque est stockée sur cet ordinateur uniquement et se lit hors connexion.</p>
+        <ul>
+          <li>Recherche, favoris, filtres audio ou vidéo</li>
+          <li>Lecteur intégré avec vitesse de lecture et mini-fenêtre</li>
+          <li>Export de l'historique en un clic, suppression quand vous voulez</li>
+        </ul>
+      </div>
+      <figure class="frame">
+        <div class="frame-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+        <img src="/assets/capture-bibliotheque.webp" alt="Bibliothèque KAYZEN Flux : liste des fichiers enregistrés, filtres, et lecteur vidéo intégré en bas de l'écran" width="1400" height="972" loading="lazy" />
+      </figure>
+    </div>
+  </section>
+
+  <section id="libre" class="section" aria-labelledby="titre-libre">
+    <div class="wrap free">
+      <div>
+        <h2 id="titre-libre">Libre et gratuit.</h2>
+        <p class="lead">KAYZEN Flux est un logiciel libre. Toutes les fonctions sont gratuites pour tout le monde, sans version payante.</p>
+        <div class="ctas">
+          <a class="btn btn-clay" href="https://github.com/kayzen-lyon/kayzenflux">Voir le code sur GitHub</a>
+          <a class="btn btn-line" href="#telecharger">Télécharger</a>
+        </div>
+      </div>
+      <dl class="free-list">
+        <div><dt>Licence MIT</dt><dd>Utilisez, étudiez, modifiez et redistribuez le logiciel librement.</dd></div>
+        <div><dt>Code source public</dt><dd>Sur <a href="https://github.com/kayzen-lyon/kayzenflux">github.com/kayzen-lyon/kayzenflux</a> : chacun peut vérifier ce que fait l'application.</dd></div>
+        <div><dt>Sans publicité</dt><dd>Ni bannière, ni pop-up, ni redirection.</dd></div>
+        <div><dt>Sans pistage</dt><dd>Aucune télémétrie, aucun cookie de suivi.</dd></div>
+        <div><dt>Sans compte</dt><dd>Installez et utilisez, rien à créer ni à activer.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="telecharger" class="section section-paper" aria-labelledby="titre-telecharger">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="titre-telecharger">Installer KAYZEN Flux</h2>
+        <p>Version 1.0.0. Les fichiers sont servis depuis telechargements.kayzen-lyon.com. Le téléchargement et la conversion de vos médias se font ensuite dans l'application.</p>
+      </div>
+      <ul class="dl-list">
+        <li class="dl">
+          <div><h3>Windows</h3><p class="req">Windows 10 et 11, 64 bits</p></div>
+          <p class="info">Installeur classique.<span class="file">kayzen-flux-1.0.0-win-x64.exe</span></p>
+          <div class="actions"><a class="btn btn-clay" data-link="downloads.windows" href="#">Télécharger (.exe)</a></div>
+        </li>
+        <li class="dl">
+          <div><h3>macOS</h3><p class="req">Apple Silicon et Intel</p></div>
+          <p class="info">La version macOS est en préparation.</p>
+          <div class="actions"><span class="soon">Bientôt disponible</span></div>
+        </li>
+        <li class="dl">
+          <div><h3>Linux</h3><p class="req">x86_64</p></div>
+          <p class="info">AppImage pour toutes les distributions, paquet .deb pour Debian et Ubuntu.<span class="file">kayzen-flux-1.0.0-linux-x86_64.AppImage, kayzen-flux-1.0.0-linux-amd64.deb</span></p>
+          <div class="actions"><a class="btn btn-clay" data-link="downloads.linuxAppImage" href="#">AppImage</a><a class="btn btn-line" data-link="downloads.linuxDeb" href="#">.deb</a></div>
+        </li>
+        <li class="dl">
+          <div><h3>Android</h3><p class="req">Fichier APK</p></div>
+          <p class="info">Installation hors Play Store, voir la note ci-dessous.<span class="file">kayzen-flux-1.0.0-android.apk</span></p>
+          <div class="actions"><a class="btn btn-clay" data-link="downloads.android" href="#">Télécharger (.apk)</a></div>
+        </li>
+        <li class="dl">
+          <div><h3>Extension Chrome, Edge, Brave</h3><p class="req">Navigateurs Chromium 111 ou plus récents</p></div>
+          <p class="info">Installation manuelle en mode développeur, en attendant la publication sur les boutiques.<span class="file">kayzen-flux-extension-chromium-1.0.0.zip</span></p>
+          <div class="actions"><a class="btn btn-clay" data-link="downloads.chromium" href="#">Télécharger (.zip)</a></div>
+        </li>
+        <li class="dl">
+          <div><h3>Extension Firefox</h3><p class="req">Firefox 128 ou plus récent</p></div>
+          <p class="info">Chargement manuel via about:debugging, en attendant la publication sur la boutique.<span class="file">kayzen-flux-extension-firefox-1.0.0.zip</span></p>
+          <div class="actions"><a class="btn btn-clay" data-link="downloads.firefox" href="#">Télécharger (.zip)</a></div>
+        </li>
+      </ul>
+      <div class="dl-help">
+        <div><strong>Avertissement Windows</strong>L'installeur n'est pas encore signé : Windows SmartScreen peut afficher « Windows a protégé votre ordinateur ». Cliquez sur « Informations complémentaires », puis « Exécuter quand même ».</div>
+        <div><strong>APK Android</strong>L'application n'est pas sur le Play Store. Android vous demandera d'autoriser l'installation d'applications depuis votre navigateur ; vous pourrez retirer cette autorisation ensuite.</div>
+        <div><strong>Extension</strong>Les étapes pour Chrome, Edge et Firefox sont détaillées dans le <a href="/installer-extension">guide d'installation de l'extension</a>.</div>
       </div>
     </div>
   </section>
 
-  <section id="tarifs" style="background:var(--surface)">
-    <div class="wrap">
-      <p class="eyebrow">Tarifs</p>
-      <h2>Gratuit pour l'essentiel. Premium pour aller plus loin.</h2>
-      <p class="intro">Licence valable sur vos ordinateurs personnels, activée hors ligne. TVA non applicable, art. 293 B du CGI.</p>
-      <div class="prices">
-        <div class="card price">
-          <h3>Gratuit</h3><div class="amount">0 €</div>
-          <ul><li>Sans publicité</li><li>MP3, M4A, Opus, MP4 jusqu'en 1080p</li><li>Playlists de 25 éléments</li><li>Bibliothèque et lecteur</li><li>Extension de lecture sans pub</li></ul>
-          <a class="btn btn-ghost" href="#telecharger">Télécharger</a>
-        </div>
-        <div class="card price">
-          <h3>Mensuel</h3><div class="amount">3,99 € <small>/ mois</small></div>
-          <ul><li>Tout le gratuit</li><li>4K et FLAC</li><li>Playlists illimitées</li><li>Abonnements automatiques</li><li>Chapitres, volume normalisé, transcription</li></ul>
-          <a class="btn btn-ghost" data-link="payment.monthly" href="#">S'abonner</a>
-        </div>
-        <div class="card price best">
-          <h3>Annuel</h3><div class="amount">29 € <small>/ an</small></div>
-          <ul><li>Tout Premium</li><li>Soit 2,42 € par mois</li><li>Mises à jour incluses</li></ul>
-          <a class="btn btn-primary" data-link="payment.yearly" href="#">Choisir l'annuel</a>
-        </div>
-        <div class="card price">
-          <h3>À vie</h3><div class="amount">59 €</div>
-          <ul><li>Tout Premium, pour toujours</li><li>Un seul paiement</li><li>Mises à jour incluses</li></ul>
-          <a class="btn btn-navy" data-link="payment.lifetime" href="#">Acheter</a>
-        </div>
+  <section id="faq" class="section" aria-labelledby="titre-faq">
+    <div class="wrap faq">
+      <h2 id="titre-faq">Questions fréquentes</h2>
+      <div class="faq-list">
+        <details><summary>Est-ce légal ?</summary><p>KAYZEN Flux est un outil. Vous êtes responsable de l'usage que vous en faites : utilisez-le pour des contenus que vous avez le droit de copier (vos propres vidéos, contenus sous licence libre comme Creative Commons, copie privée lorsqu'elle s'applique). Les contenus protégés par des mesures techniques (DRM) ne sont jamais pris en charge. Le téléchargement peut être contraire aux conditions d'utilisation de certaines plateformes.</p></details>
+        <details><summary>Pourquoi une application plutôt qu'un site ?</summary><p>Parce que le traitement se fait sur votre ordinateur : pas de serveur intermédiaire qui verrait vos fichiers, pas de file d'attente, pas de publicité pour payer des serveurs.</p></details>
+        <details><summary>Le FLAC donne-t-il une meilleure qualité ?</summary><p>Non. FLAC est un conteneur sans perte : il conserve exactement la qualité de la source, sans en ajouter. Il est utile pour les logiciels de montage ou de mixage. Pour l'écoute, MP3, M4A ou Opus suffisent.</p></details>
+        <details><summary>C'est vraiment gratuit ? Où est le piège ?</summary><p>Il n'y en a pas : KAYZEN Flux est un logiciel libre sous licence MIT, sans version payante, sans publicité et sans collecte de données. Le code source est public sur <a href="https://github.com/kayzen-lyon/kayzenflux">GitHub</a>, chacun peut le vérifier.</p></details>
+        <details><summary>L'extension collecte-t-elle mes données ?</summary><p>Non. Elle ne transmet rien à KAYZEN. Pour sauter les segments sponsorisés, elle interroge la base communautaire SponsorBlock avec seulement 4 caractères d'un hachage de l'identifiant de la vidéo, ce qui ne permet pas de savoir ce que vous regardez.</p></details>
       </div>
-      <p style="margin-top:18px;font-size:14px">Après le paiement, votre clé de licence arrive par e-mail. Collez-la dans <strong>Moteur & Paramètres</strong> : Premium est activé immédiatement.</p>
-    </div>
-  </section>
-
-  <section id="telecharger">
-    <div class="wrap">
-      <p class="eyebrow">Téléchargement</p>
-      <h2>Installer KAYZEN Flux</h2>
-      <div class="downloads">
-        <div class="card"><h3>Windows</h3><p>Windows 10 et 11, 64 bits.</p><a class="btn btn-primary" data-link="downloads.windows" href="#">Télécharger (.exe)</a></div>
-        <div class="card"><h3>macOS</h3><p>Apple Silicon et Intel, macOS 12 ou plus récent.</p><a class="btn btn-primary" data-link="downloads.mac" href="#">Télécharger (.dmg)</a></div>
-        <div class="card"><h3>Linux</h3><p>AppImage (toutes distributions) et paquet .deb.</p><a class="btn btn-primary" data-link="downloads.linux" href="#">Télécharger (.AppImage)</a></div>
-        <div class="card"><h3>Extension Chrome / Edge / Brave</h3><p>Lecture sans pub, SponsorBlock, envoi vers l'application.</p><a class="btn btn-ghost" data-link="downloads.chrome" href="#">Chrome Web Store</a></div>
-        <div class="card"><h3>Extension Firefox</h3><p>Mêmes fonctions, version Firefox 128 et plus.</p><a class="btn btn-ghost" data-link="downloads.firefox" href="#">Firefox Add-ons</a></div>
-        <div class="card"><h3>Android</h3><p>Version en préparation.</p><a class="btn btn-ghost" aria-disabled="true">Bientôt</a></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="faq" style="padding-top:0">
-    <div class="wrap">
-      <p class="eyebrow">Questions fréquentes</p>
-      <h2>FAQ</h2>
-      <details><summary>Est-ce légal ?</summary><p>KAYZEN Flux est un outil. Vous êtes responsable de l'usage que vous en faites : utilisez-le pour des contenus que vous avez le droit de copier (vos propres vidéos, contenus sous licence libre comme Creative Commons, copie privée lorsqu'elle s'applique). Les contenus protégés par des mesures techniques (DRM) ne sont jamais pris en charge. Le téléchargement peut être contraire aux conditions d'utilisation de certaines plateformes.</p></details>
-      <details><summary>Pourquoi une application plutôt qu'un site ?</summary><p>Parce que le traitement se fait sur votre ordinateur : pas de serveur intermédiaire qui verrait vos fichiers, pas de file d'attente, pas de publicité pour payer des serveurs.</p></details>
-      <details><summary>Le FLAC donne-t-il une meilleure qualité ?</summary><p>Non. FLAC est un conteneur sans perte : il conserve exactement la qualité de la source, sans en ajouter. Il est utile pour les logiciels de montage ou de mixage. Pour l'écoute, MP3, M4A ou Opus suffisent.</p></details>
-      <details><summary>Ma licence fonctionne-t-elle hors connexion ?</summary><p>Oui. La clé est signée cryptographiquement et vérifiée localement : aucune donnée n'est envoyée lors de l'activation.</p></details>
-      <details><summary>L'extension collecte-t-elle mes données ?</summary><p>Non. Elle ne transmet rien à KAYZEN. Pour sauter les segments sponsorisés, elle interroge la base communautaire SponsorBlock avec seulement 4 caractères d'un hachage de l'identifiant de la vidéo, ce qui ne permet pas de savoir ce que vous regardez.</p></details>
-      <details><summary>Puis-je me faire rembourser ?</summary><p>Voir nos <a href="/cgv">conditions générales de vente</a>, article « Droit de rétractation ».</p></details>
     </div>
   </section>
 </main>
 
-<footer class="bottom">
+<footer class="bottom on-dark">
   <div class="wrap">
     <a class="logo" href="/"><img src="/assets/icon.png" alt="" width="28" height="28" />KAYZEN <span>Flux</span></a>
-    <span>© <span id="year">2026</span> KAYZEN — Lyon</span>
     <nav aria-label="Informations légales">
       <a href="/mentions-legales">Mentions légales</a>
       <a href="/cgu">CGU</a>
-      <a href="/cgv">CGV</a>
+      
       <a href="/confidentialite">Confidentialité</a>
       <a href="mailto:contact@kayzen-lyon.fr">Contact</a>
     </nav>
+    <p class="copy">© <span data-year>2026</span> KAYZEN, Lyon. Logiciel édité par un entrepreneur individuel.</p>
   </div>
 </footer>
 </body>

@@ -1,23 +1,23 @@
 /**
- * Configuration du site — à compléter avant la mise en ligne.
- * Tant qu'un lien contient « A_CONFIGURER », le bouton correspondant s'affiche « Bientôt disponible ».
+ * Configuration du site — liens de téléchargement.
+ * Tout élément portant data-link="groupe.cle" reçoit l'URL correspondante.
+ * Tant qu'un lien contient « A_CONFIGURER » (ou est absent), le bouton s'affiche « Bientôt disponible ».
  */
+const DOWNLOAD_BASE = 'https://telechargements.kayzen-lyon.com/';
+
 window.KAYZEN_FLUX = {
-  // Liens de paiement Stripe (Dashboard Stripe > Liens de paiement). Ajouter ?client_reference_id=flux
-  payment: {
-    monthly: 'https://buy.stripe.com/A_CONFIGURER_mensuel',
-    yearly: 'https://buy.stripe.com/A_CONFIGURER_annuel',
-    lifetime: 'https://buy.stripe.com/A_CONFIGURER_a_vie',
-  },
-  // Installeurs (page « Releases » du dépôt GitHub, une fois la version publiée).
+  // Fichiers publiés sur telechargements.kayzen-lyon.com (version 1.0.0).
+  // macOS : pas encore de version publiée, la page affiche « Bientôt disponible » sans lien.
   downloads: {
-    windows: 'https://github.com/kayzen-lyon/kayzen-flux/releases/latest/download/A_CONFIGURER.exe',
-    mac: 'https://github.com/kayzen-lyon/kayzen-flux/releases/latest/download/A_CONFIGURER.dmg',
-    linux: 'https://github.com/kayzen-lyon/kayzen-flux/releases/latest/download/A_CONFIGURER.AppImage',
-    chrome: 'https://chromewebstore.google.com/detail/A_CONFIGURER',
-    firefox: 'https://addons.mozilla.org/firefox/addon/A_CONFIGURER',
+    windows: DOWNLOAD_BASE + 'kayzen-flux-1.0.0-win-x64.exe',
+    linuxAppImage: DOWNLOAD_BASE + 'kayzen-flux-1.0.0-linux-x86_64.AppImage',
+    linuxDeb: DOWNLOAD_BASE + 'kayzen-flux-1.0.0-linux-amd64.deb',
+    android: DOWNLOAD_BASE + 'kayzen-flux-1.0.0-android.apk',
+    chromium: DOWNLOAD_BASE + 'kayzen-flux-extension-chromium-1.0.0.zip',
+    firefox: DOWNLOAD_BASE + 'kayzen-flux-extension-firefox-1.0.0.zip',
   },
 };
+
 document.addEventListener('DOMContentLoaded', () => {
   const cfg = window.KAYZEN_FLUX;
   document.querySelectorAll('[data-link]').forEach((a) => {
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
       a.href = href;
     }
   });
-  const y = document.getElementById('year');
-  if (y) y.textContent = String(new Date().getFullYear());
+  document.querySelectorAll('[data-year]').forEach((el) => {
+    el.textContent = String(new Date().getFullYear());
+  });
 });

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Installer l'extension et l'application — KAYZEN Flux</title>
+  <meta name="description" content="Installer manuellement l'extension KAYZEN Flux dans Chrome, Edge ou Firefox, l'APK Android, et passer l'avertissement Windows SmartScreen." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#0f2238" />
+  <link rel="stylesheet" href="/assets/style.css" />
+  <script src="/assets/config.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#contenu">Aller au contenu</a>
+<header class="top"><div class="wrap"><a class="logo" href="/"><img src="/assets/icon.png" alt="" width="34" height="34" />KAYZEN <span>Flux</span></a><a class="btn btn-line btn-small back" href="/#telecharger">Retour aux téléchargements</a></div></header>
+<main class="legal wrap" id="contenu">
+<h1>Installer l'extension</h1>
+<p>Version 1.0.0 — extension, APK Android et installeur Windows.</p>
+<p>L'extension n'est pas encore publiée sur les boutiques des navigateurs. En attendant, elle s'installe à la main à partir du fichier .zip. Elle bloque les publicités pendant la lecture, saute les segments sponsorisés et ouvre KAYZEN Flux avec le lien de la page. Elle ne télécharge rien elle-même.</p>
+
+<h2>Chrome, Edge ou Brave</h2>
+<p><a data-link="downloads.chromium" href="#">Télécharger l'extension pour Chrome, Edge et Brave (.zip)</a></p>
+<ol class="steps">
+<li>Décompressez le fichier <code>kayzen-flux-extension-chromium-1.0.0.zip</code> dans un dossier que vous garderez (par exemple Documents). Ne supprimez pas ce dossier après l'installation : le navigateur en a besoin.</li>
+<li>Ouvrez la page des extensions : tapez <code>chrome://extensions</code> dans la barre d'adresse (<code>edge://extensions</code> dans Edge, <code>brave://extensions</code> dans Brave).</li>
+<li>Activez le <strong>Mode développeur</strong> (interrupteur en haut à droite dans Chrome, dans la colonne de gauche dans Edge).</li>
+<li>Cliquez sur <strong>Charger l'extension non empaquetée</strong> et choisissez le dossier décompressé, celui qui contient le fichier <code>manifest.json</code>.</li>
+<li>Épinglez l'extension depuis l'icône en forme de pièce de puzzle pour l'avoir sous la main.</li>
+</ol>
+<p>Au démarrage, le navigateur peut signaler qu'une extension en mode développeur est active : c'est normal pour une installation manuelle.</p>
+
+<h2>Firefox</h2>
+<p><a data-link="downloads.firefox" href="#">Télécharger l'extension pour Firefox (.zip)</a></p>
+<ol class="steps">
+<li>Tapez <code>about:debugging#/runtime/this-firefox</code> dans la barre d'adresse.</li>
+<li>Cliquez sur <strong>Charger un module complémentaire temporaire…</strong>.</li>
+<li>Sélectionnez directement le fichier <code>kayzen-flux-extension-firefox-1.0.0.zip</code> (inutile de le décompresser).</li>
+</ol>
+<p class="note">Limite de Firefox : un module chargé de cette façon est retiré à la fermeture du navigateur. Il faut refaire ces étapes à chaque redémarrage, jusqu'à la publication de l'extension sur la boutique de modules Firefox.</p>
+
+<h2>Application Android (APK)</h2>
+<p><a data-link="downloads.android" href="#">Télécharger l'APK Android</a></p>
+<p>KAYZEN Flux pour Android n'est pas distribué sur le Play Store. Pour l'installer :</p>
+<ol class="steps">
+<li>Téléchargez le fichier <code>kayzen-flux-1.0.0-android.apk</code> depuis votre téléphone, puis ouvrez-le.</li>
+<li>Android indique que votre navigateur n'est pas autorisé à installer des applications : touchez <strong>Paramètres</strong>, activez <strong>Autoriser cette source</strong>, puis revenez en arrière.</li>
+<li>Touchez <strong>Installer</strong>. Vous pouvez ensuite retirer l'autorisation donnée au navigateur.</li>
+</ol>
+<p>Les intitulés exacts varient selon la marque du téléphone et la version d'Android.</p>
+
+<h2>Avertissement Windows SmartScreen</h2>
+<p>L'installeur Windows n'est pas encore signé numériquement. Au lancement, Windows peut afficher « Windows a protégé votre ordinateur ».</p>
+<ol class="steps">
+<li>Cliquez sur <strong>Informations complémentaires</strong>.</li>
+<li>Vérifiez que l'éditeur et le nom du fichier correspondent à <code>kayzen-flux-1.0.0-win-x64.exe</code>, téléchargé depuis telechargements.kayzen-lyon.com.</li>
+<li>Cliquez sur <strong>Exécuter quand même</strong>.</li>
+</ol>
+
+<p>Une difficulté ? Écrivez à <a href="mailto:contact@kayzen-lyon.fr">contact@kayzen-lyon.fr</a>.</p>
+</main>
+<footer class="bottom on-dark"><div class="wrap"><a class="logo" href="/"><img src="/assets/icon.png" alt="" width="28" height="28" />KAYZEN <span>Flux</span></a><nav aria-label="Informations légales"><a href="/mentions-legales">Mentions légales</a><a href="/cgu">CGU</a><a href="/confidentialite">Confidentialité</a><a href="mailto:contact@kayzen-lyon.fr">Contact</a></nav><p class="copy">© <span data-year>2026</span> KAYZEN, Lyon.</p></div></footer>
+</body>
+</html>
