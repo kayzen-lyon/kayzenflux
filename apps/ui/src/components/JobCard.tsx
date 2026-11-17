@@ -40,7 +40,7 @@ export function JobCard({ job, compact = false }: { job: Job; compact?: boolean 
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="chip bg-primary-soft text-primary dark:text-white">{job.presetLabel}</span>
+          <span className="chip bg-primary-soft text-primary dark:text-white">{job.kind === 'summary' ? 'Résumé' : job.kind === 'transcription' ? 'Transcription' : job.presetLabel}</span>
           {job.playlist && <span className="chip">Playlist · {job.playlistIndex ?? 0}/{job.entryCount}</span>}
           {job.subscriptionId && <span className="chip">Abonnement</span>}
           {job.options?.map((o) => <span key={o} className="chip">{o}</span>)}
@@ -72,7 +72,7 @@ export function JobCard({ job, compact = false }: { job: Job; compact?: boolean 
             <button className="grid h-10 w-10 place-items-center rounded-full bg-primary text-white" aria-label="Lire" onClick={() => play(item)}><Play className="h-4 w-4 translate-x-px" /></button>
           </>
         )}
-        {(job.phase === 'error' || job.phase === 'cancelled') && (
+        {(job.phase === 'error' || job.phase === 'cancelled') && job.kind === 'download' && (
           <button className="icon-btn" aria-label="Réessayer" onClick={retry}><RotateCcw className="h-4 w-4" /></button>
         )}
         {!active && (

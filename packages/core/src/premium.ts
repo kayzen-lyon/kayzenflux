@@ -73,8 +73,10 @@ function stamp(sec: number): string {
 }
 
 /** Transcription Markdown lisible, en paragraphes horodatés (~30 s). */
-export function buildTranscript(cues: TranscriptCue[], meta: { title: string; source: string; lang: string }): string {
+export function buildTranscript(cues: TranscriptCue[], meta: { title: string; source: string; lang: string; note?: string }): string {
   const out: string[] = [`# ${meta.title}`, '', `Source : ${meta.source}  `, `Langue : ${meta.lang}`, ''];
+  // Mention facultative (ex. transcription par reconnaissance vocale) ; même format horodaté ensuite.
+  if (meta.note) out.push(`> ${meta.note}`, '');
   let para: string[] = [];
   let paraStart = cues[0]?.start ?? 0;
   for (const cue of cues) {

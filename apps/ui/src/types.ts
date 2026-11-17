@@ -1,5 +1,27 @@
-import type { MediaInfo, Phase, PresetId, Tier } from '@kayzen-flux/core';
-export type { MediaInfo, Phase, PresetId, Tier };
+import type { MediaInfo, OllamaModel, Phase, PresetId, Tier, TranscriptionErrorCode, WhisperModelId } from '@kayzen-flux/core';
+export type { MediaInfo, OllamaModel, Phase, PresetId, Tier, WhisperModelId };
+
+export type WhisperTarget = 'engine' | WhisperModelId;
+
+/** État de la transcription locale (whisper.cpp), renvoyé par le démon. */
+export interface WhisperStatus {
+  supported: boolean;
+  platform: string;
+  unsupportedReason: string | null;
+  ready: boolean;
+  engine: { installed: boolean; release: string; file: string | null; sizeBytes: number | null; source: string | null };
+  models: Array<{ id: WhisperModelId; label: string; hint: string; sizeBytes: number; installed: boolean; source: string }>;
+  recommendedModel: WhisperModelId;
+  installing: { target: WhisperTarget; phase: 'download' | 'verify' | 'extract' | 'check'; receivedBytes: number; totalBytes: number } | null;
+  lastError: { target: WhisperTarget; code: TranscriptionErrorCode; message: string } | null;
+}
+
+/** Serveur Ollama détecté sur 127.0.0.1 (jamais sur Internet). */
+export interface OllamaStatus {
+  available: boolean;
+  version: string | null;
+  models: OllamaModel[];
+}
 
 export interface PresetView {
   id: PresetId;
@@ -46,6 +68,7 @@ export interface Subscription {
 
 export interface Job {
   id: string;
+  kind: 'download' | 'transcription' | 'summary';
   url: string;
   preset: PresetId;
   presetLabel: string;
@@ -88,6 +111,7 @@ export interface LibraryItem {
   createdAt: string;
   favorite: boolean;
   transcriptPath?: string | null;
+  summaryPath?: string | null;
 }
 
 export interface Settings {
@@ -100,6 +124,8 @@ export interface Settings {
   filenameTemplate: string;
   normalizeAudio: boolean;
   transcript: boolean;
+  whisperModel: WhisperModelId;
+  whisperLanguage: string;
 }
 
 export type Page = 'home' | 'downloads' | 'library' | 'subscriptions' | 'settings' | 'shortcuts';

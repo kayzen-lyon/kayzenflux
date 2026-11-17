@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { api, eventsUrl } from './api';
-import type { Job, LibraryItem, Page, Settings, Status } from './types';
+import type { Job, LibraryItem, Page, Settings, Status, WhisperStatus } from './types';
 
 interface Toast {
   id: number;
@@ -28,6 +28,8 @@ interface AppState {
   refreshStatus: () => Promise<void>;
   pendingUrl: string | null;
   consumePendingUrl: () => string | null;
+  whisper: WhisperStatus | null;
+  refreshWhisper: () => Promise<void>;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -62,6 +64,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
   const pendingRef = useRef<string | null>(null);
   const toastId = useRef(0);
+  const [whisper, setWhisper] = useState<WhisperStatus | null>(null);
 
   const toast = useCallback((text: string, kind: Toast['kind'] = 'info') => {
     const id = ++toastId.current;
@@ -104,11 +107,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [toast]);
 
+  const refreshWhisper = useCallback(async () => {
+    try {
+      setWhisper(await api.whisperStatus());
+    } catch {
+      /* démon indisponible : signalé ailleurs */
+    }
+  }, []);
+
   useEffect(() => {
+    void refreshWhisper();
     void refreshStatus();
     api.settings().then(setSettings).catch(() => undefined);
     void refreshLibrary();
-  }, [refreshLibrary, refreshStatus]);
+  }, [refreshLibrary, refreshStatus, refreshWhisper]);
 
   // Flux temps réel (Server-Sent Events) depuis le démon local.
   useEffect(() => {
@@ -125,7 +137,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         copy[i] = job;
         return copy;
       });
-      if (job.phase === 'done') toast(`Terminé : ${job.title}`, 'success');
+      if (job.phase === 'done') toast(`${job.kind === 'summary' ? 'Résumé prêt' : job.kind === 'transcription' ? 'Transcription prête' : 'Terminé'} : ${job.title}`, 'success');
       if (job.phase === 'error' && job.error) toast(job.error, 'error');
     });
     es.addEventListener('removed', (e) => {
@@ -137,6 +149,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLibrary((list) => [item, ...list.filter((x) => x.id !== item.id && x.filePath !== item.filePath)]);
     });
     es.addEventListener('license', () => void refreshStatus());
+    // Progression des téléchargements du moteur et des modèles de transcription.
+    es.addEventListener('whisper', (e) => setWhisper(JSON.parse((e as MessageEvent).data) as WhisperStatus));
     // Lien reçu depuis l'extension navigateur (via l'application de bureau).
     es.addEventListener('deeplink', (e) => {
       const { url } = JSON.parse((e as MessageEvent).data) as { url: string };
@@ -174,8 +188,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setPendingUrl(null);
         return u;
       },
+      whisper,
+      refreshWhisper,
     }),
-    [page, go, status, settings, jobs, library, refreshLibrary, connected, toasts, toast, playing, dark, refreshStatus, pendingUrl],
+    [page, go, status, settings, jobs, library, refreshLibrary, connected, toasts, toast, playing, dark, refreshStatus, pendingUrl, whisper, refreshWhisper],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
