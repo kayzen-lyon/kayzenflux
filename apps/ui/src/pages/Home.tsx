@@ -147,7 +147,7 @@ export function HomePage() {
                   spellCheck={false}
                 />
               </label>
-              <button type="submit" className="btn-primary h-16 px-8 text-base focus-visible:outline-rail-ink" disabled={!url.trim() || loading}>
+              <button type="submit" className="btn-primary h-16 px-8 text-base focus-visible:outline-rail-ink disabled:bg-white/10 disabled:text-rail-muted disabled:opacity-100" disabled={!url.trim() || loading}>
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : null} {loading ? 'Analyse…' : 'Analyser'}
               </button>
             </form>
