@@ -26,6 +26,8 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+/* Conformité [WCAG 2.4.11] : l'en-tête collant (min-height 68px) ne masque ni l'élément focalisé ni la cible d'une ancre. */
+html { scroll-padding-top: 88px; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
 body { margin: 0; background: var(--cream); color: var(--text); font: 17px/1.65 'Jakarta', system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 img { max-width: 100%; height: auto; display: block; }
