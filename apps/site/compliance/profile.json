@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "project_name": "KAYZEN Flux — site vitrine statique (apps/site/public)",
+  "updated": "2026-11-17",
+  "operator": {
+    "type": { "value": "company", "basis": "stated", "note": "Professionnel (entrepreneur individuel exerçant une activité, ≠ particulier) — Brief : « Tarek BELHADJ, entrepreneur individuel, nom commercial KAYZEN »" },
+    "activity_kind": { "value": "commercial", "basis": "assumed", "note": "Logiciel gratuit sans vente ; activité professionnelle de l'éditeur (APE 62.01Z) : lecture protectrice" },
+    "country_of_establishment": { "value": "FR", "basis": "stated", "note": "6 rue Pierre Termier 69009 Lyon" },
+    "regulated_sector": { "value": false, "basis": "inferred", "note": "Édition de logiciel, aucun secteur réglementé" }
+  },
+  "market": {
+    "target_countries": { "value": ["FR"], "basis": "inferred", "note": "Site uniquement en français (lang=fr, og:locale fr_FR)" },
+    "sells_online": { "value": false, "basis": "stated", "note": "Brief : « logiciel gratuit et open source (MIT), aucun paiement, aucun compte »" },
+    "sells_to_consumers": { "value": false, "basis": "stated", "note": "Aucun paiement" },
+    "sells_what": { "value": [], "basis": "stated", "note": "Rien n'est vendu" },
+    "withdrawal_right_applies": { "value": false, "basis": "inferred", "note": "Aucune vente, donc aucun contrat à distance payant" }
+  },
+  "eaa": {
+    "sectors": { "value": [], "basis": "inferred", "note": "Aucun contrat de consommation conclu sur le site (pas de paiement, pas de compte) : pas de commerce électronique au sens de l'EAA — à confirmer par un juriste" }
+  },
+  "data": {
+    "collects_personal_data": { "value": true, "basis": "inferred", "note": "Journaux techniques de l'hébergeur (IP) et e-mails reçus via mailto (confidentialite.html §2 et §5)" },
+    "special_categories": { "value": false, "basis": "inferred", "note": "Aucun formulaire, aucun compte" },
+    "health_data": { "value": false, "basis": "inferred", "note": "Aucun formulaire, aucun compte" },
+    "non_essential_trackers": { "value": false, "basis": "stated", "note": "Brief : « aucun cookie, aucune mesure d'audience » ; aucun script tiers dans public/ (CSP script-src 'self')" },
+    "third_party_tool_kinds": { "value": ["other"], "basis": "inferred", "note": "vercel.json ; IONOS pour les installeurs" },
+    "third_party_tools": { "value": ["Vercel (hébergement du site)", "IONOS (hébergement des installeurs, DNS)"], "basis": "stated" },
+    "transfers_outside_eu": { "value": true, "basis": "assumed", "note": "Vercel Inc. est établi aux États-Unis ; région fra1 mais garanties de transfert non vérifiées" },
+    "processes_on_behalf_of_clients": { "value": false, "basis": "inferred", "note": "Aucun service B2B" }
+  },
+  "ai": {
+    "conversational_assistant": { "value": false, "basis": "inferred", "note": "Aucun widget ni script tiers sur le site" },
+    "content_generation_feature": { "value": false, "basis": "inferred", "note": "Le site ne propose aucune fonction IA (la transcription Whisper/Ollama est dans l'application, hors périmètre)" },
+    "generated_content_published": { "value": false, "basis": "assumed", "note": "Non demandé : les captures et textes ne sont pas présentés comme générés par IA ; à confirmer" },
+    "emotion_or_biometric": { "value": false, "basis": "inferred" },
+    "decisions_about_people": { "value": false, "basis": "inferred" }
+  },
+  "content": {
+    "hosts_user_content": { "value": false, "basis": "inferred", "note": "Site statique sans formulaire ni commentaire" }
+  },
+  "site": {
+    "user_accounts": { "value": false, "basis": "stated", "note": "Brief : « aucun compte »" },
+    "languages": { "value": ["fr"], "basis": "inferred" },
+    "stack": { "value": ["HTML statique", "Vercel"], "basis": "inferred", "note": "apps/site/vercel.json" }
+  }
+}

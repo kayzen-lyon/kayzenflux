@@ -1,0 +1,1445 @@
+{
+  "schema_version": 1,
+  "tool": "eu-web-compliance check-all",
+  "generator": {
+    "name": "eu-web-compliance",
+    "author": "Tarek BELHADJ - Kayzen",
+    "homepage": "https://www.kayzen-lyon.com",
+    "related": "https://nexus.kayzen-lyon.com"
+  },
+  "disclaimer": "This report was produced by an AI tool (the eu-web-compliance skill) running automated checks. It is not an accessibility audit, not a security audit and not legal advice. Automated checks find only part of the problems: an absence of findings does not mean that the site, or any part of it, conforms. This report never describes the site as a whole as \"conformant\". Have the results reviewed by qualified people before relying on them.",
+  "generated": "2026-11-17T07:33:18.226Z",
+  "target": "http://127.0.0.1:4599/",
+  "language": "fr",
+  "profile": {
+    "path": "compliance/profile.json",
+    "found": true,
+    "declares_ai": false
+  },
+  "summary": {
+    "non_conformities": 0,
+    "to_review": 8,
+    "by_domain": {
+      "accessibility": {
+        "non_conformities": 0,
+        "to_review": 6
+      },
+      "privacy": {
+        "non_conformities": 0,
+        "to_review": 0
+      },
+      "ai": {
+        "non_conformities": 0,
+        "to_review": 0
+      },
+      "security": {
+        "non_conformities": 0,
+        "to_review": 0
+      },
+      "consumer": {
+        "non_conformities": 0,
+        "to_review": 2
+      }
+    },
+    "exit_code": 0
+  },
+  "applicability": {
+    "counts": {
+      "applies": 12,
+      "does-not-apply": 36,
+      "to-confirm": 14
+    },
+    "applies": [
+      {
+        "id": "gdpr-principles-lawful-basis",
+        "domain": "privacy",
+        "title": "GDPR: principles and lawful basis",
+        "level": "mandatory",
+        "rules_file": "references/privacy/forms-and-minimisation.md"
+      },
+      {
+        "id": "gdpr-information-notice",
+        "domain": "privacy",
+        "title": "GDPR: information of the persons concerned",
+        "level": "mandatory",
+        "rules_file": "references/privacy/forms-and-minimisation.md"
+      },
+      {
+        "id": "gdpr-data-subject-rights",
+        "domain": "privacy",
+        "title": "GDPR: exercising rights",
+        "level": "mandatory",
+        "rules_file": "references/privacy/data-subject-rights.md"
+      },
+      {
+        "id": "gdpr-by-design-default",
+        "domain": "privacy",
+        "title": "GDPR: data protection by design and by default",
+        "level": "mandatory",
+        "rules_file": "references/privacy/forms-and-minimisation.md"
+      },
+      {
+        "id": "gdpr-processors",
+        "domain": "privacy",
+        "title": "GDPR: third-party tools acting as processors",
+        "level": "mandatory",
+        "rules_file": "references/privacy/third-parties-and-transfers.md"
+      },
+      {
+        "id": "gdpr-breach-notification",
+        "domain": "privacy",
+        "title": "GDPR: personal data breaches",
+        "level": "mandatory",
+        "rules_file": "references/security/README.md"
+      },
+      {
+        "id": "sec-baseline-https-headers",
+        "domain": "security",
+        "title": "HTTPS and browser security headers",
+        "level": "recommended",
+        "rules_file": "references/security/web-baseline.md"
+      },
+      {
+        "id": "sec-security-of-processing",
+        "domain": "security",
+        "title": "GDPR: security of processing",
+        "level": "mandatory",
+        "rules_file": "references/security/web-baseline.md"
+      },
+      {
+        "id": "sec-owasp-top10",
+        "domain": "security",
+        "title": "Secure development against the OWASP Top 10",
+        "level": "recommended",
+        "rules_file": "references/security/web-baseline.md"
+      },
+      {
+        "id": "sec-ai-generated-code-review",
+        "domain": "security",
+        "title": "Review of AI-generated code (ANSSI guide)",
+        "level": "recommended",
+        "rules_file": "references/security/modules/ai-generated-code.md"
+      },
+      {
+        "id": "fr-legal-notice",
+        "domain": "consumer",
+        "title": "France: mentions légales (Article 1-1 of the LCEN)",
+        "level": "mandatory",
+        "rules_file": "references/countries/fr.md"
+      },
+      {
+        "id": "gdpr-records-of-processing",
+        "domain": "privacy",
+        "title": "GDPR: records of processing activities",
+        "level": "mandatory",
+        "rules_file": "references/privacy/third-parties-and-transfers.md"
+      }
+    ],
+    "to_confirm": [
+      {
+        "id": "a11y-baseline-wcag22-aa",
+        "domain": "accessibility",
+        "title": "Accessible website (skill target: WCAG 2.2 level AA)",
+        "level": "to-confirm",
+        "rules_file": "references/accessibility/rules.md",
+        "reasons": [
+          "no answer for operator.fr_turnover_3y_average_eur"
+        ]
+      },
+      {
+        "id": "fr-rgaa-conformity",
+        "domain": "accessibility",
+        "title": "France: accessibility obligation of Article 47 (RGAA)",
+        "level": "to-confirm",
+        "rules_file": "references/accessibility/rgaa/4.1.2/index.md",
+        "reasons": [
+          "no answer for operator.fr_turnover_3y_average_eur"
+        ]
+      },
+      {
+        "id": "fr-accessibility-statement",
+        "domain": "accessibility",
+        "title": "France: accessibility statement (déclaration d'accessibilité)",
+        "level": "to-confirm",
+        "rules_file": "references/countries/fr.md",
+        "reasons": [
+          "no answer for operator.fr_turnover_3y_average_eur"
+        ]
+      },
+      {
+        "id": "fr-accessibility-multiannual-plan",
+        "domain": "accessibility",
+        "title": "France: multi-year accessibility plan (schéma pluriannuel)",
+        "level": "to-confirm",
+        "rules_file": "references/countries/fr.md",
+        "reasons": [
+          "no answer for operator.fr_turnover_3y_average_eur"
+        ]
+      },
+      {
+        "id": "fr-accessibility-home-mention",
+        "domain": "accessibility",
+        "title": "France: conformity mention on the home page",
+        "level": "to-confirm",
+        "rules_file": "references/countries/fr.md",
+        "reasons": [
+          "no answer for operator.fr_turnover_3y_average_eur"
+        ]
+      },
+      {
+        "id": "gdpr-transfers",
+        "domain": "privacy",
+        "title": "GDPR: transfers outside the European Union",
+        "level": "to-confirm",
+        "rules_file": "references/privacy/third-parties-and-transfers.md",
+        "reasons": [
+          "data.transfers_outside_eu = true (assumed) is an assumption"
+        ]
+      },
+      {
+        "id": "gdpr-children-consent",
+        "domain": "privacy",
+        "title": "GDPR: consent of children",
+        "level": "to-confirm",
+        "rules_file": "references/privacy/forms-and-minimisation.md",
+        "reasons": [
+          "no answer for audience.includes_minors",
+          "Article 8 applies only where consent is the lawful basis and the service is offered directly to a child"
+        ]
+      },
+      {
+        "id": "fr-children-consent-age",
+        "domain": "privacy",
+        "title": "France: age of digital consent",
+        "level": "to-confirm",
+        "rules_file": "references/countries/fr.md",
+        "reasons": [
+          "no answer for audience.includes_minors",
+          "Applies only where consent is the lawful basis and the service is offered directly to a child"
+        ]
+      },
+      {
+        "id": "ai-prohibited-practices",
+        "domain": "ai",
+        "title": "AI Act: prohibited practices",
+        "level": "to-confirm",
+        "rules_file": "references/ai-act/prohibited-practices.md",
+        "reasons": [
+          "ai.generated_content_published = false (assumed) is an assumption"
+        ]
+      },
+      {
+        "id": "ai-literacy",
+        "domain": "ai",
+        "title": "AI Act: AI literacy",
+        "level": "to-confirm",
+        "rules_file": "references/ai-act/ai-literacy.md",
+        "reasons": [
+          "ai.generated_content_published = false (assumed) is an assumption",
+          "operator.activity_kind = \"commercial\" (assumed) is an assumption"
+        ]
+      },
+      {
+        "id": "ai-disclose-generated-content",
+        "domain": "ai",
+        "title": "AI Act: disclose deep fakes and AI-generated public-interest text",
+        "level": "to-confirm",
+        "rules_file": "references/ai-act/transparency.md",
+        "reasons": [
+          "ai.generated_content_published = false (assumed) is an assumption",
+          "operator.activity_kind = \"commercial\" (assumed) is an assumption",
+          "Article 50(4) only covers deep fakes and text published to inform the public on matters of public interest, with an editorial exception; whether the published content falls under it must be checked piece by piece"
+        ]
+      },
+      {
+        "id": "ai-disclosure-form",
+        "domain": "ai",
+        "title": "AI Act: disclosures are clear, timely and accessible",
+        "level": "to-confirm",
+        "rules_file": "references/ai-act/transparency.md",
+        "reasons": [
+          "ai.generated_content_published = false (assumed) is an assumption",
+          "operator.activity_kind = \"commercial\" (assumed) is an assumption",
+          "Article 50(4) only covers deep fakes and text published to inform the public on matters of public interest, with an editorial exception; whether the published content falls under it must be checked piece by piece"
+        ]
+      },
+      {
+        "id": "ai-content-label-icon",
+        "domain": "ai",
+        "title": "Code of Practice: visible label on AI-generated content",
+        "level": "to-confirm",
+        "rules_file": "references/ai-act/transparency.md",
+        "reasons": [
+          "ai.generated_content_published = false (assumed) is an assumption"
+        ]
+      },
+      {
+        "id": "con-operator-identification",
+        "domain": "consumer",
+        "title": "Identification of the service provider and clear prices",
+        "level": "to-confirm",
+        "rules_file": "references/consumer/operator-identification.md",
+        "reasons": [
+          "operator.activity_kind = \"commercial\" (assumed) is an assumption"
+        ]
+      }
+    ],
+    "does_not_apply": [
+      {
+        "id": "eaa-service-accessibility",
+        "domain": "accessibility",
+        "title": "European Accessibility Act: accessible service",
+        "level": "not-applicable",
+        "rules_file": "references/accessibility/rules.md"
+      },
+      {
+        "id": "eaa-ecommerce-functions",
+        "domain": "accessibility",
+        "title": "European Accessibility Act: e-commerce functions",
+        "level": "not-applicable",
+        "rules_file": "references/accessibility/rules.md"
+      },
+      {
+        "id": "eaa-banking-plain-language",
+        "domain": "accessibility",
+        "title": "European Accessibility Act: understandable banking information",
+        "level": "not-applicable",
+        "rules_file": "references/accessibility/rules.md"
+      },
+      {
+        "id": "eaa-information-duty",
+        "domain": "accessibility",
+        "title": "European Accessibility Act: information on how the service meets the requirements",
+        "level": "not-applicable",
+        "rules_file": "references/accessibility/rules.md"
+      },
+      {
+        "id": "eaa-disproportionate-burden",
+        "domain": "accessibility",
+        "title": "European Accessibility Act: documented assessment before relying on an exception",
+        "level": "not-applicable",
+        "rules_file": "references/accessibility/rules.md"
+      },
+      {
+        "id": "fr-eaa-service-provider-duties",
+        "domain": "accessibility",
+        "title": "France: service provider duties under the code de la consommation",
+        "level": "not-applicable",
+        "rules_file": "references/countries/fr.md"
+      },
+      {
+        "id": "privacy-baseline-no-tracker-before-consent",
+        "domain": "privacy",
+        "title": "No tracker before consent",
+        "level": "recommended",
+        "rules_file": "references/privacy/trackers.md",
+        "reasons": [
+          "applied by the skill as a recommendation"
+        ]
+      },
+      {
+        "id": "gdpr-special-categories",
+        "domain": "privacy",
+        "title": "GDPR: special categories of data",
+        "level": "not-applicable",
+        "rules_file": "references/privacy/forms-and-minimisation.md"
+      },
+      {
+        "id": "gdpr-automated-decisions",
+        "domain": "privacy",
+        "title": "GDPR: automated individual decisions",
+        "level": "not-applicable",
+        "rules_file": "references/privacy/data-subject-rights.md"
+      },
+      {
+        "id": "fr-trackers-consent",
+        "domain": "privacy",
+        "title": "France: valid consent to trackers (Article 82 of loi n° 78-17, CNIL guidelines)",
+        "level": "not-applicable",
+        "rules_file": "references/privacy/consent.md"
+      },
+      {
+        "id": "fr-trackers-cnil-recommendation",
+        "domain": "privacy",
+        "title": "France: CNIL recommendation on the consent interface",
+        "level": "not-applicable",
+        "rules_file": "references/privacy/consent.md"
+      },
+      {
+        "id": "fr-audience-measurement-exemption",
+        "domain": "privacy",
+        "title": "France: audience measurement without consent only under the CNIL conditions",
+        "level": "not-applicable",
+        "rules_file": "references/privacy/trackers.md"
+      },
+      {
+        "id": "fr-session-replay",
+        "domain": "privacy",
+        "title": "France: CNIL recommendation on session replay tools",
+        "level": "not-applicable",
+        "rules_file": "references/privacy/consent.md"
+      },
+      {
+        "id": "fr-email-tracking-pixels",
+        "domain": "privacy",
+        "title": "France: CNIL recommendation on tracking pixels in emails",
+        "level": "not-applicable",
+        "rules_file": "references/privacy/consent.md"
+      },
+      {
+        "id": "ai-disclose-interaction",
+        "domain": "ai",
+        "title": "AI Act: tell people they are interacting with an AI system",
+        "level": "not-applicable",
+        "rules_file": "references/ai-act/transparency.md"
+      },
+      {
+        "id": "ai-mark-synthetic-content",
+        "domain": "ai",
+        "title": "AI Act: machine-readable marking of generated content",
+        "level": "not-applicable",
+        "rules_file": "references/ai-act/transparency.md"
+      },
+      {
+        "id": "ai-inform-emotion-biometric",
+        "domain": "ai",
+        "title": "AI Act: inform people exposed to emotion recognition or biometric categorisation",
+        "level": "not-applicable",
+        "rules_file": "references/ai-act/transparency.md"
+      },
+      {
+        "id": "ai-high-risk-screening",
+        "domain": "ai",
+        "title": "AI Act: check for a high-risk area",
+        "level": "not-applicable",
+        "rules_file": "references/ai-act/high-risk.md"
+      },
+      {
+        "id": "sec-authentication",
+        "domain": "security",
+        "title": "Authentication and passwords (ANSSI guide)",
+        "level": "not-applicable",
+        "rules_file": "references/security/modules/authentication.md"
+      },
+      {
+        "id": "fr-ecommerce-identification",
+        "domain": "consumer",
+        "title": "France: seller identification (Article 19 of the LCEN)",
+        "level": "not-applicable",
+        "rules_file": "references/countries/fr.md"
+      },
+      {
+        "id": "con-order-button",
+        "domain": "consumer",
+        "title": "Order button with obligation to pay",
+        "level": "not-applicable",
+        "rules_file": "references/consumer/online-sales.md"
+      },
+      {
+        "id": "fr-order-process-information",
+        "domain": "consumer",
+        "title": "France: order process (Articles L. 221-5 and L. 221-14)",
+        "level": "not-applicable",
+        "rules_file": "references/countries/fr.md"
+      },
+      {
+        "id": "con-withdrawal-function",
+        "domain": "consumer",
+        "title": "Online withdrawal function",
+        "level": "not-applicable",
+        "rules_file": "references/consumer/withdrawal-function.md"
+      },
+      {
+        "id": "fr-withdrawal-function",
+        "domain": "consumer",
+        "title": "France: withdrawal function (Articles L. 221-21 and D. 221-5)",
+        "level": "not-applicable",
+        "rules_file": "references/countries/fr.md"
+      },
+      {
+        "id": "con-price-reduction",
+        "domain": "consumer",
+        "title": "Price reduction announcements",
+        "level": "not-applicable",
+        "rules_file": "references/consumer/prices.md"
+      },
+      {
+        "id": "fr-consumer-mediator",
+        "domain": "consumer",
+        "title": "France: consumer mediator",
+        "level": "not-applicable",
+        "rules_file": "references/countries/fr.md"
+      },
+      {
+        "id": "con-no-odr-link",
+        "domain": "consumer",
+        "title": "No link to the former European dispute resolution platform",
+        "level": "not-applicable",
+        "rules_file": "references/consumer/online-sales.md"
+      },
+      {
+        "id": "con-no-deceptive-design",
+        "domain": "consumer",
+        "title": "No deceptive interface (unfair commercial practices)",
+        "level": "not-applicable",
+        "rules_file": "references/consumer/deceptive-design.md"
+      },
+      {
+        "id": "dsa-intermediary-duties",
+        "domain": "consumer",
+        "title": "Digital Services Act: points of contact and terms",
+        "level": "not-applicable",
+        "rules_file": "references/consumer/dsa.md"
+      },
+      {
+        "id": "dsa-hosting-notice-action",
+        "domain": "consumer",
+        "title": "Digital Services Act: notice and action",
+        "level": "not-applicable",
+        "rules_file": "references/consumer/dsa.md"
+      },
+      {
+        "id": "dsa-online-platform-duties",
+        "domain": "consumer",
+        "title": "Digital Services Act: online platform duties",
+        "level": "not-applicable",
+        "rules_file": "references/consumer/dsa.md"
+      },
+      {
+        "id": "gdpr-impact-assessment",
+        "domain": "privacy",
+        "title": "GDPR: data protection impact assessment",
+        "level": "not-applicable",
+        "rules_file": "references/scoping/out-of-scope.md"
+      },
+      {
+        "id": "gdpr-data-protection-officer",
+        "domain": "privacy",
+        "title": "GDPR: designation of a data protection officer",
+        "level": "not-applicable",
+        "rules_file": "references/scoping/out-of-scope.md"
+      },
+      {
+        "id": "con-terms-of-sale",
+        "domain": "consumer",
+        "title": "Terms of sale carrying the pre-contractual information",
+        "level": "not-applicable",
+        "rules_file": "references/documents/terms-of-sale.md"
+      },
+      {
+        "id": "terms-of-use",
+        "domain": "consumer",
+        "title": "Terms of use for a service with accounts",
+        "level": "not-applicable",
+        "rules_file": "references/documents/terms-of-use.md"
+      },
+      {
+        "id": "gdpr-processor-agreement",
+        "domain": "privacy",
+        "title": "GDPR: contract when the operator acts as processor",
+        "level": "not-applicable",
+        "rules_file": "references/documents/data-processing-agreement.md"
+      }
+    ],
+    "assumptions": {
+      "assumed_answers": [
+        {
+          "field": "ai.generated_content_published",
+          "value": false,
+          "note": "Non demandé : les captures et textes ne sont pas présentés comme générés par IA ; à confirmer"
+        },
+        {
+          "field": "data.transfers_outside_eu",
+          "value": true,
+          "note": "Vercel Inc. est établi aux États-Unis ; région fra1 mais garanties de transfert non vérifiées"
+        },
+        {
+          "field": "operator.activity_kind",
+          "value": "commercial",
+          "note": "Logiciel gratuit sans vente ; activité professionnelle de l'éditeur (APE 62.01Z) : lecture protectrice"
+        }
+      ],
+      "missing_answers": [
+        {
+          "field": "ai.role",
+          "protective_reading": "both",
+          "question": 8
+        },
+        {
+          "field": "audience.includes_minors",
+          "protective_reading": true,
+          "question": 7
+        },
+        {
+          "field": "operator.annual_turnover_eur",
+          "protective_reading": "Not a microenterprise (no exemption relied on). No number is invented: the answer stays missing.",
+          "question": 2
+        },
+        {
+          "field": "operator.balance_sheet_total_eur",
+          "protective_reading": "Not a microenterprise (no exemption relied on). No number is invented: the answer stays missing.",
+          "question": 2
+        },
+        {
+          "field": "operator.fr_turnover_3y_average_eur",
+          "protective_reading": "Unknown: the French Article 47 turnover test stays to-confirm for a company. No number is invented.",
+          "question": 2
+        },
+        {
+          "field": "operator.headcount",
+          "protective_reading": "Not a microenterprise (no exemption relied on). No number is invented: the answer stays missing.",
+          "question": 2
+        }
+      ]
+    },
+    "country_coverage": [],
+    "beyond_the_skill": [
+      {
+        "id": "esc-minors",
+        "title": "Audience includes minors",
+        "state": "not-ruled-out",
+        "to_confirm": [
+          "no answer for audience.includes_minors"
+        ],
+        "what_to_do": "Consent of children, age checks, profiling and advertising towards minors need a legal analysis this skill does not replace. Consult a data protection professional."
+      }
+    ]
+  },
+  "ai_act": null,
+  "checkers": [
+    {
+      "name": "a11y",
+      "status": "ran",
+      "exit_code": 0,
+      "pages": 1,
+      "summary": {
+        "non_conformities": 0,
+        "to_review": 6
+      },
+      "browser": "chrome",
+      "raw_report": "compliance-report-2026-11-17-raw/check-a11y.json",
+      "error": null,
+      "expected": null
+    },
+    {
+      "name": "privacy",
+      "status": "ran",
+      "exit_code": 0,
+      "pages": 1,
+      "summary": {
+        "non_conformities": 0,
+        "to_review": 0
+      },
+      "browser": "chrome",
+      "raw_report": "compliance-report-2026-11-17-raw/check-privacy.json",
+      "error": null,
+      "expected": null
+    },
+    {
+      "name": "security",
+      "status": "ran",
+      "exit_code": 0,
+      "pages": 1,
+      "summary": {
+        "non_conformities": 0,
+        "to_review": 0
+      },
+      "browser": "chrome",
+      "raw_report": "compliance-report-2026-11-17-raw/check-security.json",
+      "error": null,
+      "expected": null
+    },
+    {
+      "name": "content",
+      "status": "ran",
+      "exit_code": 0,
+      "pages": 1,
+      "summary": {
+        "non_conformities": 0,
+        "to_review": 2
+      },
+      "browser": "chrome",
+      "raw_report": "compliance-report-2026-11-17-raw/check-content.json",
+      "error": null,
+      "expected": null
+    }
+  ],
+  "findings": [
+    {
+      "id": "accessibility|color-contrast|http://127.0.0.1:4599/|ol > li:nth-child(1) > strong",
+      "domain": "accessibility",
+      "checker": "a11y",
+      "detector": "axe",
+      "rule": "color-contrast",
+      "verdict": "NT",
+      "severity": "major",
+      "sources": [
+        "WCAG 2.2 SC 1.4.3"
+      ],
+      "source_ids": [],
+      "page": "http://127.0.0.1:4599/",
+      "selector": "ol > li:nth-child(1) > strong",
+      "request": null,
+      "cookie": null,
+      "storage": null,
+      "header": null,
+      "file": null,
+      "line": null,
+      "detail": null,
+      "message": "Elements must meet minimum color contrast ratio thresholds",
+      "impact": null,
+      "help_url": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+      "element": "ol > li:nth-child(1) > strong",
+      "fix_ref": "references/accessibility/anti-patterns-visual-media.md",
+      "fix_entry": "AP-VIS-01"
+    },
+    {
+      "id": "accessibility|color-contrast|http://127.0.0.1:4599/|ol > li:nth-child(1) > span",
+      "domain": "accessibility",
+      "checker": "a11y",
+      "detector": "axe",
+      "rule": "color-contrast",
+      "verdict": "NT",
+      "severity": "major",
+      "sources": [
+        "WCAG 2.2 SC 1.4.3"
+      ],
+      "source_ids": [],
+      "page": "http://127.0.0.1:4599/",
+      "selector": "ol > li:nth-child(1) > span",
+      "request": null,
+      "cookie": null,
+      "storage": null,
+      "header": null,
+      "file": null,
+      "line": null,
+      "detail": null,
+      "message": "Elements must meet minimum color contrast ratio thresholds",
+      "impact": null,
+      "help_url": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+      "element": "ol > li:nth-child(1) > span",
+      "fix_ref": "references/accessibility/anti-patterns-visual-media.md",
+      "fix_entry": "AP-VIS-01"
+    },
+    {
+      "id": "accessibility|color-contrast|http://127.0.0.1:4599/|ol > li:nth-child(2) > strong",
+      "domain": "accessibility",
+      "checker": "a11y",
+      "detector": "axe",
+      "rule": "color-contrast",
+      "verdict": "NT",
+      "severity": "major",
+      "sources": [
+        "WCAG 2.2 SC 1.4.3"
+      ],
+      "source_ids": [],
+      "page": "http://127.0.0.1:4599/",
+      "selector": "ol > li:nth-child(2) > strong",
+      "request": null,
+      "cookie": null,
+      "storage": null,
+      "header": null,
+      "file": null,
+      "line": null,
+      "detail": null,
+      "message": "Elements must meet minimum color contrast ratio thresholds",
+      "impact": null,
+      "help_url": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+      "element": "ol > li:nth-child(2) > strong",
+      "fix_ref": "references/accessibility/anti-patterns-visual-media.md",
+      "fix_entry": "AP-VIS-01"
+    },
+    {
+      "id": "accessibility|color-contrast|http://127.0.0.1:4599/|ol > li:nth-child(2) > span",
+      "domain": "accessibility",
+      "checker": "a11y",
+      "detector": "axe",
+      "rule": "color-contrast",
+      "verdict": "NT",
+      "severity": "major",
+      "sources": [
+        "WCAG 2.2 SC 1.4.3"
+      ],
+      "source_ids": [],
+      "page": "http://127.0.0.1:4599/",
+      "selector": "ol > li:nth-child(2) > span",
+      "request": null,
+      "cookie": null,
+      "storage": null,
+      "header": null,
+      "file": null,
+      "line": null,
+      "detail": null,
+      "message": "Elements must meet minimum color contrast ratio thresholds",
+      "impact": null,
+      "help_url": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+      "element": "ol > li:nth-child(2) > span",
+      "fix_ref": "references/accessibility/anti-patterns-visual-media.md",
+      "fix_entry": "AP-VIS-01"
+    },
+    {
+      "id": "accessibility|color-contrast|http://127.0.0.1:4599/|ol > li:nth-child(3) > strong",
+      "domain": "accessibility",
+      "checker": "a11y",
+      "detector": "axe",
+      "rule": "color-contrast",
+      "verdict": "NT",
+      "severity": "major",
+      "sources": [
+        "WCAG 2.2 SC 1.4.3"
+      ],
+      "source_ids": [],
+      "page": "http://127.0.0.1:4599/",
+      "selector": "ol > li:nth-child(3) > strong",
+      "request": null,
+      "cookie": null,
+      "storage": null,
+      "header": null,
+      "file": null,
+      "line": null,
+      "detail": null,
+      "message": "Elements must meet minimum color contrast ratio thresholds",
+      "impact": null,
+      "help_url": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+      "element": "ol > li:nth-child(3) > strong",
+      "fix_ref": "references/accessibility/anti-patterns-visual-media.md",
+      "fix_entry": "AP-VIS-01"
+    },
+    {
+      "id": "accessibility|color-contrast|http://127.0.0.1:4599/|ol > li:nth-child(3) > span",
+      "domain": "accessibility",
+      "checker": "a11y",
+      "detector": "axe",
+      "rule": "color-contrast",
+      "verdict": "NT",
+      "severity": "major",
+      "sources": [
+        "WCAG 2.2 SC 1.4.3"
+      ],
+      "source_ids": [],
+      "page": "http://127.0.0.1:4599/",
+      "selector": "ol > li:nth-child(3) > span",
+      "request": null,
+      "cookie": null,
+      "storage": null,
+      "header": null,
+      "file": null,
+      "line": null,
+      "detail": null,
+      "message": "Elements must meet minimum color contrast ratio thresholds",
+      "impact": null,
+      "help_url": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+      "element": "ol > li:nth-child(3) > span",
+      "fix_ref": "references/accessibility/anti-patterns-visual-media.md",
+      "fix_entry": "AP-VIS-01"
+    },
+    {
+      "id": "consumer|site-declaration-missing|http://127.0.0.1:4599/|",
+      "domain": "consumer",
+      "checker": "content",
+      "detector": "content",
+      "rule": "site-declaration-missing",
+      "verdict": "NT",
+      "severity": "minor",
+      "sources": [
+        "best practice"
+      ],
+      "source_ids": [],
+      "page": "http://127.0.0.1:4599/",
+      "selector": null,
+      "request": null,
+      "cookie": null,
+      "storage": null,
+      "header": null,
+      "file": null,
+      "line": null,
+      "detail": null,
+      "message": "compliance/site.json not found: cannot tell what the site is. Not evaluated: order button, information at the start of the order, withdrawal function, AI content labels. Legal notice links are reported for review only. Add the declaration (schema in the header of scripts/check-content.mjs).",
+      "impact": null,
+      "help_url": null,
+      "element": null,
+      "fix_ref": null,
+      "fix_entry": null
+    },
+    {
+      "id": "consumer|site-declaration-page-missing|http://127.0.0.1:4599/|",
+      "domain": "consumer",
+      "checker": "content",
+      "detector": "content",
+      "rule": "site-declaration-page-missing",
+      "verdict": "NT",
+      "severity": "minor",
+      "sources": [
+        "best practice"
+      ],
+      "source_ids": [],
+      "page": "http://127.0.0.1:4599/",
+      "selector": null,
+      "request": null,
+      "cookie": null,
+      "storage": null,
+      "header": null,
+      "file": null,
+      "line": null,
+      "detail": "mentions-legales",
+      "message": "The legal notice (mentions-legales) exists but was not among the pages checked: its content was not reviewed.",
+      "impact": null,
+      "help_url": null,
+      "element": null,
+      "fix_ref": null,
+      "fix_entry": null
+    }
+  ],
+  "grouped_fixes": [],
+  "not_tested": [
+    {
+      "checker": "a11y",
+      "text": "Relevance of text alternatives (human judgement)",
+      "wcag": "1.1.1"
+    },
+    {
+      "checker": "a11y",
+      "text": "Accuracy and synchronisation of captions",
+      "wcag": "1.2.2"
+    },
+    {
+      "checker": "a11y",
+      "text": "Meaningful reading order",
+      "wcag": "1.3.2"
+    },
+    {
+      "checker": "a11y",
+      "text": "Text spacing override",
+      "wcag": "1.4.12"
+    },
+    {
+      "checker": "a11y",
+      "text": "Content on hover or focus",
+      "wcag": "1.4.13"
+    },
+    {
+      "checker": "a11y",
+      "text": "Logical focus order",
+      "wcag": "2.4.3"
+    },
+    {
+      "checker": "a11y",
+      "text": "Descriptive headings and labels",
+      "wcag": "2.4.6"
+    },
+    {
+      "checker": "a11y",
+      "text": "Single-pointer alternative to dragging",
+      "wcag": "2.5.7"
+    },
+    {
+      "checker": "a11y",
+      "text": "Consistent help across pages",
+      "wcag": "3.2.6"
+    },
+    {
+      "checker": "a11y",
+      "text": "Redundant entry",
+      "wcag": "3.3.7"
+    },
+    {
+      "checker": "a11y",
+      "text": "Accessible authentication",
+      "wcag": "3.3.8"
+    },
+    {
+      "checker": "a11y",
+      "text": "Behaviour of custom widgets with a screen reader",
+      "wcag": "4.1.2"
+    },
+    {
+      "checker": "privacy",
+      "text": "The checker sees what happens in one fresh browser session per scenario, on the pages given only; it does not crawl the site.",
+      "wcag": null
+    },
+    {
+      "checker": "privacy",
+      "text": "It does not see server-side processing: server logs, server-to-server tracking, data the back end sends to third parties.",
+      "wcag": null
+    },
+    {
+      "checker": "privacy",
+      "text": "It does not see logged-in areas unless those pages are provided, and it does not log in.",
+      "wcag": null
+    },
+    {
+      "checker": "privacy",
+      "text": "It does not see trackers triggered by later interactions (scrolling, clicks other than the consent controls, forms, timers longer than the wait).",
+      "wcag": null
+    },
+    {
+      "checker": "privacy",
+      "text": "By default every third-party request is recorded and aborted: what a blocked script would have loaded or written is not seen. The blocked request itself is reported.",
+      "wcag": null
+    },
+    {
+      "checker": "privacy",
+      "text": "Requests that could send data (methods other than GET, HEAD and OPTIONS, such as form posts and beacons) are always aborted, even to the site itself and with --allow-network; buttons that submit a form are never clicked. A consent choice the site records on its server is therefore not seen.",
+      "wcag": null
+    },
+    {
+      "checker": "privacy",
+      "text": "A purpose cannot be known from a name. Items declared exempt in compliance/trackers.json are trusted; a person must check each declaration.",
+      "wcag": null
+    },
+    {
+      "checker": "privacy",
+      "text": "Browser fingerprinting, storage inside third-party iframes, Cache Storage and service workers are not inspected; IndexedDB is listed by database name only.",
+      "wcag": null
+    },
+    {
+      "checker": "privacy",
+      "text": "Consent controls are found by accessible name in English and French, or by data-consent-action attributes; other wording is not recognised.",
+      "wcag": null
+    },
+    {
+      "checker": "privacy",
+      "text": "The content of the consent interface (purposes, list of third parties, proof of consent, duration of the choice) is not checked.",
+      "wcag": null
+    },
+    {
+      "checker": "privacy",
+      "text": "First party means same host name, ignoring the first labels (example.org and www.example.org); without the public suffix list, two sites under a shared suffix such as co.uk look like one.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "Only the response headers of the HTML pages given are checked, not those of scripts, styles, APIs, redirects or error pages.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "TLS is not checked (protocol versions, cipher suites, certificate); use a dedicated TLS test against the ANSSI TLS guide.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "A local folder is served over plain HTTP: HTTPS-only headers such as HSTS and the Secure cookie attribute are checked as declared, not as applied by a browser, and http:// sub-resources are reported for review rather than as mixed content. On a remote site served over plain HTTP, HTTPS-only headers are not evaluated.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "CORS is only checked on the response to the page request: origin reflection needs a request with a forged Origin header, which is not sent.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "Headers declared in a local `_headers` file reproduce the host configuration; check the deployed site by its URL as well.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "Cookies written by JavaScript are not seen here (scripts/check-privacy.mjs lists them); only Set-Cookie headers are checked.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "Server-side controls are out of reach: CSRF protection, input validation, output escaping, access control, rate limiting, vulnerable dependencies.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "Secret detection uses patterns on the page and the first-party scripts it loads: other formats and other files are not seen.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "Inline scripts and event handlers are reported for review: whether a strict CSP is feasible depends on the code.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "Third-party scripts without integrity are reported for review: integrity cannot be used for a script its provider updates, and the risk depends on the trust placed in that provider.",
+      "wcag": null
+    },
+    {
+      "checker": "security",
+      "text": "Requests that could send data (methods other than GET, HEAD and OPTIONS) are always aborted; forms are never submitted.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "The checker loads each page given in one fresh browser session; it does not crawl the site. It opens chat panels and the withdrawal statement, but never sends a chat message, a form or an order: it never clicks a button that submits a form, and every request other than GET, HEAD or OPTIONS is aborted.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "Server-side behaviour is not seen: whether the order or the withdrawal statement is recorded, the time stamp, the order confirmation and the acknowledgement of withdrawal on a durable medium (emails), or whether the withdrawal function stays available for the whole withdrawal period.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "Prices over time are not known: the checker cannot tell whether the prior price shown is the lowest price of the last 30 days, or whether a deadline is real. It only reports a reduction without any prior price, and a countdown that starts again when the page is reloaded.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "Stock and demand are not known: scarcity messages are reported for review, never as true or false.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "AI-generated content is only checked where compliance/site.json declares it: the checker cannot tell from a file whether it was generated, and it cannot read watermarks, provenance metadata or other machine-readable marks (Article 50(2) is the provider's duty and is not checked).",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "Whether a text informs the public on a matter of public interest, whether it was really reviewed by an editor, and whether an image is a deep fake are facts declared by the operator; the checker trusts the declaration.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "Short texts, alt text, captions, UI labels and source code are outside Article 50 marking (AI Act Guidelines point 68) and are not checked.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "The chatbot's answers are not tested: whether it says it is an AI when asked, whether the \"obvious\" exception could apply, and vendor widgets inside iframes are not inspected.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "Only the wordings written in the law, as given in the skill references, are accepted as order, withdrawal and confirmation labels (English and French). Any other wording is reported for review: whether it is equally unambiguous is for a professional to decide.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "Text patterns (countdown, scarcity, confirmshaming, payment and delivery information, legal notice categories) are in English and French only; other wordings are not recognised.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "The legal notice is checked for the presence of categories of information, not for their accuracy. Terms of sale, mediator details and pre-contractual information are not checked.",
+      "wcag": null
+    },
+    {
+      "checker": "content",
+      "text": "Whether the site is an online platform under the DSA, sells at a distance to consumers, or which country's law applies is taken from compliance/site.json; the checker does not decide it.",
+      "wcag": null
+    }
+  ],
+  "manual_checks": [
+    {
+      "id": "manual-a11y-1",
+      "domain": "accessibility",
+      "title": "Keyboard walk",
+      "procedure": "Pass when: every function can be reached and operated; focus is always visible and never trapped; the order is logical; focus is never lost or sent back to the top after an action. [WCAG 2.1.1, 2.1.2, 2.4.3, 2.4.7, 2.4.11]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-2",
+      "domain": "accessibility",
+      "title": "Zoom to 200 %",
+      "procedure": "Pass when: all text is present and readable; nothing is clipped, overlapped or cut by a fixed-height container; every function still works. [WCAG 1.4.4]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-3",
+      "domain": "accessibility",
+      "title": "Reflow at 320 CSS pixels",
+      "procedure": "Pass when: reading needs vertical scrolling only. Sideways scrolling is accepted inside a data table, a map, a diagram, a video or a toolbar, not for the page itself. No content or function has disappeared; sticky bars leave room to read; the focused element stays visible. [WCAG 1.4.10, 2.4.11]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-4",
+      "domain": "accessibility",
+      "title": "Text spacing",
+      "procedure": "Pass when: no text is cut off, hidden or overlapping another. [WCAG 1.4.12]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-5",
+      "domain": "accessibility",
+      "title": "Screen reader smoke test",
+      "procedure": "Pass when: each of the nine points holds. Note the screen reader, the browser and their versions. [WCAG 1.3.1, 2.4.2, 2.4.4, 3.3.2, 4.1.2, 4.1.3]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-6",
+      "domain": "accessibility",
+      "title": "Page without CSS",
+      "procedure": "Pass when: the content comes in a meaningful order; everything informative is still there (no text or icon that existed only in CSS); hidden technical content does not appear as meaningful text in a confusing place. [WCAG 1.3.1, 1.3.2]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-7",
+      "domain": "accessibility",
+      "title": "Relevance of text alternatives",
+      "procedure": "Pass when: decorative images are silent; each informative image has a short, accurate alternative in the language of the page; complex images have a detailed equivalent. [WCAG 1.1.1]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-8",
+      "domain": "accessibility",
+      "title": "Relevance of headings, links, labels and titles",
+      "procedure": "Pass when: titles differ from page to page; headings describe their section; no \"click here\" or \"read more\" without context; the same function has the same name everywhere; the accessible name contains the visible text. [WCAG 2.4.2, 2.4.4, 2.4.6, 2.5.3, 3.2.4]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-9",
+      "domain": "accessibility",
+      "title": "Colour and contrast beyond the tool",
+      "procedure": "Pass when: text reaches 4.5:1 (3:1 for large text) everywhere it appears; component boundaries, states and meaningful graphics reach 3:1; nothing is understandable through colour only. [WCAG 1.4.1, 1.4.3, 1.4.11]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-10",
+      "domain": "accessibility",
+      "title": "Captions, transcripts and audio description",
+      "procedure": "Pass when: every prerecorded video with speech has accurate captions; every audio has a transcript; visual-only information has an audio or text equivalent; the player works with the keyboard. [WCAG 1.2.1, 1.2.2, 1.2.5, 2.1.1]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-11",
+      "domain": "accessibility",
+      "title": "Motion, sound and time limits",
+      "procedure": "Pass when: nothing moves for more than 5 seconds without a control; no sound plays by itself for more than 3 seconds without a control; time limits warn and can be extended; nothing flashes more than three times per second. [WCAG 1.4.2, 2.2.1, 2.2.2, 2.3.1]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-12",
+      "domain": "accessibility",
+      "title": "Pointer: targets, dragging, gestures",
+      "procedure": "Pass when: no control is missed repeatedly or triggers its neighbour; every drag and every gesture has a click or tap alternative; actions fire on release. [WCAG 2.5.1, 2.5.2, 2.5.7, 2.5.8]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "manual-a11y-13",
+      "domain": "accessibility",
+      "title": "Processes: login, forms, errors",
+      "procedure": "Pass when: each of the six points holds. [WCAG 3.2.6, 3.3.1, 3.3.3, 3.3.4, 3.3.7, 3.3.8]",
+      "reference": "references/accessibility/testing-by-hand.md",
+      "origin": "testing-by-hand"
+    },
+    {
+      "id": "fr-accessibility-statement",
+      "domain": "accessibility",
+      "title": "France: accessibility statement (déclaration d'accessibilité) (to-confirm)",
+      "procedure": "Check by hand that: A statement in the mandatory format is published on a page reachable from the home page and from every page. Its conformity status and rate come from a real audit; the skill cannot produce them.",
+      "reference": "references/countries/fr.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "fr-accessibility-multiannual-plan",
+      "domain": "accessibility",
+      "title": "France: multi-year accessibility plan (schéma pluriannuel) (to-confirm)",
+      "procedure": "Check by hand that: A multi-year accessibility plan is published, within the maximum duration set by Article 47, and linked from the statement.",
+      "reference": "references/countries/fr.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "fr-accessibility-home-mention",
+      "domain": "accessibility",
+      "title": "France: conformity mention on the home page (to-confirm)",
+      "procedure": "Check by hand that: The home page shows the mention 'Accessibilité : totalement conforme', 'partiellement conforme' or 'non conforme', as defined by the RGAA. Without a valid audit the mention is 'non conforme'.",
+      "reference": "references/countries/fr.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "gdpr-principles-lawful-basis",
+      "domain": "privacy",
+      "title": "GDPR: principles and lawful basis",
+      "procedure": "Check by hand that: Each processing of personal data has a stated purpose, a lawful basis among those of Article 6, and collects only what the purpose needs (Articles 5 and 6).",
+      "reference": "references/privacy/forms-and-minimisation.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "gdpr-information-notice",
+      "domain": "privacy",
+      "title": "GDPR: information of the persons concerned",
+      "procedure": "Check by hand that: Persons are informed, at the point of collection and in a privacy notice, of what Articles 12 to 14 require.",
+      "reference": "references/privacy/forms-and-minimisation.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "gdpr-data-subject-rights",
+      "domain": "privacy",
+      "title": "GDPR: exercising rights",
+      "procedure": "Check by hand that: The site gives a working way to exercise the rights of Articles 15 to 22, and withdrawing a consent is as easy as giving it (Article 7(3)).",
+      "reference": "references/privacy/data-subject-rights.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "gdpr-by-design-default",
+      "domain": "privacy",
+      "title": "GDPR: data protection by design and by default",
+      "procedure": "Check by hand that: Forms, accounts and defaults are built so that only the data needed are processed (Article 25).",
+      "reference": "references/privacy/forms-and-minimisation.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "gdpr-processors",
+      "domain": "privacy",
+      "title": "GDPR: third-party tools acting as processors",
+      "procedure": "Check by hand that: For each third-party tool that receives personal data, the operator knows whether it acts as a processor and has the contract Article 28 requires.",
+      "reference": "references/privacy/third-parties-and-transfers.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "gdpr-breach-notification",
+      "domain": "privacy",
+      "title": "GDPR: personal data breaches",
+      "procedure": "Check by hand that: The operator can detect a personal data breach and notify it within the time limit of Article 33, and inform the persons where Article 34 requires it.",
+      "reference": "references/security/README.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "gdpr-transfers",
+      "domain": "privacy",
+      "title": "GDPR: transfers outside the European Union (to-confirm)",
+      "procedure": "Check by hand that: Each transfer of personal data outside the Union rests on one of the mechanisms of Articles 44 to 49.",
+      "reference": "references/privacy/third-parties-and-transfers.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "gdpr-children-consent",
+      "domain": "privacy",
+      "title": "GDPR: consent of children (to-confirm)",
+      "procedure": "Check by hand that: Where an information society service offered directly to a child relies on consent, the conditions of Article 8 apply, with the age set by each Member State.",
+      "reference": "references/privacy/forms-and-minimisation.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "fr-children-consent-age",
+      "domain": "privacy",
+      "title": "France: age of digital consent (to-confirm)",
+      "procedure": "Check by hand that: In France the age below which joint consent of the minor and the holder of parental responsibility is required is set by Article 45 of loi n° 78-17.",
+      "reference": "references/countries/fr.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "ai-prohibited-practices",
+      "domain": "ai",
+      "title": "AI Act: prohibited practices (to-confirm)",
+      "procedure": "Check by hand that: No feature of the site implements a practice of Article 5 of Regulation (EU) 2024/1689. When one is suspected the agent stops and says so.",
+      "reference": "references/ai-act/prohibited-practices.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "ai-literacy",
+      "domain": "ai",
+      "title": "AI Act: AI literacy (to-confirm)",
+      "procedure": "Check by hand that: Providers and deployers take measures to support the AI literacy of their staff and of the persons operating AI systems on their behalf (Article 4).",
+      "reference": "references/ai-act/ai-literacy.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "ai-disclosure-form",
+      "domain": "ai",
+      "title": "AI Act: disclosures are clear, timely and accessible (to-confirm)",
+      "procedure": "Check by hand that: The information of Article 50(1) to (4) is given in a clear and distinguishable manner at the latest at the first interaction or exposure, and conforms to the applicable accessibility requirements (Article 50(5)).",
+      "reference": "references/ai-act/transparency.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "sec-security-of-processing",
+      "domain": "security",
+      "title": "GDPR: security of processing",
+      "procedure": "Check by hand that: Personal data are protected by technical and organisational measures appropriate to the risk (Article 32).",
+      "reference": "references/security/web-baseline.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "sec-owasp-top10",
+      "domain": "security",
+      "title": "Secure development against the OWASP Top 10 (recommended)",
+      "procedure": "Check by hand that: Code is written and reviewed against the categories of the OWASP Top 10 edition in regulatory-status.",
+      "reference": "references/security/web-baseline.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "sec-ai-generated-code-review",
+      "domain": "security",
+      "title": "Review of AI-generated code (ANSSI guide) (recommended)",
+      "procedure": "Check by hand that: Source code generated by an AI is systematically reviewed, and generation is limited for critical modules.",
+      "reference": "references/security/modules/ai-generated-code.md",
+      "origin": "matrix"
+    },
+    {
+      "id": "gdpr-records-of-processing",
+      "domain": "privacy",
+      "title": "GDPR: records of processing activities",
+      "procedure": "Check by hand that: The controller keeps records of its processing activities (Article 30). The exemption of Article 30(5) for organisations with fewer than 250 persons requires the processing to be occasional, without risk and without special or criminal data; the skill reads the processing behind a running website (accounts, orders, contact requests) as not occasional, so it treats the duty as applying. This reading is listed in OPEN-QUESTIONS.md for review.",
+      "reference": "references/privacy/third-parties-and-transfers.md",
+      "origin": "matrix"
+    }
+  ],
+  "documents": [
+    {
+      "id": "accessibility-statement-fr",
+      "title": "Accessibility statement (France, RGAA)",
+      "template": "templates/accessibility-statement-fr.md",
+      "obligations": [
+        "fr-accessibility-statement"
+      ],
+      "level": "to-confirm",
+      "status": "not-checked",
+      "pages": []
+    },
+    {
+      "id": "legal-notice",
+      "title": "Legal notice (identification of the operator)",
+      "template": "templates/consumer/legal-notice-fr.md",
+      "obligations": [
+        "con-operator-identification",
+        "fr-legal-notice"
+      ],
+      "level": "mandatory",
+      "status": "not-checked",
+      "pages": []
+    },
+    {
+      "id": "privacy-policy",
+      "title": "Privacy policy",
+      "template": "templates/privacy-policy.md",
+      "obligations": [
+        "gdpr-information-notice"
+      ],
+      "level": "mandatory",
+      "status": "not-checked",
+      "pages": []
+    },
+    {
+      "id": "ai-usage-page",
+      "title": "Use of AI on this site",
+      "template": "templates/ai/ai-usage-page.md",
+      "obligations": [
+        "ai-disclose-generated-content",
+        "ai-content-label-icon",
+        "ai-disclosure-form"
+      ],
+      "level": "to-confirm",
+      "status": "not-checked",
+      "pages": []
+    }
+  ],
+  "changes": null,
+  "next_actions": [
+    "Confirm the answers behind the 14 obligations marked \"to confirm\".",
+    "Have a person review the 8 items marked \"to review\".",
+    "Have a person perform the 32 checks listed under \"To check by a person\".",
+    "Consult a qualified professional for the cases listed under \"Beyond the skill\"."
+  ],
+  "outputs": {
+    "markdown": "compliance-report-2026-11-17.md",
+    "json": "compliance-report-2026-11-17.json",
+    "raw": "compliance-report-2026-11-17-raw"
+  }
+}
