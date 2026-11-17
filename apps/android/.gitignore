@@ -1,0 +1,10 @@
+# Sorties de build et composants natifs (régénérés par scripts/build-native.sh)
+app/build/
+runtime/
+# Jamais de clé ni de mot de passe dans git
+*.jks
+*.keystore
+*.p12
+*.pass
+keystore.properties
+local.properties
