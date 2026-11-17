@@ -44,8 +44,14 @@ node tools/license.mjs keygen
 
 ## 4. Envoi des licences par e-mail (Resend)
 
-1. Crée un compte Resend et vérifie le domaine `kayzen-lyon.fr` (enregistrements DNS à ajouter chez IONOS).
-2. Crée une clé API.
+1. Crée un compte sur https://resend.com, puis *Domains > Add domain* : `kayzen-lyon.fr`, région Europe (Irlande).
+2. Resend affiche 3 ou 4 enregistrements DNS (MX et TXT pour l'envoi, TXT DKIM `resend._domainkey`, TXT DMARC conseillé). Ajoute-les chez IONOS (*Domaines & SSL > kayzen-lyon.fr > DNS*), **sans toucher à tes enregistrements MX existants** : ceux de Resend portent sur le sous-domaine `send`.
+3. Attends que le domaine passe à « Verified » (quelques minutes à quelques heures).
+4. *API Keys > Create* : droit « Sending access », domaine `kayzen-lyon.fr`.
+5. Test réel depuis le dossier du projet (envoie une licence de test de 35 jours à ton adresse) :
+   ```bash
+   RESEND_API_KEY=re_xxx MAIL_FROM="KAYZEN Flux <licences@kayzen-lyon.fr>" node tools/test-mail.mjs tarek@ton-adresse.fr
+   ```
 
 ## 5. Site (Vercel)
 
@@ -55,6 +61,8 @@ node tools/license.mjs keygen
 4. Test de bout en bout en mode test Stripe : achat → e-mail reçu → clé collée dans l'application → Premium actif.
 
 ## 6. Extension
+
+Fiches complètes, justifications des autorisations et visuels : **`docs/STORES.md`** et `docs/store-assets/`.
 
 - **Chrome Web Store** (compte développeur payant, frais unique) : téléverse `kayzen-flux-extension-chromium-1.0.0.zip`. Déclarations : aucune donnée collectée ; justification de chaque permission (`storage` réglages, `scripting` lecture sans pub, `declarativeNetRequest` blocage des publicités, `contextMenus` menu « Envoyer vers », `activeTab` envoi de la page courante, accès aux sites vidéo et à `sponsor.ajay.app`).
 - **Firefox Add-ons** (gratuit) : `kayzen-flux-extension-firefox-1.0.0.zip`.
