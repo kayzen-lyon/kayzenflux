@@ -71,6 +71,8 @@ function expectHash(buf, expected, name) {
   if (got !== expected.toLowerCase()) throw new Error(`Empreinte SHA-256 invalide pour ${name} : ${got} ≠ ${expected}`);
   console.log(`  ✓ ${name} (sha256 ${got.slice(0, 16)}…)`);
 }
+// Sous Windows, on force le tar du système (bsdtar, lit les .zip) : le tar GNU de Git Bash prend « D: » pour un hôte distant.
+const TAR = process.platform === 'win32' ? join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe') : 'tar';
 const sumsLookup = (text, name) => text.split('\n').map((l) => l.trim().split(/\s+\*?/)).find((p) => p[1] === name)?.[0];
 
 console.log(`Sidecars pour ${target} → ${out}`);
@@ -103,8 +105,8 @@ if (conf.ffmpeg.kind === 'static') {
   expectHash(archive, sumsLookup(sums, conf.ffmpeg.file), conf.ffmpeg.file);
   const file = join(tmp, conf.ffmpeg.file);
   writeFileSync(file, archive);
-  if (conf.ffmpeg.kind === 'tar') execFileSync('tar', ['-xJf', file, '-C', tmp]);
-  else execFileSync(process.platform === 'win32' ? 'tar' : 'unzip', process.platform === 'win32' ? ['-xf', file, '-C', tmp] : ['-q', file, '-d', tmp]);
+  if (conf.ffmpeg.kind === 'tar') execFileSync(TAR, ['-xJf', file, '-C', tmp]);
+  else execFileSync(process.platform === 'win32' ? TAR : 'unzip', process.platform === 'win32' ? ['-xf', file, '-C', tmp] : ['-q', file, '-d', tmp]);
   const dir = readdirSync(tmp).map((d) => join(tmp, d)).find((d) => statSync(d).isDirectory());
   for (const tool of ['ffmpeg', 'ffprobe']) copyFileSync(join(dir, 'bin', tool + conf.exe), join(out, tool + conf.exe));
   copyFileSync(join(dir, 'LICENSE.txt'), join(out, 'FFMPEG-LICENSE.txt'));
@@ -118,7 +120,7 @@ if (conf.ffmpeg.kind === 'static') {
   expectHash(zip, (/[a-f0-9]{64}/i.exec(sumText) ?? [])[0], conf.deno); // format Unix ou tableau PowerShell selon la plateforme
   const file = join(tmp, conf.deno);
   writeFileSync(file, zip);
-  execFileSync(process.platform === 'win32' ? 'tar' : 'unzip', process.platform === 'win32' ? ['-xf', file, '-C', tmp] : ['-q', '-o', file, '-d', tmp]);
+  execFileSync(process.platform === 'win32' ? TAR : 'unzip', process.platform === 'win32' ? ['-xf', file, '-C', tmp] : ['-q', '-o', file, '-d', tmp]);
   renameSync(join(tmp, 'deno' + conf.exe), join(out, 'deno' + conf.exe));
 }
 
