@@ -38,3 +38,9 @@ Code de l'application : MIT (`apps/android/LICENSE`). La bibliothèque youtubedl
 | musl libc 1.2.4 | Chargeur dynamique (`libkzmusl.so`) et lanceur `kzpy` | MIT | Paquet source Ubuntu `musl 1.2.4-2`, non modifié |
 | PyInstaller 6.16 | Lecture des archives de la build yt-dlp | GPL-2.0 avec exception | **Outil de build uniquement**, non distribué |
 | Outils Android de Debian (aapt, dx, apksigner, zipalign, android.jar API 23) | Construction de l'APK | Apache 2.0 | Outils de build, non distribués |
+
+## Police Atkinson Hyperlegible (site vitrine, option « police lisible »)
+
+- Fichier : `apps/site/public/assets/atkinson.woff2`
+- Auteur : Braille Institute of America
+- Licence : SIL Open Font License 1.1 (OFL-1.1) — https://openfontlicense.org
