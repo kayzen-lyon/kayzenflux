@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Chrome, Cpu, FolderOpen, KeyRound, Laptop, Loader2, Lock, RefreshCw, Save, Smartphone, XCircle, Crown } from 'lucide-react';
+import { CheckCircle2, Chrome, Cpu, Download, ExternalLink, FolderOpen, KeyRound, Laptop, Loader2, Lock, RefreshCw, Save, Smartphone, XCircle, Crown } from 'lucide-react';
 import { api } from '../api';
 import { useApp } from '../state';
 import { Toggle } from '../components/Shell';
+import { canAutoUpdate } from '../components/UpdateBanner';
 import type { Settings } from '../types';
 
 export function SettingsPage() {
@@ -38,7 +39,9 @@ export function SettingsPage() {
   const save = async () => {
     setSaving(true);
     try {
-      const saved = await api.saveSettings(draft);
+      // Le choix de mise à jour automatique est enregistré à part, dès qu'il change.
+      const { autoUpdate: _ignored, ...prefs } = draft;
+      const saved = await api.saveSettings(prefs);
       setSettings(saved);
       toast('Réglages enregistrés.', 'success');
     } catch (e) {
@@ -144,6 +147,8 @@ export function SettingsPage() {
             <p className="mt-2 text-[11px] text-white/60">Si yt-dlp a été installé avec pip ou un gestionnaire de paquets, mettez-le à jour avec celui-ci.</p>
           </section>
 
+          <AppUpdateCard />
+
           <section className="card p-6" aria-labelledby="plan">
             <h2 id="plan" className="flex items-center gap-2 text-lg font-bold"><Crown className="h-5 w-5 text-gold" /> Offre {premium ? 'Premium' : 'Gratuite'}</h2>
             {premium ? (
@@ -186,6 +191,93 @@ export function SettingsPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+const UPDATE_LABELS: Record<string, string> = {
+  idle: 'Aucune vérification pour l’instant.',
+  checking: 'Recherche en cours…',
+  'up-to-date': 'KAYZEN Flux est à jour.',
+  downloading: 'Téléchargement de la nouvelle version…',
+  downloaded: 'Nouvelle version prête à installer.',
+  error: 'La recherche de mise à jour a échoué.',
+};
+
+function AppUpdateCard() {
+  const { appUpdate, setAppUpdate, settings, setSettings, toast } = useApp();
+  const [checking, setChecking] = useState(false);
+  const [installing, setInstalling] = useState(false);
+  if (!appUpdate || !settings || appUpdate.status === 'unavailable') return null;
+
+  const setAuto = async (autoUpdate: boolean) => {
+    try {
+      setSettings(await api.saveSettings({ autoUpdate }));
+    } catch (e) {
+      toast((e as Error).message, 'error');
+    }
+  };
+  const checkNow = async () => {
+    setChecking(true);
+    try {
+      setAppUpdate(await api.checkAppUpdate());
+    } catch (e) {
+      toast((e as Error).message, 'error');
+    } finally {
+      setChecking(false);
+    }
+  };
+  const install = async () => {
+    setInstalling(true);
+    try {
+      await api.installAppUpdate();
+    } catch (e) {
+      toast((e as Error).message, 'error');
+      setInstalling(false);
+    }
+  };
+
+  const busy = checking || appUpdate.status === 'checking';
+  const line = appUpdate.status === 'downloading' && appUpdate.percent !== null
+    ? `Téléchargement de la version ${appUpdate.version ?? ''} : ${appUpdate.percent} %`
+    : appUpdate.status === 'downloaded'
+      ? `Version ${appUpdate.version ?? ''} prête à installer.`
+      : appUpdate.message ?? UPDATE_LABELS[appUpdate.status] ?? '';
+
+  return (
+    <section className="card space-y-3 p-6" aria-labelledby="appupd">
+      <h2 id="appupd" className="flex items-center gap-2 text-lg font-bold"><Download className="h-5 w-5 text-primary" /> Mises à jour de l’application</h2>
+      <p className="text-sm">Version installée : <span className="font-mono text-ink">{appUpdate.currentVersion ?? '?'}</span></p>
+      {canAutoUpdate(appUpdate.status) ? (
+        <>
+          <Toggle
+            checked={settings.autoUpdate === true}
+            onChange={(v) => void setAuto(v)}
+            label="Rechercher automatiquement"
+            hint="Au démarrage puis toutes les 6 heures. Téléchargement en arrière-plan, installation quand vous le décidez. Aucun identifiant envoyé."
+          />
+          <p className="text-sm" aria-live="polite">{line}</p>
+          {appUpdate.lastCheck && <p className="text-xs">Dernière vérification : {new Date(appUpdate.lastCheck).toLocaleString('fr-FR')}</p>}
+          {appUpdate.status === 'downloaded' ? (
+            <button className="btn-primary w-full" onClick={install} disabled={installing}>
+              {installing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Redémarrer pour installer
+            </button>
+          ) : (
+            <button className="btn-ghost w-full" onClick={checkNow} disabled={busy || appUpdate.status === 'downloading'}>
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Rechercher maintenant
+            </button>
+          )}
+        </>
+      ) : (
+        <>
+          <p className="text-sm">{appUpdate.message}</p>
+          {appUpdate.downloadPage && (
+            <a className="btn-ghost w-full" href={appUpdate.downloadPage} target="_blank" rel="noreferrer">
+              <ExternalLink className="h-4 w-4" /> Page de téléchargement
+            </a>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 

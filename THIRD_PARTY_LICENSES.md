@@ -7,6 +7,7 @@
 | Deno | Moteur JavaScript requis par yt-dlp pour certains sites | MIT | Embarqué |
 | Electron | Application de bureau | MIT (Chromium : licences BSD et autres, fichier `LICENSES.chromium.html`) | Embarqué |
 | SponsorBlock (API) | Segments sponsorisés | Données sous CC BY-NC-SA 4.0 — **usage commercial à valider** | Appel réseau (application et extension) |
+| electron-updater 6 | Mise à jour automatique de l'application de bureau, uniquement avec l'accord de l'utilisateur | MIT. Dépendances intégrées : builder-util-runtime, fs-extra, jsonfile, universalify, js-yaml, lazy-val, lodash.escaperegexp, lodash.isequal, tiny-typed-emitter, debug, ms (MIT) ; semver (ISC) ; graceful-fs, sax (BlueOak-1.0.0) ; argparse (Python-2.0) | Embarqué (intégré au fichier main.cjs) |
 | React, React DOM | Interface | MIT | Embarqué |
 | lucide-react | Icônes | ISC | Embarqué |
 | Tailwind CSS | Styles | MIT | Embarqué (compilé) |

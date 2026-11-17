@@ -33,6 +33,20 @@ node tools/license.mjs keygen
 - Signature (recommandée, sinon avertissements Windows SmartScreen / macOS Gatekeeper) : ajouter les secrets `WIN_CSC_LINK`, `WIN_CSC_KEY_PASSWORD` (certificat Windows), `CSC_LINK`, `CSC_KEY_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` (Apple Developer Program). Ils sont pris en compte automatiquement.
 - Le dépôt étant privé, ses fichiers de version ne sont pas téléchargeables par le public : pour le site, publier les installeurs dans un dépôt public dédié (ex. `kayzen-lyon/kayzenflux-releases`) ou un stockage public, puis renseigner les liens dans `apps/site/public/assets/config.js`.
 
+## 2 bis. Mises à jour automatiques de l'application
+
+L'application demande l'accord de l'utilisateur au premier lancement (rien n'est vérifié sans réponse), puis vérifie au démarrage et toutes les 6 h, télécharge en arrière-plan et propose « Redémarrer pour installer » (jamais imposé ; sinon installation à la fermeture). Bouton « Rechercher maintenant » dans *Moteur & Paramètres*.
+
+- **Adresse** : `publish.url` dans `apps/desktop/electron-builder.yml`, par défaut `https://flux.kayzen-lyon.com/updates/` (https obligatoire). Autre adresse pour un build : `electron-builder … -c.publish.url=https://exemple.fr/maj/`. Désactivation sur un poste : variable `KAYZEN_DISABLE_UPDATES=1`.
+- **Fichiers à déposer** dans ce dossier, pour chaque version, depuis `apps/desktop/release/` (ils sont dans les artefacts de la CI) :
+  - Windows : `latest.yml`, `kayzen-flux-X.Y.Z-win-x64.exe` et son `.blockmap` ;
+  - macOS : `latest-mac.yml`, les `.zip` (arm64 et x64) et leurs `.blockmap` (le `.zip` est indispensable, le `.dmg` ne sert qu'à la première installation) ;
+  - Linux : `latest-linux.yml` et l'`.AppImage`. Le paquet `.deb` ne se met **pas** à jour seul : l'application renvoie vers la page de téléchargement.
+  - Déposer les installeurs **avant** les `latest*.yml` (sinon les clients voient une version introuvable).
+- **Hébergement** : le site Vercel est encore protégé (accès réservé) : tant que la protection est active, les vérifications échouent. Les installeurs (> 100 Mo) peuvent dépasser les limites de fichiers de Vercel : on peut ne laisser que les `latest*.yml` sur le site et rediriger les autres fichiers (redirection 302 dans `vercel.json`) vers un stockage public situé dans l'UE ; electron-updater suit les redirections.
+- **Sécurité** : electron-updater vérifie l'empreinte **sha512** annoncée dans `latest*.yml` avant d'installer. Cela détecte un fichier corrompu, mais pas un serveur compromis (qui changerait aussi le `.yml`) : seule la **signature de code** (Windows, et macOS où elle est obligatoire pour la mise à jour) garantit l'origine. Signer les versions avant d'ouvrir les mises à jour au public.
+- **Confidentialité** : aucune donnée personnelle envoyée ; l'identifiant aléatoire qu'electron-updater ajoute normalement à chaque requête est remplacé par une valeur identique pour tous. Le serveur voit l'adresse IP et la version (en-tête User-Agent) : limiter la conservation des journaux d'accès.
+
 ## 3. Paiement (Stripe)
 
 1. Crée les produits : **Premium mensuel** 3,99 € (récurrent), **Premium annuel** 29 € (récurrent), **Premium à vie** 59 € (paiement unique).

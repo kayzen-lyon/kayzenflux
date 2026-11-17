@@ -4,6 +4,7 @@ import { useApp } from '../state';
 import type { Page } from '../types';
 import { isActive } from '../format';
 import { PlayerBar } from './PlayerBar';
+import { UpdateBanner } from './UpdateBanner';
 
 const NAV: Array<{ id: Page; label: string; icon: typeof Download }> = [
   { id: 'home', label: 'Accueil & Convertisseur', icon: Download },
@@ -101,6 +102,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <span className="hidden rounded-full border border-hairline bg-card px-3 py-1.5 text-xs font-semibold text-ink sm:inline">Session locale · 0 pistage</span>
           </div>
         </header>
+        <UpdateBanner />
         <main className={`mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-8 ${playing ? 'pb-36' : ''}`}>{children}</main>
       </div>
       <PlayerBar />
