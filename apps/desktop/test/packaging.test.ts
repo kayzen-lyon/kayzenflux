@@ -16,3 +16,21 @@ describe('electron-builder.yml', () => {
     expect(filesBlock).toMatch(/^\s*-\s*build\/icon\.png\s*$/m);
   });
 });
+
+describe('outils embarqués par plateforme', () => {
+  const config = readFileSync(join(__dirname, '..', 'electron-builder.yml'), 'utf8');
+
+  it('ne dépend pas de la plateforme de la machine de construction', () => {
+    expect(config).not.toMatch(/sidecars\/\$\{platform\}/);
+  });
+
+  it.each([
+    ['linux', 'sidecars/linux-${arch}'],
+    ['win', 'sidecars/win32-${arch}'],
+    ['mac', 'sidecars/darwin-${arch}'],
+  ])('la section %s embarque %s', (section, folder) => {
+    const block = config.split(new RegExp(`^${section}:\\s*$`, 'm'))[1]?.split(/^\S/m)[0] ?? '';
+    expect(block).toContain(`from: ${folder}`);
+    expect(block).toMatch(/to: bin/);
+  });
+});

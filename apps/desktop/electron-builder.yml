@@ -12,8 +12,6 @@ files:
 extraResources:
   - from: ../ui/dist
     to: ui
-  - from: sidecars/${platform}-${arch}
-    to: bin
   - from: ../../THIRD_PARTY_LICENSES.md
     to: THIRD_PARTY_LICENSES.md
 protocols:
@@ -21,7 +19,14 @@ protocols:
     schemes: [kayzenflux]
 asar: true
 artifactName: kayzen-flux-${version}-${os}-${arch}.${ext}
+# Outils embarqués (yt-dlp, ffmpeg, Deno) : un dossier par plateforme cible.
+# Ne pas utiliser ${platform} dans extraResources : il vaut la plateforme de la
+# machine qui construit, ce qui embarquait les binaires Linux dans l'installeur
+# Windows lors d'une construction croisée.
 linux:
+  extraResources:
+    - from: sidecars/linux-${arch}
+      to: bin
   target: [AppImage, deb]
   maintainer: KAYZEN <contact@kayzen-lyon.fr>
   vendor: KAYZEN
@@ -33,6 +38,9 @@ deb:
   packageName: kayzen-flux
   depends: [libnss3, libgtk-3-0]
 win:
+  extraResources:
+    - from: sidecars/win32-${arch}
+      to: bin
   target: [nsis]
   icon: build/icon.png
   # Signature : renseigner CSC_LINK / CSC_KEY_PASSWORD (certificat de signature de code) dans la CI.
@@ -43,6 +51,9 @@ nsis:
   language: '1036'
   shortcutName: KAYZEN Flux
 mac:
+  extraResources:
+    - from: sidecars/darwin-${arch}
+      to: bin
   target: [dmg]
   icon: build/icon.png
   category: public.app-category.video
