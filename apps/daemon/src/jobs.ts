@@ -19,11 +19,10 @@ import {
   whisperTranscriptNote,
   parseEngineLine,
   PRESETS,
-  TIER_LIMITS,
+  LIMITS,
   type MediaInfo,
   type Phase,
   type PresetId,
-  type Tier,
 } from '@kayzen-flux/core';
 import { runEngine, type RunHandle } from './engine.js';
 import type { JsonStore, LibraryItem } from './store.js';
@@ -83,7 +82,6 @@ export interface Job {
 interface Deps {
   binary: string;
   ffmpegPath?: string;
-  getTier: () => Tier;
   allowLocal: boolean;
   store: JsonStore;
   dataDir: string;
@@ -120,7 +118,6 @@ export class JobQueue extends EventEmitter {
       url: req.url,
       preset: req.preset,
       outputDir: settings.downloadDir,
-      tier: this.deps.getTier(),
       allowLocal: this.deps.allowLocal,
       splitChapters: req.splitChapters,
       normalizeAudio: req.normalizeAudio,
@@ -203,7 +200,7 @@ export class JobQueue extends EventEmitter {
 
   private pump(): void {
     const settings = this.deps.store.getSettings();
-    const max = Math.min(settings.maxParallel, TIER_LIMITS[this.deps.getTier()].maxParallelJobs);
+    const max = Math.min(settings.maxParallel, LIMITS.maxParallelJobs);
     // Ordre d'insertion = premier arrivé, premier servi.
     for (const job of this.jobs.values()) {
       if (this.running() >= max) return;
@@ -226,8 +223,7 @@ export class JobQueue extends EventEmitter {
         url: req.url,
         preset: req.preset,
         outputDir: settings.downloadDir,
-        tier: this.deps.getTier(),
-        filenameTemplate: settings.filenameTemplate,
+          filenameTemplate: settings.filenameTemplate,
         splitChapters: req.splitChapters,
         normalizeAudio: req.normalizeAudio,
         transcript: req.transcript,
@@ -474,7 +470,7 @@ export class JobQueue extends EventEmitter {
     return job;
   }
 
-  /** Transcrit localement un fichier déjà présent dans la bibliothèque (Premium, vérifié par l'appelant). */
+  /** Transcrit localement un fichier déjà présent dans la bibliothèque. */
   async transcribeItem(item: LibraryItem): Promise<Job> {
     const whisper = this.deps.whisper;
     if (!whisper?.supported) throw new TranscriptionError('unsupported_platform');

@@ -104,10 +104,11 @@ describe('sécurité du démon', () => {
     const trav = await call('GET', '/..%2F..%2Fetc%2Fpasswd');
     expect(trav.raw).not.toContain('root:');
   });
-  it('refuse les formats premium en offre gratuite', async () => {
-    const r = await call('POST', '/api/jobs', { url: mediaUrl, preset: 'mp4-2160' });
-    expect(r.status).toBe(400);
-    expect(r.data.error).toMatch(/Premium/);
+  it('accepte la 4K comme format par défaut sans licence (application gratuite)', async () => {
+    const r = await call('PUT', '/api/settings', { defaultPreset: 'mp4-2160' });
+    expect(r.status).toBe(200);
+    expect(r.data.defaultPreset).toBe('mp4-2160');
+    await call('PUT', '/api/settings', { defaultPreset: 'mp3-320' });
   });
   it('refuse une URL invalide', async () => {
     const r = await call('POST', '/api/info', { url: 'file:///etc/passwd' });
@@ -121,7 +122,7 @@ describe('téléchargement réel de bout en bout', () => {
     expect(r.status).toBe(200);
     expect(r.data.engine).toMatch(/^\d{4}\./);
     expect(r.data.ffmpeg).toBeTruthy();
-    expect(r.data.tier).toBe('free');
+    expect(r.data.limits.maxParallelJobs).toBe(6);
   });
 
   it('récupère les infos, convertit en MP3, alimente la bibliothèque et lit le média', async () => {

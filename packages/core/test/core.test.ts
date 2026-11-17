@@ -5,7 +5,9 @@ import {
   buildInfoArgs,
   classifyEngineError,
   detectDrm,
-  isPresetAllowed,
+  LIMITS,
+  PRESET_IDS,
+  isPresetId,
   parseEngineLine,
   parseInfoJson,
   validateUrl,
@@ -35,7 +37,7 @@ describe('validateUrl', () => {
 });
 
 describe('buildDownloadArgs', () => {
-  const base = { url: 'https://example.com/v/1', outputDir: '/tmp/out', tier: 'free' as const };
+  const base = { url: 'https://example.com/v/1', outputDir: '/tmp/out' };
 
   it("place toujours l'URL après « -- »", () => {
     const args = buildDownloadArgs({ ...base, preset: 'mp3-320' });
@@ -45,14 +47,17 @@ describe('buildDownloadArgs', () => {
     expect(args).toContain('--ignore-config');
   });
 
-  it('refuse les formats premium en offre gratuite', () => {
-    expect(() => buildDownloadArgs({ ...base, preset: 'mp4-2160' })).toThrow(ArgsError);
-    expect(() => buildDownloadArgs({ ...base, preset: 'mp4-2160', tier: 'premium' })).not.toThrow();
+  it('accepte tous les formats, y compris FLAC et 4K', () => {
+    for (const preset of PRESET_IDS) expect(() => buildDownloadArgs({ ...base, preset })).not.toThrow();
   });
 
-  it('plafonne la playlist à 25 éléments en gratuit', () => {
-    const args = buildDownloadArgs({ ...base, preset: 'm4a', playlist: true, playlistLimit: 500 });
-    expect(args[args.indexOf('--playlist-items') + 1]).toBe('1:25');
+  it('plafonne la playlist à la limite technique commune', () => {
+    const big = buildDownloadArgs({ ...base, preset: 'm4a', playlist: true, playlistLimit: 100000 });
+    expect(big[big.indexOf('--playlist-items') + 1]).toBe(`1:${LIMITS.maxPlaylistItems}`);
+    const small = buildDownloadArgs({ ...base, preset: 'm4a', playlist: true, playlistLimit: 500 });
+    expect(small[small.indexOf('--playlist-items') + 1]).toBe('1:500');
+    const all = buildDownloadArgs({ ...base, preset: 'm4a', playlist: true });
+    expect(all[all.indexOf('--playlist-items') + 1]).toBe('1:5000');
   });
 
   it('ajoute SponsorBlock, métadonnées et sous-titres sur demande', () => {
@@ -68,7 +73,7 @@ describe('buildDownloadArgs', () => {
   });
 
   it("n'utilise jamais d'option de contournement (cookies, DRM, exec)", () => {
-    const args = buildDownloadArgs({ ...base, preset: 'mp4-1080', tier: 'premium', playlist: true }).join(' ');
+    const args = buildDownloadArgs({ ...base, preset: 'mp4-1080', playlist: true }).join(' ');
     expect(args).not.toMatch(/--cookies|--allow-unplayable|--exec|--username|--password/);
   });
 
@@ -79,11 +84,14 @@ describe('buildDownloadArgs', () => {
   });
 });
 
-describe('isPresetAllowed', () => {
-  it('respecte la matrice gratuit/premium', () => {
-    expect(isPresetAllowed('mp3-320', 'free')).toBe(true);
-    expect(isPresetAllowed('flac', 'free')).toBe(false);
-    expect(isPresetAllowed('flac', 'premium')).toBe(true);
+describe('LIMITS', () => {
+  it("reprend les valeurs de l'ancienne offre Premium pour tout le monde", () => {
+    expect(LIMITS).toEqual({ maxPlaylistItems: 5000, maxParallelJobs: 6 });
+  });
+  it('reconnaît les identifiants de préréglage', () => {
+    expect(isPresetId('flac')).toBe(true);
+    expect(isPresetId('mp4-9999')).toBe(false);
+    expect(isPresetId(42)).toBe(false);
   });
 });
 

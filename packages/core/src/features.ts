@@ -1,3 +1,8 @@
+/**
+ * Fonctions avancées, disponibles pour tous (application gratuite) : modèles de nom,
+ * normalisation du volume, transcription, abonnements.
+ */
+
 /** Modèles de nom de fichier (liste fermée : aucun gabarit libre, donc aucun chemin arbitraire). */
 export const FILENAME_TEMPLATES = {
   'title-id': { label: 'Titre [identifiant]', template: '%(title).150B [%(id)s].%(ext)s' },

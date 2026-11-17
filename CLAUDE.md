@@ -9,7 +9,7 @@ Tu es l'ingénieur principal de KAYZEN Flux, téléchargeur et convertisseur mul
 3. L'EXTENSION NE TÉLÉCHARGE RIEN : blocage pub, SponsorBlock, bouton qui ouvre kayzenflux://add?url=…
 4. AUCUNE MARQUE TIERCE dans le nom, l'icône ou les fiches store (pas de « YouTube », « Tube »).
 5. PAS D'API YOUTUBE DATA pour ces fonctions.
-6. LICENCES : yt-dlp (Unlicense) en binaire officiel non modifié ; ffmpeg comme programme séparé (build LGPL si disponible, sinon GPL avec licence et offre de source) ; NouTube (AGPL-3.0) : lecture seule, aucun code copié sauf décision écrite de passer en open-core AGPL. Tenir THIRD_PARTY_LICENSES.md à jour.
+6. LICENCES : yt-dlp (Unlicense) en binaire officiel non modifié ; ffmpeg comme programme séparé (build LGPL si disponible, sinon GPL avec licence et offre de source) ; Projet sous licence MIT ; NouTube (AGPL-3.0) : lecture seule, aucun code copié. Tenir THIRD_PARTY_LICENSES.md à jour.
 7. CONFIDENTIALITÉ : aucune télémétrie sans consentement ; journaux sans URL ni données personnelles ; hébergement UE.
 8. HONNÊTETÉ : ne jamais présenter un FLAC/WAV issu d'une source compressée comme « sans perte » ; n'afficher que des fonctions réellement implémentées.
 Si une demande viole une règle : t'arrêter et l'expliquer.
@@ -25,5 +25,5 @@ Si une demande viole une règle : t'arrêter et l'expliquer.
 Pour chaque tâche : objectif et critères d'acceptation → fichiers touchés → tests d'abord → implémentation → vérifications → résumé (fait, reste, incertitudes). Ne jamais déclarer « terminé » avec un test en échec. Distinguer vérifié et supposé.
 
 ## État
-Version 1.0 : application de bureau Electron (démon intégré), extension MV3, licences Ed25519, fonctions Premium, site + webhook.
+Version 1.0 : application de bureau Electron (démon intégré), extension MV3, site statique. Application ENTIÈREMENT GRATUITE et open source sous licence MIT (dépôt public github.com/kayzen-lyon/kayzenflux) : plus de licence Premium, plus de vente ni de paiement ; toutes les fonctions (4K, FLAC, chapitres, volume normalisé, transcription, résumé local, abonnements) sont disponibles pour tous, avec des limites techniques communes (`LIMITS` dans packages/core : 5 000 éléments de playlist, 6 téléchargements en parallèle). Installeurs hébergés chez IONOS (telechargements.kayzen-lyon.com).
 Mise en production : docs/MISE-EN-PRODUCTION.md. Pistes suivantes : Android, mise à jour automatique de l'application, build ffmpeg minimal, résumé IA des transcriptions.
