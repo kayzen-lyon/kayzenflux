@@ -6,6 +6,8 @@ import { isActive } from '../format';
 import { PlayerBar } from './PlayerBar';
 import { UpdateBanner } from './UpdateBanner';
 import { PRESET_KIND } from './presetKind';
+import mark from '../assets/flux-mark.png';
+import markLight from '../assets/flux-mark-light.png';
 
 const NAV: Array<{ id: Page; label: string; icon: typeof Download }> = [
   { id: 'home', label: 'Convertir', icon: Download },
@@ -16,12 +18,19 @@ const NAV: Array<{ id: Page; label: string; icon: typeof Download }> = [
   { id: 'shortcuts', label: 'Raccourcis', icon: Keyboard },
 ];
 
-export function LogoMark({ className = 'h-9 w-9' }: { className?: string }) {
+/**
+ * Symbole « Flux » (F en flèche). `tone="light"` : variante claire pour les fonds marine
+ * (barre latérale) ; `tone="auto"` : variante colorée en thème clair, claire en thème sombre.
+ * Ressources locales uniquement (CSP : img-src 'self').
+ */
+export function LogoMark({ className = 'h-9', tone = 'light' }: { className?: string; tone?: 'light' | 'auto' }) {
+  if (tone === 'light') {
+    return <img src={markLight} alt="" aria-hidden="true" draggable={false} className={`w-auto shrink-0 select-none ${className}`} />;
+  }
   return (
-    <span className={`grid shrink-0 place-items-center rounded-[10px] bg-primary text-on-primary ${className}`}>
-      <svg viewBox="0 0 64 64" className="h-1/2 w-1/2" aria-hidden="true">
-        <path d="M14 12h10v40H14zM28 32l22-20v40z" fill="currentColor" />
-      </svg>
+    <span className="inline-flex shrink-0" aria-hidden="true">
+      <img src={mark} alt="" draggable={false} className={`w-auto select-none dark:hidden ${className}`} />
+      <img src={markLight} alt="" draggable={false} className={`hidden w-auto select-none dark:block ${className}`} />
     </span>
   );
 }
@@ -96,7 +105,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-20 flex items-center gap-3 bg-rail px-4 py-2.5 lg:hidden">
-          <LogoMark className="h-8 w-8" />
+          <LogoMark className="h-7" />
           <nav className="flex gap-1 overflow-x-auto" aria-label="Navigation">
             {NAV.map(({ id, icon: Icon, label }) => (
               <button

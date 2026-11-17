@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Check, CheckCircle2, ExternalLink, FolderOpen, Loader2, RefreshCw, Save, XCircle } from 'lucide-react';
 import { api } from '../api';
 import { useApp } from '../state';
-import { PageHeader, Toggle } from '../components/Shell';
+import { LogoMark, PageHeader, Toggle } from '../components/Shell';
 import { canAutoUpdate } from '../components/UpdateBanner';
 import { LocalTranscriptionSettings } from '../components/LocalAi';
 import { PRESET_KIND } from '../components/presetKind';
@@ -158,6 +158,12 @@ export function SettingsPage() {
       </Section>
 
       <Section id="set-about" title="À propos" text="KAYZEN Flux est gratuit et open source.">
+        <div className="mb-4 flex items-center gap-3">
+          <LogoMark tone="auto" className="h-10" />
+          <p className="font-display text-lead leading-none tracking-tight text-ink">
+            <span className="font-extrabold">KAYZEN</span> <span className="font-normal">Flux</span>
+          </p>
+        </div>
         <dl className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-2 text-small">
           <dt>Version</dt><dd className="font-semibold tabular-nums text-ink">{status?.app ?? '?'}</dd>
           <dt>Licence</dt><dd className="font-semibold text-ink">MIT</dd>
