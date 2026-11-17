@@ -115,7 +115,7 @@ if (conf.ffmpeg.kind === 'static') {
   const base = 'https://github.com/denoland/deno/releases/latest/download/';
   const zip = await get(base + conf.deno);
   const sumText = (await get(base + conf.deno + '.sha256sum')).toString('utf8');
-  expectHash(zip, sumText.trim().split(/\s+/)[0], conf.deno);
+  expectHash(zip, (/[a-f0-9]{64}/i.exec(sumText) ?? [])[0], conf.deno); // format Unix ou tableau PowerShell selon la plateforme
   const file = join(tmp, conf.deno);
   writeFileSync(file, zip);
   execFileSync(process.platform === 'win32' ? 'tar' : 'unzip', process.platform === 'win32' ? ['-xf', file, '-C', tmp] : ['-q', '-o', file, '-d', tmp]);
