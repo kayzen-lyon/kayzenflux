@@ -22,7 +22,7 @@ export function UpdateBanner() {
     setBusy(true);
     try {
       setSettings(await api.saveSettings({ autoUpdate }));
-      toast(autoUpdate ? 'Mises à jour automatiques activées.' : 'Mises à jour automatiques désactivées. Vous pourrez changer d’avis dans Moteur & Paramètres.', 'success');
+      toast(autoUpdate ? 'Mises à jour automatiques activées.' : 'Mises à jour automatiques désactivées. Vous pourrez changer d’avis dans Paramètres.', 'success');
     } catch (e) {
       toast((e as Error).message, 'error');
     } finally {
@@ -43,11 +43,11 @@ export function UpdateBanner() {
 
   if (appUpdate.status === 'downloaded' && !later) {
     return (
-      <div role="status" className="flex flex-wrap items-center gap-3 border-b border-primary/30 bg-primary-soft px-4 py-3 text-sm md:px-8">
+      <div role="status" className="flex flex-wrap items-center gap-3 border-b border-primary/30 bg-primary-soft px-5 py-3 text-small md:px-10">
         <RefreshCw className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
         <p className="flex-1 font-semibold text-ink">
-          Nouvelle version {appUpdate.version ?? ''} prête — Redémarrer pour installer
-          <span className="block text-xs font-normal">Sinon, elle s’installera à la prochaine fermeture de KAYZEN Flux.</span>
+          Nouvelle version {appUpdate.version ?? ''} prête à installer
+          <span className="block text-meta font-normal text-body">Sinon, elle s’installera à la prochaine fermeture de KAYZEN Flux.</span>
         </p>
         <button className="btn-ghost" onClick={() => setLater(true)} disabled={busy}>Plus tard</button>
         <button className="btn-primary" onClick={install} disabled={busy}>
@@ -59,11 +59,11 @@ export function UpdateBanner() {
 
   if (settings.autoUpdate === null && canAutoUpdate(appUpdate.status)) {
     return (
-      <div role="region" aria-labelledby="upd-consent" className="flex flex-wrap items-center gap-3 border-b border-hairline bg-card px-4 py-3 text-sm md:px-8">
+      <div role="region" aria-labelledby="upd-consent" className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-hairline bg-surface px-5 py-4 text-small md:px-10">
         <ShieldCheck className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-        <div className="min-w-[240px] flex-1">
+        <div className="min-w-[240px] max-w-3xl flex-1">
           <p id="upd-consent" className="font-semibold text-ink">Rechercher automatiquement les mises à jour de KAYZEN Flux ?</p>
-          <p className="text-xs">
+          <p className="mt-0.5 text-meta leading-relaxed">
             Au démarrage puis toutes les 6 heures, l’application consulte le fichier de version publié par KAYZEN,
             télécharge la nouvelle version en arrière-plan et vous propose de redémarrer. Comme pour toute page web, le serveur voit
             votre adresse IP et la version de l’application ; aucun identifiant ni statistique n’est envoyé.

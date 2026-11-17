@@ -1,5 +1,5 @@
-import type { MediaInfo, OllamaModel, Phase, PresetId, Tier, TranscriptionErrorCode, UpdateState, UpdateStatus, WhisperModelId } from '@kayzen-flux/core';
-export type { MediaInfo, OllamaModel, Phase, PresetId, Tier, UpdateState, UpdateStatus, WhisperModelId };
+import type { MediaInfo, OllamaModel, Phase, PresetId, TranscriptionErrorCode, UpdateState, UpdateStatus, WhisperModelId } from '@kayzen-flux/core';
+export type { MediaInfo, OllamaModel, Phase, PresetId, UpdateState, UpdateStatus, WhisperModelId };
 
 export type WhisperTarget = 'engine' | WhisperModelId;
 
@@ -28,29 +28,19 @@ export interface PresetView {
   kind: 'audio' | 'video';
   label: string;
   hint: string;
-  tier: Tier;
-  allowed: boolean;
 }
 
+/**
+ * État du démon. KAYZEN Flux est gratuit et open source : l'interface n'utilise
+ * plus d'offre ni de licence. Les limites sont facultatives (le démon peut les omettre).
+ */
 export interface Status {
   app: string;
   engine: string | null;
   ffmpeg: string | null;
-  tier: Tier;
-  limits: { maxPlaylistItems: number; maxParallelJobs: number };
+  limits?: { maxPlaylistItems?: number; maxParallelJobs?: number };
   presets: PresetView[];
-  license: LicenseState;
-  devLicenseKey: boolean;
   templates: Array<{ id: string; label: string }>;
-}
-
-export interface LicenseState {
-  tier: Tier;
-  source: 'license' | 'env' | 'none';
-  email: string | null;
-  name: string | null;
-  expiresAt: string | null;
-  error: string | null;
 }
 
 export interface Subscription {

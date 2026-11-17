@@ -1,4 +1,4 @@
-import { Keyboard } from 'lucide-react';
+import { PageHeader } from '../components/Shell';
 
 /** Seuls les raccourcis réellement implémentés sont listés. */
 const GROUPS: Array<{ title: string; items: Array<[string, string[]]> }> = [
@@ -34,25 +34,19 @@ const GROUPS: Array<{ title: string; items: Array<[string, string[]]> }> = [
 
 export function ShortcutsPage() {
   return (
-    <div className="space-y-8">
-      <header>
-        <p className="eyebrow flex items-center gap-1.5"><Keyboard className="h-3.5 w-3.5" /> Utilisable entièrement au clavier</p>
-        <h1 className="mt-1 text-3xl font-extrabold tracking-tight md:text-4xl">Raccourcis clavier</h1>
-        <p className="mt-1">Sur Mac, remplacez Ctrl par ⌘.</p>
-      </header>
-      <div className="grid gap-5 md:grid-cols-3">
+    <div className="space-y-10">
+      <PageHeader title="Raccourcis clavier" lead="Toute l’application s’utilise au clavier. Sur Mac, remplacez Ctrl par ⌘." />
+      <div className="grid gap-x-12 gap-y-10 md:grid-cols-2">
         {GROUPS.map((g) => (
-          <section key={g.title} className="card p-6" aria-labelledby={`sc-${g.title}`}>
-            <h2 id={`sc-${g.title}`} className="text-lg font-bold">{g.title}</h2>
-            <dl className="mt-4 space-y-3">
+          <section key={g.title} aria-labelledby={`sc-${g.title}`}>
+            <h2 id={`sc-${g.title}`} className="text-lead font-semibold">{g.title}</h2>
+            <dl className="mt-3 divide-y divide-hairline border-y border-hairline">
               {g.items.map(([label, keys]) => (
-                <div key={label} className="flex items-center justify-between gap-3 text-sm">
+                <div key={label} className="flex items-center justify-between gap-4 py-2.5 text-small">
                   <dt>{label}</dt>
-                  <dd className="flex shrink-0 items-center gap-1">
+                  <dd className="flex shrink-0 items-center gap-1.5">
                     {keys.map((k, i) =>
-                      k === 'puis' ? <span key={i} className="text-xs">puis</span> : (
-                        <kbd key={i} className="min-w-[28px] rounded-lg border border-hairline bg-surface px-2 py-1 text-center font-display text-xs font-bold text-ink shadow-sm">{k}</kbd>
-                      ),
+                      k === 'puis' ? <span key={i} className="text-meta">puis</span> : <kbd key={i} className="kbd">{k}</kbd>,
                     )}
                   </dd>
                 </div>
@@ -61,7 +55,7 @@ export function ShortcutsPage() {
           </section>
         ))}
       </div>
-      <p className="text-sm">Interface en ligne de commande et personnalisation des raccourcis : prévues dans une version ultérieure.</p>
+      <p className="text-small">La personnalisation des raccourcis et une interface en ligne de commande sont prévues dans une version ultérieure.</p>
     </div>
   );
 }

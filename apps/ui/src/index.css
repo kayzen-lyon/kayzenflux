@@ -4,49 +4,113 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Palette KAYZEN Flux (contrastes vérifiés AA) :
+ * crème #F6F0E6 · marine #0F1D30 · orange brûlé #B4471A (texte blanc 5,4:1 ; sur crème 4,8:1).
+ * En sombre, la base est marine (et non brune) pour garder la cohérence avec la barre latérale.
+ */
 :root {
-  --bg: 247 250 252;
-  --surface: 242 245 247;
-  --card: 255 255 255;
-  --ink: 31 41 55;
-  --body: 88 100 116;
-  --hairline: 224 229 235;
-  --primary: 183 72 31;
-  --primary-soft: 255 233 227;
-  --navy: 19 41 68;
-  --gold: 243 189 73;
-  --ok: 22 163 74;
-  --danger: 186 26 26;
+  --bg: 246 240 230;
+  --surface: 238 230 216;
+  --card: 255 252 246;
+  --ink: 20 35 58;
+  --body: 85 96 110;
+  --hairline: 225 215 197;
+  --primary: 180 71 26;
+  --on-primary: 255 255 255;
+  --primary-soft: 247 224 207;
+  --navy: 15 29 48;
+  --rail: 15 29 48;
+  --rail-ink: 240 233 221;
+  --rail-muted: 159 176 198;
+  --gold: 196 140 40;
+  --ok: 30 122 74;
+  --danger: 180 35 24;
+  --shadow: 15 29 48;
   color-scheme: light;
 }
 .dark {
-  --bg: 19 14 12;
-  --surface: 26 21 20;
-  --card: 33 28 27;
-  --ink: 252 248 246;
-  --body: 163 159 157;
-  --hairline: 57 53 51;
-  --primary: 218 86 37;
-  --primary-soft: 81 20 0;
-  --navy: 19 41 68;
-  --gold: 243 189 73;
-  --ok: 74 222 128;
-  --danger: 248 113 113;
+  --bg: 14 23 36;
+  --surface: 20 33 51;
+  --card: 23 38 59;
+  --ink: 240 233 221;
+  --body: 163 174 189;
+  --hairline: 37 54 79;
+  --primary: 232 116 58;
+  --on-primary: 26 16 8;
+  --primary-soft: 58 36 26;
+  --navy: 9 17 29;
+  --rail: 9 17 29;
+  --rail-ink: 240 233 221;
+  --rail-muted: 150 164 184;
+  --gold: 226 178 82;
+  --ok: 92 201 138;
+  --danger: 242 135 123;
+  --shadow: 0 0 0;
   color-scheme: dark;
 }
 
 html, body, #root { height: 100%; }
-body { @apply bg-bg font-sans text-body antialiased; }
+body { @apply bg-bg font-sans text-base text-body antialiased; font-feature-settings: 'ss01', 'cv11'; }
 h1, h2, h3, h4 { @apply font-display text-ink; }
+::selection { background: rgb(var(--primary) / 0.25); }
+
+/* Focus clavier toujours visible, discret à la souris. */
+:focus-visible { outline: 2px solid rgb(var(--primary)); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
 
 @layer components {
-  .card { @apply rounded-3xl border border-hairline bg-card shadow-soft; }
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-display text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50; }
-  .btn-primary { @apply btn bg-primary text-white shadow-md shadow-primary/20 hover:brightness-110; }
-  .btn-ghost { @apply btn border border-hairline bg-card text-ink hover:bg-surface; }
-  .btn-navy { @apply btn bg-navy text-white hover:brightness-125; }
-  .icon-btn { @apply inline-flex h-9 w-9 items-center justify-center rounded-full text-body transition hover:bg-surface hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50; }
-  .eyebrow { @apply font-display text-xs font-bold uppercase tracking-[0.12em] text-primary; }
-  .input { @apply w-full rounded-full border border-hairline bg-surface px-5 py-3 text-ink placeholder:text-body/70 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20; }
-  .chip { @apply inline-flex items-center gap-1 rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-body; }
+  .card { @apply rounded-2xl border border-hairline bg-card; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-display text-small font-semibold transition duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn bg-primary text-on-primary hover:bg-primary/90 active:translate-y-px; }
+  .btn-ghost { @apply btn border border-hairline bg-card text-ink hover:border-ink/25; }
+  .btn-quiet { @apply btn px-3 text-ink hover:bg-surface; }
+  .btn-danger { @apply btn border border-danger/30 text-danger hover:bg-danger/10; }
+  .icon-btn { @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-body transition duration-150 hover:bg-surface hover:text-ink disabled:opacity-40; }
+  .play-btn { @apply grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-on-primary transition duration-150 hover:scale-105 active:scale-95; }
+  .input { @apply w-full rounded-xl border border-hairline bg-card px-4 py-2.5 text-ink placeholder:text-body/80 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20; }
+  .chip { @apply inline-flex items-center gap-1 rounded-md bg-surface px-2 py-0.5 text-meta font-semibold text-body; }
+  .label { @apply font-display text-base font-semibold text-ink; }
+  .kbd { @apply inline-flex min-w-[1.75rem] items-center justify-center rounded-md border border-b-2 border-hairline bg-card px-1.5 py-0.5 font-display text-meta font-bold text-ink; }
+  .page-title { @apply text-h1 font-bold; }
+  .page-lead { @apply mt-2 max-w-2xl text-lead; }
 }
+
+@keyframes toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* Curseur de progression : piste remplie jusqu'à --p (pourcentage). */
+.seek {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: linear-gradient(to right, rgb(var(--primary)) var(--p, 0%), var(--track, rgb(var(--ink) / 0.15)) var(--p, 0%));
+}
+.seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgb(var(--primary));
+  border: 2px solid rgb(var(--card));
+  box-shadow: 0 0 0 1px rgb(var(--primary) / 0.4);
+  transition: transform 120ms ease-out;
+}
+.seek:hover::-webkit-slider-thumb, .seek:focus-visible::-webkit-slider-thumb { transform: scale(1.15); }
+.seek::-moz-range-thumb { width: 12px; height: 12px; border-radius: 999px; background: rgb(var(--primary)); border: 2px solid rgb(var(--card)); }
+
+/* Indicateur « en lecture » (trois barres), figé si l'utilisateur réduit les animations. */
+@keyframes eq { 0%, 100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
+.eq > span { display: block; width: 3px; border-radius: 2px; background: rgb(var(--primary)); transform-origin: bottom; animation: eq 900ms ease-in-out infinite; }
+.eq > span:nth-child(2) { animation-delay: -300ms; }
+.eq > span:nth-child(3) { animation-delay: -600ms; }
+.eq.is-paused > span { animation-play-state: paused; }
+
+/* Progression indéterminée (conversion, attente) : un segment qui glisse. */
+@keyframes indet { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+.indet { animation: indet 1.4s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
