@@ -57,7 +57,7 @@
       ]
     },
     {
-      "source": "/assets/config.js",
+      "source": "/assets/(.*)\\.(css|js)",
       "headers": [
         {
           "key": "Cache-Control",
