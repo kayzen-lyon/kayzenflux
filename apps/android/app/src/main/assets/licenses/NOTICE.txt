@@ -1,0 +1,24 @@
+KAYZEN Flux pour Android — licence MIT (voir LICENSE dans le dépôt).
+
+Composants embarqués :
+
+• yt-dlp — Unlicense (domaine public). Build officielle « musllinux_aarch64 »
+  (https://github.com/yt-dlp/yt-dlp), bytecode non modifié, simplement
+  réorganisé pour Android. Inclut CPython 3.14 (licence PSF), OpenSSL
+  (Apache 2.0), certifi (MPL 2.0), brotli, websockets, requests, urllib3,
+  mutagen, pycryptodomex, cryptography, curl_cffi… : détail complet dans
+  licenses/YTDLP-THIRD_PARTY_LICENSES.txt.
+
+• FFmpeg 6.1.1 — GPL v3 (compilé avec --enable-gpl --enable-version3,
+  avec LAME). Programme séparé, appelé en ligne de commande. Texte :
+  licenses/GPL-3.0.txt. Code source : https://ffmpeg.org/ (version 6.1.1,
+  paquet source Ubuntu ffmpeg 6.1.1-3ubuntu5) ; options de compilation dans
+  apps/android/scripts/build-native.sh du dépôt. Copie du code source
+  disponible sur demande à contact@kayzen-lyon.fr pendant 3 ans.
+
+• LAME 3.100 — LGPL 2.0 ou ultérieure (encodeur MP3, lié à FFmpeg).
+
+• musl libc 1.2.4 — MIT (chargeur dynamique libkzmusl.so).
+
+Mise à jour de yt-dlp : téléchargée à votre demande depuis les publications
+officielles GitHub de yt-dlp, vérifiée par SHA-256.

@@ -18,3 +18,17 @@
 | zod | Validation | MIT | Embarqué |
 
 NouTube (AGPL-3.0) a servi de référence d'architecture : **aucun code n'en est copié**.
+
+## Application Android (`apps/android`)
+
+Code de l'application : MIT (`apps/android/LICENSE`). La bibliothèque youtubedl-android (GPL-3.0) **n'est pas utilisée** (dépôts Maven inaccessibles lors de la création) ; aucun de ses fichiers n'est inclus.
+
+| Composant | Usage | Licence | Distribution |
+| --- | --- | --- | --- |
+| yt-dlp (build officielle `yt-dlp_musllinux_aarch64`) | Moteur de téléchargement sur le téléphone | Unlicense (domaine public) | Embarqué dans `assets/runtime.zip` ; bytecode non modifié, réorganisé en arborescence Python par `scripts/repack_ytdlp_runtime.py`. Mise à jour à la demande (zipapp officiel GitHub, SHA-256 vérifié). |
+| CPython 3.14 et dépendances de la build yt-dlp (OpenSSL 3 — Apache 2.0 ; certifi — MPL 2.0 ; brotli, websockets, requests, urllib3, mutagen, pycryptodomex, cryptography, curl_cffi, sqlite, zlib, libffi, bzip2, xz, zstd, mpdecimal…) | Interpréteur et bibliothèques | PSF-2.0 et licences listées dans `YTDLP-THIRD_PARTY_LICENSES.txt` (fourni par yt-dlp, copié dans l'APK) | Embarqué, inchangé |
+| FFmpeg 6.1.1 / FFprobe | Conversion et fusion | **GPL v3** (`--enable-gpl --enable-version3`) | Compilé depuis le paquet source Ubuntu `ffmpeg 6.1.1-3ubuntu5` (options : `apps/android/scripts/build-native.sh`), embarqué comme **programme séparé** (`libkzffmpeg.so`). Texte GPL-3.0 dans l'APK. Source : https://ffmpeg.org/ ; copie sur demande à contact@kayzen-lyon.fr pendant 3 ans. |
+| LAME 3.100 | Encodage MP3 (lié statiquement à FFmpeg) | LGPL 2.0+ | Paquet source Ubuntu `lame 3.100-6build1` |
+| musl libc 1.2.4 | Chargeur dynamique (`libkzmusl.so`) et lanceur `kzpy` | MIT | Paquet source Ubuntu `musl 1.2.4-2`, non modifié |
+| PyInstaller 6.16 | Lecture des archives de la build yt-dlp | GPL-2.0 avec exception | **Outil de build uniquement**, non distribué |
+| Outils Android de Debian (aapt, dx, apksigner, zipalign, android.jar API 23) | Construction de l'APK | Apache 2.0 | Outils de build, non distribués |

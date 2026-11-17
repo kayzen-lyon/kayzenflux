@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.KayzenFlux" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">#14213D</item>
+        <item name="android:colorPrimaryDark">#0B1526</item>
+        <item name="android:colorAccent">#B5451B</item>
+        <item name="android:windowBackground">@color/kz_bg</item>
+    </style>
+</resources>
