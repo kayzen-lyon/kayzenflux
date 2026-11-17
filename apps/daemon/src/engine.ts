@@ -16,17 +16,31 @@ export interface RunHandle {
  * Lance yt-dlp sans shell (arguments en tableau) et remonte chaque ligne.
  */
 export function runEngine(binary: string, args: string[], onLine: (line: string) => void): RunHandle {
-  const child = spawn(binary, args, { shell: false, windowsHide: true, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
+  return runProcess(binary, args, onLine, { env: { PYTHONIOENCODING: 'utf-8' }, missingMessage: 'Moteur yt-dlp introuvable' });
+}
+
+/**
+ * Lance un programme local sans shell (arguments en tableau) et remonte chaque ligne de stdout/stderr.
+ * Utilisé pour yt-dlp, ffmpeg et whisper.cpp.
+ */
+export function runProcess(
+  binary: string,
+  args: string[],
+  onLine: (line: string) => void,
+  opts: { env?: NodeJS.ProcessEnv; missingMessage?: string; splitCarriageReturn?: boolean } = {},
+): RunHandle {
+  const child = spawn(binary, args, { shell: false, windowsHide: true, env: { ...process.env, ...opts.env } });
   let cancelled = false;
   const pipe = (stream: NodeJS.ReadableStream | null) => {
     if (!stream) return;
-    createInterface({ input: stream }).on('line', onLine);
+    // whisper.cpp sépare parfois ses lignes de progression par « \r » (option explicite).
+    createInterface({ input: stream }).on('line', (l) => (opts.splitCarriageReturn ? l.split('\r').forEach((part) => part && onLine(part)) : onLine(l)));
   };
   pipe(child.stdout);
   pipe(child.stderr);
   const done = new Promise<{ code: number | null; cancelled: boolean }>((resolve) => {
     child.on('error', (err) => {
-      onLine(`ERROR: ${(err as NodeJS.ErrnoException).code === 'ENOENT' ? 'Moteur yt-dlp introuvable' : err.message}`);
+      onLine(`ERROR: ${(err as NodeJS.ErrnoException).code === 'ENOENT' ? (opts.missingMessage ?? 'Programme introuvable') : err.message}`);
       resolve({ code: -1, cancelled });
     });
     child.on('close', (code) => resolve({ code, cancelled }));

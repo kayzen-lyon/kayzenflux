@@ -3,10 +3,20 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, extname, join } from 'node:path';
 import {
+  SUMMARY_MESSAGES,
+  TRANSCRIPTION_MESSAGES,
   buildDownloadArgs,
+  buildMergePrompt,
+  buildSummaryMarkdown,
+  buildSummaryPrompt,
   buildTranscript,
   classifyEngineError,
+  cleanModelOutput,
   parseSubtitles,
+  splitForSummary,
+  summaryPathFor,
+  transcriptToPlainText,
+  whisperTranscriptNote,
   parseEngineLine,
   PRESETS,
   TIER_LIMITS,
@@ -17,6 +27,11 @@ import {
 } from '@kayzen-flux/core';
 import { runEngine, type RunHandle } from './engine.js';
 import type { JsonStore, LibraryItem } from './store.js';
+import { TranscriptionError, type WhisperManager } from './whisper.js';
+import { SummaryError, type OllamaClient } from './ollama.js';
+
+/** Taille des morceaux de transcription envoyés au modèle local (≈ 3 000 jetons). */
+const SUMMARY_CHUNK_CHARS = 12_000;
 
 export interface JobRequest {
   url: string;
@@ -33,8 +48,11 @@ export interface JobRequest {
   info?: Pick<MediaInfo, 'title' | 'author' | 'thumbnail' | 'durationSec' | 'site' | 'entryCount'> | null;
 }
 
+export type JobKind = 'download' | 'transcription' | 'summary';
+
 export interface Job {
   id: string;
+  kind: JobKind;
   url: string;
   preset: PresetId;
   presetLabel: string;
@@ -69,6 +87,8 @@ interface Deps {
   allowLocal: boolean;
   store: JsonStore;
   dataDir: string;
+  whisper?: WhisperManager;
+  ollama?: OllamaClient;
 }
 
 /** File d'attente des téléchargements, exécutés localement en parallèle limité. */
@@ -77,6 +97,8 @@ export class JobQueue extends EventEmitter {
   private handles = new Map<string, RunHandle>();
   private requests = new Map<string, JobRequest>();
   private pendingLibrary = new Map<string, Promise<void>[]>();
+  /** Tâches locales (transcription, résumé) annulables. */
+  private aborts = new Map<string, AbortController>();
 
   constructor(private readonly deps: Deps) {
     super();
@@ -106,6 +128,7 @@ export class JobQueue extends EventEmitter {
     });
     const job: Job = {
       id: randomUUID(),
+      kind: 'download',
       url: req.url,
       preset: req.preset,
       presetLabel: PRESETS[req.preset].label,
@@ -157,12 +180,17 @@ export class JobQueue extends EventEmitter {
       handle.cancel();
       return true;
     }
+    const abort = this.aborts.get(id);
+    if (abort) {
+      abort.abort();
+      return true;
+    }
     return false;
   }
 
   remove(id: string): boolean {
     const job = this.jobs.get(id);
-    if (!job || this.handles.has(id) || job.phase === 'queued') return false;
+    if (!job || this.handles.has(id) || this.aborts.has(id) || job.phase === 'queued') return false;
     this.jobs.delete(id);
     this.requests.delete(id);
     this.emit('removed', id);
@@ -275,9 +303,16 @@ export class JobQueue extends EventEmitter {
         job.phase = 'processing';
         job.label = 'Création de la transcription';
         this.emitJob(job);
-        await this.writeTranscripts(job);
+        const abort = new AbortController();
+        this.aborts.set(job.id, abort);
+        try {
+          await this.writeTranscripts(job, abort.signal);
+        } finally {
+          this.aborts.delete(job.id);
+        }
       }
-      this.finish(job, 'done', 'Terminé');
+      // La tâche a pu être annulée pendant la transcription locale.
+      if ((job.phase as Phase) !== 'cancelled') this.finish(job, 'done', job.transcripts.length || !req.transcript ? 'Terminé' : job.label);
     }
     else this.finish(job, 'error', 'Échec', classifyEngineError(lastError ?? '').message);
     this.pump();
@@ -309,8 +344,12 @@ export class JobQueue extends EventEmitter {
     this.emitJob(job);
   }
 
-  /** Convertit les sous-titres téléchargés en transcription Markdown (fr en priorité). */
-  private async writeTranscripts(job: Job): Promise<void> {
+  /**
+   * Convertit les sous-titres téléchargés en transcription Markdown (fr en priorité).
+   * Sans sous-titres : reconnaissance vocale locale (whisper.cpp) si elle est installée.
+   */
+  private async writeTranscripts(job: Job, signal: AbortSignal): Promise<void> {
+    const missing: number[] = [];
     for (const [i, file] of job.files.entries()) {
       const dir = dirname(file);
       const stem = basename(file, extname(file));
@@ -324,7 +363,10 @@ export class JobQueue extends EventEmitter {
         .filter((n) => n.startsWith(`${stem}.`) && /\.(srt|vtt)$/i.test(n))
         .sort((a, b) => rank(a) - rank(b));
       const chosen = subs[0];
-      if (!chosen) continue;
+      if (!chosen) {
+        missing.push(i);
+        continue;
+      }
       const lang = chosen.slice(stem.length + 1).replace(/\.(srt|vtt)$/i, '');
       try {
         const cues = parseSubtitles(await readFile(join(dir, chosen), 'utf8'));
@@ -341,7 +383,166 @@ export class JobQueue extends EventEmitter {
         /* sous-titres illisibles : on continue */
       }
     }
-    if (!job.transcripts.length) job.label = 'Aucun sous-titre disponible pour la transcription';
+    if (!missing.length) return;
+    const whisper = this.deps.whisper;
+    if (!whisper || !(await whisper.isReady())) {
+      if (!job.transcripts.length) {
+        job.label = whisper?.supported
+          ? 'Aucun sous-titre : installez la transcription locale (Paramètres) pour transcrire l’audio'
+          : 'Aucun sous-titre disponible pour la transcription';
+      }
+      return;
+    }
+    for (const i of missing) {
+      if (signal.aborted) break;
+      try {
+        await this.whisperTranscript(job, job.files[i]!, job.libraryIds[i], signal);
+      } catch (err) {
+        if (err instanceof TranscriptionError && err.code === 'cancelled') {
+          this.finish(job, 'cancelled', 'Annulé');
+          return;
+        }
+        job.label = err instanceof TranscriptionError ? err.message : TRANSCRIPTION_MESSAGES.whisper_failed;
+      }
+    }
+  }
+
+  /** Transcription par reconnaissance vocale locale, au même format Markdown que les sous-titres. */
+  private async whisperTranscript(job: Job, file: string, libId: string | undefined, signal: AbortSignal): Promise<void> {
+    const whisper = this.deps.whisper;
+    if (!whisper) throw new TranscriptionError('not_installed');
+    const settings = this.deps.store.getSettings();
+    let lastEmit = 0;
+    const result = await whisper.transcribe(file, {
+      preferredModel: settings.whisperModel,
+      language: settings.whisperLanguage,
+      signal,
+      onProgress: (pct, label) => {
+        job.phase = 'processing';
+        job.label = label;
+        job.percent = pct;
+        const now = Date.now();
+        if (now - lastEmit > 250) {
+          lastEmit = now;
+          this.emitJob(job);
+        }
+      },
+    });
+    const target = join(dirname(file), `${basename(file, extname(file))}.transcription.md`);
+    const title = job.kind === 'download' && job.playlist ? basename(file, extname(file)) : job.title;
+    await writeFile(target, buildTranscript(result.cues, { title, source: job.url, lang: result.lang, note: whisperTranscriptNote(result.model) }), 'utf8');
+    job.transcripts.push(target);
+    if (libId) {
+      const updated = await this.deps.store.patchItem(libId, { transcriptPath: target });
+      if (updated) this.emit('library', { ...updated });
+    }
+  }
+
+  /** Crée une tâche locale (transcription ou résumé) rattachée à un élément de la bibliothèque. */
+  private localJob(kind: Exclude<JobKind, 'download'>, item: LibraryItem, option: string): Job {
+    const job: Job = {
+      id: randomUUID(),
+      kind,
+      url: item.sourceUrl,
+      preset: item.preset,
+      presetLabel: PRESETS[item.preset].label,
+      title: item.title,
+      author: item.author,
+      thumbnail: item.thumbnail,
+      site: item.site,
+      playlist: false,
+      phase: 'queued',
+      label: 'En attente',
+      percent: null,
+      speed: null,
+      eta: null,
+      downloaded: null,
+      total: null,
+      playlistIndex: null,
+      entryCount: 1,
+      files: [item.filePath],
+      libraryIds: [item.id],
+      error: null,
+      createdAt: new Date().toISOString(),
+      finishedAt: null,
+      options: [option],
+      subscriptionId: null,
+      transcripts: [],
+    };
+    this.jobs.set(job.id, job);
+    this.emitJob(job);
+    return job;
+  }
+
+  /** Transcrit localement un fichier déjà présent dans la bibliothèque (Premium, vérifié par l'appelant). */
+  async transcribeItem(item: LibraryItem): Promise<Job> {
+    const whisper = this.deps.whisper;
+    if (!whisper?.supported) throw new TranscriptionError('unsupported_platform');
+    if (!(await whisper.isReady())) throw new TranscriptionError('not_installed');
+    const job = this.localJob('transcription', item, 'Transcription locale');
+    const abort = new AbortController();
+    this.aborts.set(job.id, abort);
+    void this.whisperTranscript(job, item.filePath, item.id, abort.signal)
+      .then(() => this.finish(job, 'done', 'Transcription terminée'))
+      .catch((err: unknown) => {
+        if (err instanceof TranscriptionError && err.code === 'cancelled') this.finish(job, 'cancelled', 'Annulé');
+        else this.finish(job, 'error', 'Échec', err instanceof TranscriptionError ? err.message : TRANSCRIPTION_MESSAGES.whisper_failed);
+      })
+      .finally(() => this.aborts.delete(job.id));
+    return job;
+  }
+
+  /** Résume une transcription avec un modèle Ollama local ; le résultat est enregistré à côté de la transcription. */
+  async summarizeItem(item: LibraryItem, model: string): Promise<Job> {
+    const ollama = this.deps.ollama;
+    if (!ollama) throw new SummaryError('unavailable');
+    if (!item.transcriptPath) throw new SummaryError('no_transcript');
+    const markdown = await readFile(item.transcriptPath, 'utf8').catch(() => null);
+    if (markdown === null) throw new SummaryError('no_transcript', 'Transcription déplacée ou supprimée.');
+    const status = await ollama.status();
+    if (!status.available) throw new SummaryError('unavailable');
+    if (!status.models.some((m) => m.name === model)) throw new SummaryError('model_missing');
+
+    const job = this.localJob('summary', item, `Résumé · ${model}`);
+    const abort = new AbortController();
+    this.aborts.set(job.id, abort);
+    const transcriptPath = item.transcriptPath;
+    const run = async () => {
+      const parts = splitForSummary(transcriptToPlainText(markdown), SUMMARY_CHUNK_CHARS);
+      if (!parts.length || !parts.some((p) => p.trim())) throw new SummaryError('no_transcript');
+      const steps = parts.length > 1 ? parts.length + 1 : 1;
+      const progress = (done: number) => {
+        job.phase = 'processing';
+        job.percent = Math.round((done / steps) * 100);
+        job.label = steps > 1 ? `Résumé local (étape ${Math.min(done + 1, steps)}/${steps})` : 'Résumé local en cours';
+        this.emitJob(job);
+      };
+      progress(0);
+      let summary: string;
+      if (parts.length === 1) {
+        summary = await ollama.generate(model, buildSummaryPrompt({ title: item.title, text: parts[0]! }), { signal: abort.signal });
+      } else {
+        const partials: string[] = [];
+        for (const [i, text] of parts.entries()) {
+          partials.push(cleanModelOutput(await ollama.generate(model, buildSummaryPrompt({ title: item.title, text, part: i + 1, total: parts.length }), { signal: abort.signal })));
+          progress(i + 1);
+        }
+        summary = await ollama.generate(model, buildMergePrompt({ title: item.title, partials }), { signal: abort.signal });
+      }
+      if (!cleanModelOutput(summary)) throw new SummaryError('bad_response');
+      const target = summaryPathFor(transcriptPath);
+      await writeFile(target, buildSummaryMarkdown({ title: item.title, model, summary, source: item.sourceUrl }), 'utf8');
+      const updated = await this.deps.store.patchItem(item.id, { summaryPath: target });
+      if (updated) this.emit('library', { ...updated });
+    };
+    void run()
+      .then(() => this.finish(job, 'done', 'Résumé terminé'))
+      .catch((err: unknown) => {
+        if (err instanceof SummaryError && err.code === 'cancelled') this.finish(job, 'cancelled', 'Annulé');
+        else this.finish(job, 'error', 'Échec', err instanceof SummaryError ? err.message : SUMMARY_MESSAGES.bad_response);
+      })
+      .finally(() => this.aborts.delete(job.id));
+    return job;
   }
 
   private finish(job: Job, phase: Phase, label: string, error: string | null = null): void {

@@ -1,6 +1,7 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import type { Tier } from '@kayzen-flux/core';
+import { OLLAMA_DEFAULT_URL, type Tier } from '@kayzen-flux/core';
+import type { WhisperSources } from './whisper.js';
 
 export interface DaemonConfig {
   host: '127.0.0.1';
@@ -18,6 +19,12 @@ export interface DaemonConfig {
   /** Remplace la clé publique de licence (tests). */
   licensePublicKey?: string;
   subscriptionTickMs?: number;
+  /** Serveur Ollama local (boucle locale uniquement, vérifié au démarrage). */
+  ollamaUrl: string;
+  /** Remplace les sources whisper.cpp (tests uniquement : jamais lu depuis l'environnement). */
+  whisperSources?: Partial<WhisperSources>;
+  /** Remplace la plate-forme détectée (tests). */
+  whisperPlatform?: { platform: string; arch: string };
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env, uiDir: string): DaemonConfig {
@@ -34,5 +41,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env, uiDir: string):
     allowLocalUrls: env.KAYZEN_ALLOW_LOCAL === '1',
     uiDir,
     appVersion: '1.0.0',
+    ollamaUrl: OLLAMA_DEFAULT_URL,
   };
 }

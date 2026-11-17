@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Chrome, Cpu, Download, ExternalLink, FolderOpen, KeyRound, Laptop, Loader2, Lock, RefreshCw, Save, Smartphone, XCircle, Crown } from 'lucide-react';
+import { AudioLines, CheckCircle2, Chrome, Cpu, Download, ExternalLink, FolderOpen, KeyRound, Laptop, Loader2, Lock, RefreshCw, Save, Smartphone, XCircle, Crown } from 'lucide-react';
 import { api } from '../api';
 import { useApp } from '../state';
 import { Toggle } from '../components/Shell';
 import { canAutoUpdate } from '../components/UpdateBanner';
+import { LocalTranscriptionSettings } from '../components/LocalAi';
 import type { Settings } from '../types';
 
 export function SettingsPage() {
@@ -104,7 +105,7 @@ export function SettingsPage() {
             <Toggle checked={draft.embedMetadata} onChange={(v) => set('embedMetadata', v)} label="Métadonnées & pochette" hint="Titre, artiste et vignette intégrés au fichier." />
             <Toggle checked={draft.subtitles} onChange={(v) => set('subtitles', v)} label="Sous-titres" hint="Récupère les pistes français et anglais existantes (.srt)." />
             <Toggle checked={premium && draft.normalizeAudio} onChange={(v) => premium && set('normalizeAudio', v)} label={`Normaliser le volume ${premium ? '' : '· Premium'}`} hint="Niveau sonore homogène entre les morceaux (EBU R128, environ -16 LUFS)." />
-            <Toggle checked={premium && draft.transcript} onChange={(v) => premium && set('transcript', v)} label={`Transcription automatique ${premium ? '' : '· Premium'}`} hint="Crée un fichier texte horodaté à partir des sous-titres disponibles." />
+            <Toggle checked={premium && draft.transcript} onChange={(v) => premium && set('transcript', v)} label={`Transcription automatique ${premium ? '' : '· Premium'}`} hint="Crée un fichier texte horodaté à partir des sous-titres, ou de l'audio via la transcription locale si elle est installée." />
           </div>
 
           <div>
@@ -121,6 +122,13 @@ export function SettingsPage() {
             </div>
             <input id="par" type="range" min={1} max={maxPar} value={Math.min(draft.maxParallel, maxPar)} onChange={(e) => set('maxParallel', Number(e.target.value))} className="mt-3 w-full accent-[rgb(var(--primary))]" />
             <p className="mt-1 text-xs">Maximum {maxPar} avec votre offre.</p>
+          </div>
+
+          <div className="border-t border-hairline pt-6">
+            <h3 className="flex items-center gap-2 text-base font-bold"><AudioLines className="h-5 w-5 text-primary" /> Transcription locale {premium ? '' : '· Premium'}</h3>
+            <div className="mt-3">
+              <LocalTranscriptionSettings draft={draft} set={set} premium={premium} />
+            </div>
           </div>
 
           <div className="flex justify-end">
@@ -168,6 +176,7 @@ export function SettingsPage() {
                   <li className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-gold" /> Playlists illimitées, 6 en parallèle</li>
                   <li className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-gold" /> Abonnements automatiques</li>
                   <li className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-gold" /> Chapitres, volume normalisé, transcription</li>
+                  <li className="flex items-center gap-2"><Lock className="h-3.5 w-3.5 text-gold" /> Transcription et résumé locaux (sans envoi en ligne)</li>
                 </ul>
                 <label htmlFor="lic" className="mt-4 block font-display text-sm font-semibold text-ink">Clé de licence</label>
                 <textarea id="lic" rows={3} className="input mt-1 rounded-2xl font-mono text-xs" placeholder="KZF1.…" value={licenseKey} onChange={(e) => setLicenseKey(e.target.value)} />

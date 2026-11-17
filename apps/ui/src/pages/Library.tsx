@@ -1,28 +1,31 @@
 import { useMemo, useState } from 'react';
-import { Download, FolderOpen, HardDrive, Heart, Library, Music, Play, Search, ShieldCheck, Trash2, Film, FileJson, FileText, Copy, X } from 'lucide-react';
+import { Download, FolderOpen, HardDrive, Heart, Library, Music, Play, Search, ShieldCheck, Trash2, Film, FileJson, FileText, Copy, X, Sparkles } from 'lucide-react';
 import { api } from '../api';
 import { bytes, duration, relative } from '../format';
 import { useApp } from '../state';
 import { EmptyState } from '../components/Shell';
 import { PRESET_KIND } from '../components/presetKind';
+import { MarkdownView, SummaryPanel, TranscribeButton } from '../components/LocalAi';
 import type { LibraryItem } from '../types';
 
 type Filter = 'all' | 'audio' | 'video' | 'fav';
 
 export function LibraryPage() {
-  const { library, play, playing, toast, refreshLibrary, go } = useApp();
+  const { library, play, playing, toast, refreshLibrary, go, status } = useApp();
+  const premium = status?.tier === 'premium';
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
-  const [transcript, setTranscript] = useState<{ title: string; markdown: string } | null>(null);
+  const [transcript, setTranscript] = useState<{ id: string; kind: 'transcript' | 'summary'; title: string; markdown: string } | null>(null);
 
-  const openTranscript = async (item: LibraryItem) => {
+  const openTranscript = async (item: LibraryItem, kind: 'transcript' | 'summary' = 'transcript') => {
     try {
-      const t = await api.transcript(item.id);
-      setTranscript({ title: item.title, markdown: t.markdown });
+      const t = kind === 'summary' ? await api.summary(item.id) : await api.transcript(item.id);
+      setTranscript({ id: item.id, kind, title: item.title, markdown: t.markdown });
     } catch (e) {
       toast((e as Error).message, 'error');
     }
   };
+  const openItem = transcript ? library.find((i) => i.id === transcript.id) : undefined;
 
   const total = library.reduce((s, i) => s + (i.sizeBytes || 0), 0);
   const favs = library.filter((i) => i.favorite).length;
@@ -129,8 +132,13 @@ export function LibraryPage() {
                   <button className={`icon-btn hidden sm:inline-flex ${item.favorite ? 'text-primary' : ''}`} aria-pressed={item.favorite} aria-label={item.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'} onClick={() => act(() => api.favorite(item.id, !item.favorite))}>
                     <Heart className={`h-4 w-4 ${item.favorite ? 'fill-current' : ''}`} />
                   </button>
-                  {item.transcriptPath && (
+                  {item.transcriptPath ? (
                     <button className="icon-btn" aria-label="Lire la transcription" onClick={() => openTranscript(item)}><FileText className="h-4 w-4" /></button>
+                  ) : premium ? (
+                    <TranscribeButton itemId={item.id} onNeedSetup={() => go('settings')} />
+                  ) : null}
+                  {item.summaryPath && (
+                    <button className="icon-btn" aria-label="Lire le résumé" onClick={() => openTranscript(item, 'summary')}><Sparkles className="h-4 w-4" /></button>
                   )}
                   <button className="icon-btn hidden sm:inline-flex" aria-label="Ouvrir le dossier" onClick={() => act(() => api.reveal(item.id))}><FolderOpen className="h-4 w-4" /></button>
                   <button className="icon-btn hover:text-danger" aria-label="Supprimer" onClick={() => remove(item)}><Trash2 className="h-4 w-4" /></button>
@@ -145,21 +153,22 @@ export function LibraryPage() {
         <div className="fixed inset-0 z-40 grid place-items-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="tr-title" onClick={() => setTranscript(null)}>
           <div className="card flex max-h-[85vh] w-full max-w-2xl flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 border-b border-hairline p-4">
-              <FileText className="h-5 w-5 text-primary" />
-              <h2 id="tr-title" className="flex-1 truncate text-lg font-bold">Transcription : {transcript.title}</h2>
-              <button className="btn-ghost px-3 py-1.5" onClick={() => navigator.clipboard?.writeText(transcript.markdown).then(() => toast('Transcription copiée.', 'success'))}><Copy className="h-4 w-4" /> Copier</button>
+              {transcript.kind === 'summary' ? <Sparkles className="h-5 w-5 text-primary" /> : <FileText className="h-5 w-5 text-primary" />}
+              <h2 id="tr-title" className="flex-1 truncate text-lg font-bold">{transcript.kind === 'summary' ? 'Résumé' : 'Transcription'} : {transcript.title}</h2>
+              <button className="btn-ghost px-3 py-1.5" onClick={() => navigator.clipboard?.writeText(transcript.markdown).then(() => toast('Texte copié.', 'success'))}><Copy className="h-4 w-4" /> Copier</button>
               <button className="icon-btn" aria-label="Fermer" onClick={() => setTranscript(null)}><X className="h-4 w-4" /></button>
             </div>
-            <div className="flex-1 space-y-3 overflow-auto p-5 text-sm leading-relaxed text-ink">
-              {transcript.markdown.split('\n').filter((l) => l.trim() && !l.startsWith('# ')).map((line, i) => {
-                const m = /^\*\*\[([^\]]+)\]\*\*\s?(.*)$/.exec(line);
-                return m ? (
-                  <p key={i}><span className="mr-2 rounded bg-primary-soft px-1.5 py-0.5 font-mono text-xs font-bold text-primary dark:text-white">{m[1]}</span>{m[2]}</p>
-                ) : (
-                  <p key={i} className="text-xs text-body">{line.replace(/\s+$/, '')}</p>
-                );
-              })}
+            <div className="flex-1 overflow-auto p-5">
+              <MarkdownView markdown={transcript.markdown} />
             </div>
+            {transcript.kind === 'transcript' && (
+              <div className="space-y-2 border-t border-hairline p-4">
+                {openItem?.summaryPath && (
+                  <button className="btn-ghost px-3 py-1.5 text-sm" onClick={() => openItem && openTranscript(openItem, 'summary')}><Sparkles className="h-4 w-4" /> Voir le résumé existant</button>
+                )}
+                <SummaryPanel itemId={transcript.id} premium={premium} onStarted={() => setTranscript(null)} />
+              </div>
+            )}
           </div>
         </div>
       )}

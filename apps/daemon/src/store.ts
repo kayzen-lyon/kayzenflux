@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { isFilenameTemplateId, isPresetId, type FilenameTemplateId, type PresetId } from '@kayzen-flux/core';
+import { isFilenameTemplateId, isPresetId, isWhisperLanguage, isWhisperModelId, type FilenameTemplateId, type PresetId, type WhisperModelId } from '@kayzen-flux/core';
 
 export interface Settings {
   downloadDir: string;
@@ -18,6 +18,10 @@ export interface Settings {
    * répondu (aucune vérification), puis son choix explicite.
    */
   autoUpdate: boolean | null;
+  /** Modèle whisper.cpp préféré pour la transcription locale. */
+  whisperModel: WhisperModelId;
+  /** Langue parlée (« auto » = détection automatique). */
+  whisperLanguage: string;
 }
 
 export interface LibraryItem {
@@ -35,6 +39,7 @@ export interface LibraryItem {
   createdAt: string;
   favorite: boolean;
   transcriptPath?: string | null;
+  summaryPath?: string | null;
 }
 
 /** Stockage local en fichiers JSON (écriture atomique). Rien ne quitte l'appareil. */
@@ -80,11 +85,12 @@ export class JsonStore {
     return full;
   }
 
-  async patchItem(id: string, patch: Pick<Partial<LibraryItem>, 'favorite' | 'transcriptPath'>): Promise<LibraryItem | undefined> {
+  async patchItem(id: string, patch: Pick<Partial<LibraryItem>, 'favorite' | 'transcriptPath' | 'summaryPath'>): Promise<LibraryItem | undefined> {
     const item = this.getItem(id);
     if (!item) return undefined;
     if (typeof patch.favorite === 'boolean') item.favorite = patch.favorite;
     if (typeof patch.transcriptPath === 'string') item.transcriptPath = patch.transcriptPath;
+    if (typeof patch.summaryPath === 'string') item.summaryPath = patch.summaryPath;
     await this.persist('library.json', this.library);
     return item;
   }
@@ -145,5 +151,7 @@ export function sanitizeSettings(input: Partial<Settings>, defaults: Settings): 
     normalizeAudio: typeof input.normalizeAudio === 'boolean' ? input.normalizeAudio : defaults.normalizeAudio,
     transcript: typeof input.transcript === 'boolean' ? input.transcript : defaults.transcript,
     autoUpdate: typeof input.autoUpdate === 'boolean' || input.autoUpdate === null ? input.autoUpdate : defaults.autoUpdate,
+    whisperModel: isWhisperModelId(input.whisperModel) ? input.whisperModel : defaults.whisperModel,
+    whisperLanguage: isWhisperLanguage(input.whisperLanguage) ? input.whisperLanguage : defaults.whisperLanguage,
   };
 }

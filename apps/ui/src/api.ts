@@ -1,4 +1,4 @@
-import type { Job, LibraryItem, LicenseState, MediaInfo, PresetId, Settings, Status, Subscription, UpdateState } from './types';
+import type { Job, LibraryItem, LicenseState, MediaInfo, OllamaStatus, PresetId, Settings, Status, Subscription, UpdateState, WhisperStatus, WhisperTarget } from './types';
 
 const token = document.querySelector<HTMLMetaElement>('meta[name="kayzen-token"]')?.content ?? '';
 // En développement (Vite), le jeton peut être fourni par ?token= dans l'URL.
@@ -62,6 +62,15 @@ export const api = {
   removeSubscription: (id: string) => call<{ ok: true }>('DELETE', `/api/subscriptions/${id}`),
   checkSubscription: (id: string) => call<{ found: number }>('POST', `/api/subscriptions/${id}/check`, {}),
   transcript: (id: string) => call<{ markdown: string; path: string }>('GET', `/api/library/${id}/transcript`),
+  summary: (id: string) => call<{ markdown: string; path: string }>('GET', `/api/library/${id}/summary`),
+  transcribeItem: (id: string) => call<Job>('POST', `/api/library/${id}/transcribe`, {}),
+  summarizeItem: (id: string, model: string) => call<Job>('POST', `/api/library/${id}/summarize`, { model }),
+  whisperStatus: () => call<WhisperStatus>('GET', '/api/whisper'),
+  /** `confirmedBytes` = taille montrée à l'utilisateur et acceptée par lui. */
+  installWhisper: (target: WhisperTarget, confirmedBytes: number) => call<WhisperStatus>('POST', '/api/whisper/install', { target, confirmedBytes }),
+  cancelWhisperInstall: () => call<{ ok: true }>('POST', '/api/whisper/cancel', {}),
+  uninstallWhisper: (target: WhisperTarget) => call<WhisperStatus>('DELETE', `/api/whisper/${target}`),
+  ollamaStatus: () => call<OllamaStatus>('GET', '/api/ollama'),
   updateEngine: () => call<{ ok: boolean; output: string }>('POST', '/api/engine/update', {}),
   appUpdate: () => call<UpdateState>('GET', '/api/update'),
   checkAppUpdate: () => call<UpdateState>('POST', '/api/update/check', {}),

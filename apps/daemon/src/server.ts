@@ -13,6 +13,8 @@ import { LicenseManager } from './license.js';
 import { SubscriptionManager } from './subscriptions.js';
 import { LICENSE_KEY_IS_DEV } from './license-key.js';
 import type { DaemonHooks } from './updates.js';
+import { TranscriptionError, WhisperManager, isWhisperTarget } from './whisper.js';
+import { OllamaClient, SummaryError } from './ollama.js';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -62,6 +64,8 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
     normalizeAudio: false,
     transcript: false,
     autoUpdate: null,
+    whisperModel: 'base',
+    whisperLanguage: 'auto',
   });
   await store.init();
   const updater = hooks.updater;
@@ -70,7 +74,18 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
   const license = new LicenseManager(config.dataDir, config.envTier, config.licensePublicKey);
   await license.init();
   const getTier = () => license.tier;
+  const whisper = new WhisperManager({
+    dataDir: config.dataDir,
+    ffmpegPath: config.ffmpegPath,
+    platform: config.whisperPlatform?.platform,
+    arch: config.whisperPlatform?.arch,
+    sources: config.whisperSources,
+  });
+  await whisper.init();
+  const ollama = new OllamaClient(config.ollamaUrl);
   const queue = new JobQueue({
+    whisper,
+    ollama,
     binary: config.ytdlpPath,
     ffmpegPath: config.ffmpegPath,
     getTier,
@@ -96,6 +111,7 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
   queue.on('job', (job) => broadcast('job', job));
   queue.on('removed', (id) => broadcast('removed', { id }));
   queue.on('library', (item) => broadcast('library', item));
+  whisper.on('status', (s) => broadcast('whisper', s));
 
   // Rempli après l'écoute (le port peut être choisi par le système si config.port = 0).
   const allowedHosts = new Set<string>();
@@ -304,7 +320,67 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
       if (text === null) throw new HttpError(404, 'Transcription déplacée ou supprimée.');
       return json(res, 200, { markdown: text, path: item.transcriptPath });
     }
+    if (p.startsWith('/api/whisper') || p.startsWith('/api/ollama') || /^\/api\/library\/[\w-]+\/(transcribe|summarize|summary)$/.test(p)) {
+      return routeLocalAi(req, res, m, p);
+    }
     if (m === 'POST' && p === '/api/engine/update') return json(res, 200, await updateEngine(config.ytdlpPath));
+    throw new HttpError(404, 'Route inconnue.');
+  };
+
+  /** Transcription locale (whisper.cpp) et résumé local (Ollama) : fonctions Premium, rien ne quitte l'ordinateur. */
+  const routeLocalAi = async (req: IncomingMessage, res: ServerResponse, m: string, p: string) => {
+    let match: RegExpExecArray | null;
+    const requirePremium = (what: 'transcription' | 'summary') => {
+      if (getTier() !== 'premium') throw new HttpError(403, what === 'summary' ? 'Le résumé est réservé à l’offre Premium.' : 'La transcription locale est réservée à l’offre Premium.', 'premium');
+    };
+    try {
+      if (m === 'GET' && p === '/api/whisper') return json(res, 200, await whisper.status());
+      if (m === 'POST' && p === '/api/whisper/install') {
+        requirePremium('transcription');
+        const body = await readBody(req);
+        if (!isWhisperTarget(body.target)) throw new HttpError(400, 'Composant inconnu.');
+        whisper.install(body.target, body.confirmedBytes);
+        return json(res, 202, await whisper.status());
+      }
+      if (m === 'POST' && p === '/api/whisper/cancel') {
+        if (!whisper.cancelInstall()) throw new HttpError(409, 'Aucun téléchargement en cours.');
+        return json(res, 200, { ok: true });
+      }
+      if (m === 'DELETE' && (match = /^\/api\/whisper\/([\w-]+)$/.exec(p))) {
+        if (!isWhisperTarget(match[1])) throw new HttpError(400, 'Composant inconnu.');
+        await whisper.uninstall(match[1]);
+        return json(res, 200, await whisper.status());
+      }
+      // Détection explicite d'Ollama sur 127.0.0.1 uniquement.
+      if (m === 'GET' && p === '/api/ollama') return json(res, 200, await ollama.status());
+      if (m === 'POST' && (match = /^\/api\/library\/([\w-]+)\/transcribe$/.exec(p))) {
+        requirePremium('transcription');
+        const item = store.getItem(match[1]!);
+        if (!item) throw new HttpError(404, 'Élément introuvable.');
+        return json(res, 202, await queue.transcribeItem(item));
+      }
+      if (m === 'POST' && (match = /^\/api\/library\/([\w-]+)\/summarize$/.exec(p))) {
+        requirePremium('summary');
+        const item = store.getItem(match[1]!);
+        if (!item) throw new HttpError(404, 'Élément introuvable.');
+        const body = await readBody(req);
+        return json(res, 202, await queue.summarizeItem(item, String(body.model ?? '')));
+      }
+      if (m === 'GET' && (match = /^\/api\/library\/([\w-]+)\/summary$/.exec(p))) {
+        const item = store.getItem(match[1]!);
+        if (!item?.summaryPath) throw new HttpError(404, 'Aucun résumé pour ce fichier.');
+        const text = await readFile(item.summaryPath, 'utf8').catch(() => null);
+        if (text === null) throw new HttpError(404, 'Résumé déplacé ou supprimé.');
+        return json(res, 200, { markdown: text, path: item.summaryPath });
+      }
+    } catch (err) {
+      if (err instanceof TranscriptionError) {
+        const status = err.code === 'busy' ? 409 : err.code === 'unsupported_platform' ? 501 : err.code === 'premium' ? 403 : 400;
+        throw new HttpError(status, err.message, err.code);
+      }
+      if (err instanceof SummaryError) throw new HttpError(err.code === 'unavailable' ? 503 : 400, err.message, err.code);
+      throw err;
+    }
     throw new HttpError(404, 'Route inconnue.');
   };
 
@@ -385,6 +461,7 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
     close: () =>
       new Promise((ok) => {
         subscriptions.stop();
+        whisper.cancelInstall();
         for (const c of sseClients) c.end();
         server.close(() => ok());
       }),
