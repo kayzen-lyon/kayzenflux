@@ -15,7 +15,7 @@
     "build": "esbuild src/main.ts --bundle --platform=node --format=cjs --target=node20 --external:electron --outfile=dist/main.cjs",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "icons": "python3 scripts/make-icon.py build/icon.png",
+    "icons": "python3 scripts/make-icon.py build/src/mark.png ../..",
     "sidecars": "node scripts/fetch-sidecars.mjs",
     "start": "pnpm build && electron .",
     "dist:linux": "pnpm build && node scripts/fetch-sidecars.mjs linux-x64 && electron-builder --linux --x64 --publish never",
