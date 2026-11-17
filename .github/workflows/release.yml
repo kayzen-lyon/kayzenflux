@@ -14,6 +14,11 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      draft_release:
+        description: Créer un brouillon de version GitHub avec les installeurs
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -59,16 +64,23 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @kayzen-flux/ui build
       - name: Installeurs
-        run: pnpm --filter @kayzen-flux/desktop ${{ matrix.script }}
+        shell: bash
+        # Les variables de signature ne sont exportées que si le secret existe :
+        # une variable vide (ex. CSC_LINK="") ferait échouer electron-builder.
         env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ secrets.CSC_LINK != '' }}
+          S_CSC_LINK: ${{ secrets.CSC_LINK }}
+          S_CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          S_WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          S_WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          S_APPLE_ID: ${{ secrets.APPLE_ID }}
+          S_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          S_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          for v in CSC_LINK CSC_KEY_PASSWORD WIN_CSC_LINK WIN_CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+            val="S_$v"; if [ -n "${!val}" ]; then export "$v=${!val}"; fi
+          done
+          if [ -z "${CSC_LINK:-}" ]; then export CSC_IDENTITY_AUTO_DISCOVERY=false; fi
+          pnpm --filter @kayzen-flux/desktop ${{ matrix.script }}
       - uses: actions/upload-artifact@v4
         with:
           name: kayzen-flux-${{ runner.os }}
@@ -95,14 +107,20 @@ jobs:
           path: apps/extension/release/*.zip
 
   publish:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.draft_release)
     needs: [desktop, extension]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: echo "tag=v$(node -p "require('./apps/desktop/package.json').version")" >> "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@v4
         with: { path: artifacts }
       - name: Brouillon de version GitHub (à relire puis publier manuellement)
         uses: softprops/action-gh-release@v2
         with:
           draft: true
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || steps.v.outputs.tag }}
+          name: KAYZEN Flux ${{ steps.v.outputs.tag }}
+          target_commitish: ${{ github.sha }}
           files: artifacts/**/*
