@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /telechargements/
+Disallow: /updates/
+
+Sitemap: https://flux.kayzen-lyon.com/sitemap.xml

@@ -13,7 +13,7 @@
     if (saved === 'dark' || saved === 'light') theme = saved;
   } catch (e) { /* stockage indisponible (navigation privée) */ }
   if (!theme) {
-    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    theme = 'light'; // Thème clair par défaut, comme kayzen-lyon.com ; le choix du visiteur est mémorisé.
   }
   root.classList.add(theme === 'dark' ? 'dark' : 'light');
 

@@ -69,7 +69,10 @@ describe('mentions légales [LCEN art. 1-1]', () => {
     expect(html).toMatch(/Tarek BELHADJ, entrepreneur individuel/);
     expect(html).toMatch(/SIRET<\/dt><dd>493 857 262 00098/);
     expect(html).toMatch(/Directeur de la publication/);
-    expect((html.match(/téléphone : \[numéro de téléphone de l'hébergeur/g) ?? []).length).toBe(2);
+    expect(html).not.toMatch(/à compléter/);
+    expect(html).toMatch(/IONOS SARL, 7 place de la Gare, 57200 Sarreguemines/);
+    expect(html).toMatch(/09 70 80 89 11/);
+    expect(html).toMatch(/Vercel Inc\., 440 N Barranca Avenue/);
   });
   it('renvoient vers la politique de confidentialité', () => {
     expect(html).toMatch(/<a href="\/confidentialite">politique de confidentialité<\/a>/);
@@ -77,10 +80,21 @@ describe('mentions légales [LCEN art. 1-1]', () => {
 });
 
 describe('politique de confidentialité [RGPD art. 13]', () => {
-  it('ne présente pas de garantie de transfert ni de durée non vérifiées comme acquises', () => {
+  it('indique la base légale des journaux et les garanties de transfert de Vercel', () => {
     const html = read('confidentialite.html');
-    expect(html).not.toMatch(/pour une durée limitée/);
-    expect(html).toMatch(/\[mécanisme de transfert/);
-    expect(html).toMatch(/\[durée de conservation des journaux/);
+    expect(html).not.toMatch(/\[[^\]]*(compléter|confirmer)/);
+    expect(html).toMatch(/article 6\.1\.f du RGPD/);
+    expect(html).toMatch(/Data Privacy Framework/);
+    expect(html).toMatch(/clauses contractuelles types/);
+  });
+});
+
+describe('indexation par les moteurs de recherche', () => {
+  it('autorise l\'indexation et publie robots.txt et sitemap.xml', () => {
+    const cfg = readFileSync(join(__dirname, '..', 'vercel.json'), 'utf8');
+    expect(cfg).not.toMatch(/noindex/);
+    const robots = read('robots.txt');
+    expect(robots).toMatch(/Sitemap: https:\/\/flux\.kayzen-lyon\.com\/sitemap\.xml/);
+    expect(read('sitemap.xml')).toMatch(/<loc>https:\/\/flux\.kayzen-lyon\.com\/<\/loc>/);
   });
 });

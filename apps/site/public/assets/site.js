@@ -53,16 +53,7 @@
         store(THEME_KEY, next); // seul un choix explicite est mémorisé
       });
     });
-    /* Sans choix mémorisé, on suit le réglage du système s'il change. */
-    if (window.matchMedia) {
-      var mq = window.matchMedia('(prefers-color-scheme: dark)');
-      var onChange = function (e) {
-        var saved = null;
-        try { saved = localStorage.getItem(THEME_KEY); } catch (err) { saved = null; }
-        if (saved !== 'dark' && saved !== 'light') applyTheme(e.matches ? 'dark' : 'light');
-      };
-      if (mq.addEventListener) mq.addEventListener('change', onChange);
-    }
+    /* Thème clair par défaut (comme kayzen-lyon.com) : seul le choix explicite du visiteur le change. */
   }
 
   /* ---------- Retour en haut + anneau de progression ---------- */

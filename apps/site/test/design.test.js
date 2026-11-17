@@ -68,7 +68,7 @@ describe('carte de visite vCard', () => {
     expect(vcf).toContain('TEL;TYPE=WORK,VOICE:+33487776861');
     expect(vcf).toContain('EMAIL;TYPE=WORK:contact@kayzen-lyon.fr');
     expect(vcf).toContain('URL:https://www.kayzen-lyon.com');
-    expect(vcf).toContain('ADR;TYPE=WORK:;;6 rue Pierre Termier;Lyon;;69009;France');
+    expect(vcf).toContain('ADR;TYPE=WORK:;;6 rue de Bourgogne;Lyon;;69009;France');
     expect(vcf.trimEnd().endsWith('END:VCARD')).toBe(true);
   });
   it('a un QR code SVG statique, sans ressource externe', () => {
@@ -84,7 +84,7 @@ describe('scripts du site : préférences locales, aucun appel réseau', () => {
   it('mémorise thème et accessibilité dans localStorage avec try/catch', () => {
     expect(js).toMatch(/kayzen-flux-theme/);
     expect(js).toMatch(/kayzen-flux-a11y/);
-    expect(js).toMatch(/prefers-color-scheme: dark/);
+    expect(js).not.toMatch(/prefers-color-scheme: dark/); // thème clair par défaut
     expect((js.match(/try \{/g) ?? []).length).toBeGreaterThanOrEqual(3);
   });
   it('n’effectue aucune requête ni mesure d’audience', () => {

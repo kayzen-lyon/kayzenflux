@@ -24,7 +24,7 @@ VCARD = "\r\n".join([
     "TEL;TYPE=WORK,VOICE:+33487776861",
     "EMAIL;TYPE=WORK:contact@kayzen-lyon.fr",
     "URL:https://www.kayzen-lyon.com",
-    "ADR;TYPE=WORK:;;6 rue Pierre Termier;Lyon;;69009;France",
+    "ADR;TYPE=WORK:;;6 rue de Bourgogne;Lyon;;69009;France",
     "END:VCARD",
 ]) + "\r\n"
 
