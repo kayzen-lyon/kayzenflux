@@ -22,6 +22,9 @@ interface AppState {
   toast: (text: string, kind?: Toast['kind']) => void;
   playing: LibraryItem | null;
   play: (item: LibraryItem | null) => void;
+  /** Lecteur vidéo déplié (image visible) ou réduit (barre seule). */
+  playerExpanded: boolean;
+  setPlayerExpanded: (v: boolean) => void;
   dark: boolean;
   toggleDark: () => void;
   urlInputRef: React.MutableRefObject<HTMLInputElement | null>;
@@ -62,6 +65,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [connected, setConnected] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [playing, setPlaying] = useState<LibraryItem | null>(null);
+  const [playerExpanded, setPlayerExpanded] = useState(true);
   const [dark, setDark] = useState(readDark);
   const urlInputRef = useRef<HTMLInputElement | null>(null);
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
@@ -153,7 +157,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const item: LibraryItem = JSON.parse((e as MessageEvent).data);
       setLibrary((list) => [item, ...list.filter((x) => x.id !== item.id && x.filePath !== item.filePath)]);
     });
-    es.addEventListener('license', () => void refreshStatus());
     es.addEventListener('update', (e) => setAppUpdate(JSON.parse((e as MessageEvent).data) as UpdateState));
     // Progression des téléchargements du moteur et des modèles de transcription.
     es.addEventListener('whisper', (e) => setWhisper(JSON.parse((e as MessageEvent).data) as WhisperStatus));
@@ -183,6 +186,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       toast,
       playing,
       play: setPlaying,
+      playerExpanded,
+      setPlayerExpanded,
       dark,
       toggleDark: () => setDark((d) => !d),
       urlInputRef,
@@ -199,7 +204,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       whisper,
       refreshWhisper,
     }),
-    [page, go, status, settings, jobs, library, refreshLibrary, connected, toasts, toast, playing, dark, refreshStatus, pendingUrl, appUpdate, whisper, refreshWhisper],
+    [page, go, status, settings, jobs, library, refreshLibrary, connected, toasts, toast, playing, playerExpanded, dark, refreshStatus, pendingUrl, appUpdate, whisper, refreshWhisper],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

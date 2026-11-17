@@ -1,4 +1,4 @@
-import type { Job, LibraryItem, LicenseState, MediaInfo, OllamaStatus, PresetId, Settings, Status, Subscription, UpdateState, WhisperStatus, WhisperTarget } from './types';
+import type { Job, LibraryItem, MediaInfo, OllamaStatus, PresetId, Settings, Status, Subscription, UpdateState, WhisperStatus, WhisperTarget } from './types';
 
 const token = document.querySelector<HTMLMetaElement>('meta[name="kayzen-token"]')?.content ?? '';
 // En développement (Vite), le jeton peut être fourni par ?token= dans l'URL.
@@ -54,8 +54,6 @@ export const api = {
   openFolder: () => call<{ ok: true }>('POST', '/api/folder/open', {}),
   settings: () => call<Settings>('GET', '/api/settings'),
   saveSettings: (s: Partial<Settings>) => call<Settings>('PUT', '/api/settings', s),
-  activateLicense: (key: string) => call<LicenseState>('POST', '/api/license', { key }),
-  deactivateLicense: () => call<LicenseState>('DELETE', '/api/license'),
   subscriptions: () => call<Subscription[]>('GET', '/api/subscriptions'),
   addSubscription: (s: { url: string; preset: PresetId; intervalHours: number; downloadLatest: number }) => call<Subscription>('POST', '/api/subscriptions', s),
   updateSubscription: (id: string, patch: Partial<Pick<Subscription, 'enabled' | 'preset' | 'intervalHours'>>) => call<Subscription>('PATCH', `/api/subscriptions/${id}`, patch),

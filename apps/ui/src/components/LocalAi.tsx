@@ -22,15 +22,15 @@ const host = (url: string | null) => {
 };
 
 /** Réglages « Transcription locale » (whisper.cpp) : installation à la demande, modèle, langue. */
-export function LocalTranscriptionSettings({ draft, set, premium }: { draft: Settings; set: <K extends keyof Settings>(k: K, v: Settings[K]) => void; premium: boolean }) {
+export function LocalTranscriptionSettings({ draft, set }: { draft: Settings; set: <K extends keyof Settings>(k: K, v: Settings[K]) => void }) {
   const { whisper, toast } = useApp();
   const [busy, setBusy] = useState(false);
 
-  if (!whisper) return <p className="text-sm"><Loader2 className="mr-1 inline h-4 w-4 animate-spin" /> Chargement de l’état de la transcription locale…</p>;
+  if (!whisper) return <p className="text-small"><Loader2 className="mr-1 inline h-4 w-4 animate-spin" /> Chargement de l’état de la transcription locale…</p>;
 
   if (!whisper.supported) {
     return (
-      <div className="flex gap-3 rounded-2xl bg-surface p-4 text-sm" role="note">
+      <div className="flex gap-3 rounded-xl bg-surface p-4 text-small" role="note">
         <AlertTriangle className="h-5 w-5 shrink-0 text-gold" />
         <p>{whisper.unsupportedReason}</p>
       </div>
@@ -64,32 +64,32 @@ export function LocalTranscriptionSettings({ draft, set, premium }: { draft: Set
   };
 
   const inst = whisper.installing;
-  const disabled = !premium || busy || inst !== null;
+  const disabled = busy || inst !== null;
 
   return (
     <div className="space-y-4">
-      <p className="text-sm">
+      <p className="text-small">
         Sans sous-titres disponibles, KAYZEN Flux peut transcrire l’audio <strong className="text-ink">sur cet ordinateur</strong> avec whisper.cpp.
         Le moteur et le modèle sont téléchargés une seule fois, à votre demande, depuis leurs sources officielles.
       </p>
 
       {inst && (
-        <div className="rounded-2xl bg-primary-soft/50 p-4" aria-live="polite">
-          <div className="flex items-center justify-between text-xs font-semibold">
+        <div className="rounded-xl bg-primary-soft/50 p-4" aria-live="polite">
+          <div className="flex items-center justify-between text-meta font-semibold">
             <span className="text-primary">{PHASES[inst.phase]} · {inst.target === 'engine' ? 'moteur' : `modèle ${inst.target}`}</span>
             <span className="tabular-nums">{bytes(inst.receivedBytes)} / {bytes(inst.totalBytes)}</span>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((inst.receivedBytes / Math.max(1, inst.totalBytes)) * 100)} aria-label="Téléchargement du composant de transcription">
-            <div className="h-full rounded-full bg-gradient-to-r from-primary to-gold transition-all" style={{ width: `${Math.min(100, (inst.receivedBytes / Math.max(1, inst.totalBytes)) * 100)}%` }} />
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(100, (inst.receivedBytes / Math.max(1, inst.totalBytes)) * 100)}%` }} />
           </div>
-          <button className="mt-2 text-xs font-bold text-danger" onClick={() => api.cancelWhisperInstall().catch((e: Error) => toast(e.message, 'error'))}>Annuler le téléchargement</button>
+          <button className="mt-2 text-meta font-bold text-danger" onClick={() => api.cancelWhisperInstall().catch((e: Error) => toast(e.message, 'error'))}>Annuler le téléchargement</button>
         </div>
       )}
       {whisper.lastError && !inst && (
-        <p className="flex items-start gap-2 rounded-2xl bg-danger/10 p-3 text-sm text-danger" role="alert"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {whisper.lastError.message}</p>
+        <p className="flex items-start gap-2 rounded-xl bg-danger/10 p-3 text-small text-danger" role="alert"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {whisper.lastError.message}</p>
       )}
 
-      <ul className="divide-y divide-hairline rounded-2xl border border-hairline">
+      <ul className="divide-y divide-hairline rounded-xl border border-hairline">
         <ComponentRow
           title={`Moteur whisper.cpp (${whisper.engine.release})`}
           hint={`Programme officiel pour ${whisper.platform} · licence MIT`}
@@ -116,19 +116,19 @@ export function LocalTranscriptionSettings({ draft, set, premium }: { draft: Set
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
-          <span className="font-display text-sm font-semibold text-ink">Modèle utilisé</span>
+          <span className="label">Modèle utilisé</span>
           <select className="input mt-1 py-2.5" value={draft.whisperModel} onChange={(e) => set('whisperModel', e.target.value as Settings['whisperModel'])}>
             {whisper.models.map((m) => <option key={m.id} value={m.id}>{m.label}{m.installed ? '' : ' (non installé)'}</option>)}
           </select>
         </label>
         <label className="block">
-          <span className="font-display text-sm font-semibold text-ink">Langue parlée</span>
+          <span className="label">Langue parlée</span>
           <select className="input mt-1 py-2.5" value={draft.whisperLanguage} onChange={(e) => set('whisperLanguage', e.target.value)}>
             {WHISPER_LANGUAGES.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
           </select>
         </label>
       </div>
-      <p className="text-xs">
+      <p className="text-meta">
         {whisper.ready
           ? 'Prêt : les vidéos sans sous-titres seront transcrites localement quand l’option « Transcription automatique » est activée.'
           : 'Installez le moteur et au moins un modèle pour transcrire les vidéos sans sous-titres.'}
@@ -142,8 +142,8 @@ function ComponentRow(props: { title: string; hint: string; size: number | null;
   return (
     <li className="flex flex-wrap items-center gap-3 p-4">
       <div className="min-w-0 flex-1">
-        <p className="font-display text-sm font-semibold text-ink">{props.title}</p>
-        <p className="text-xs">{props.hint} · {props.approx ? '≈ ' : ''}{bytes(props.size)}</p>
+        <p className="font-display text-small font-semibold text-ink">{props.title}</p>
+        <p className="text-meta">{props.hint} · {props.approx ? '≈ ' : ''}{bytes(props.size)}</p>
       </div>
       {props.installed ? (
         <>
@@ -151,7 +151,7 @@ function ComponentRow(props: { title: string; hint: string; size: number | null;
           <button className="icon-btn hover:text-danger" aria-label={`Supprimer : ${props.title}`} disabled={props.disabled} onClick={props.onRemove}><Trash2 className="h-4 w-4" /></button>
         </>
       ) : (
-        <button className="btn-ghost px-3 py-1.5 text-sm" disabled={props.disabled} onClick={props.onInstall}><Download className="h-4 w-4" /> Télécharger</button>
+        <button className="btn-ghost px-3 py-1.5 text-small" disabled={props.disabled} onClick={props.onInstall}><Download className="h-4 w-4" /> Télécharger</button>
       )}
     </li>
   );
@@ -161,17 +161,17 @@ function ComponentRow(props: { title: string; hint: string; size: number | null;
 export function OllamaHelp({ status }: { status: OllamaStatus | null }) {
   if (status?.available && !status.models.length) {
     return (
-      <p className="text-sm">
-        Ollama est lancé mais aucun modèle n’est installé. Dans un terminal, installez-en un, par exemple : <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs">ollama pull mistral</code>
+      <p className="text-small">
+        Ollama est lancé mais aucun modèle n’est installé. Dans un terminal, installez-en un, par exemple : <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-meta">ollama pull mistral</code>
       </p>
     );
   }
   return (
-    <div className="space-y-2 text-sm">
+    <div className="space-y-2 text-small">
       <p>Le résumé utilise <strong className="text-ink">Ollama</strong>, un logiciel gratuit qui exécute des modèles d’IA sur votre ordinateur. KAYZEN Flux ne l’inclut pas et n’envoie rien sur Internet.</p>
       <ol className="list-decimal space-y-1 pl-5">
-        <li>Installez Ollama depuis son site officiel : <span className="font-mono text-xs">ollama.com/download</span></li>
-        <li>Téléchargez un modèle : <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs">ollama pull mistral</code></li>
+        <li>Installez Ollama depuis son site officiel : <span className="font-mono text-meta">ollama.com/download</span></li>
+        <li>Téléchargez un modèle : <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-meta">ollama pull mistral</code></li>
         <li>Laissez Ollama ouvert puis cliquez sur « Détecter ».</li>
       </ol>
     </div>
@@ -179,7 +179,7 @@ export function OllamaHelp({ status }: { status: OllamaStatus | null }) {
 }
 
 /** Panneau « Résumer » d'une transcription : détection explicite d'Ollama sur 127.0.0.1 et choix du modèle. */
-export function SummaryPanel({ itemId, premium, onStarted }: { itemId: string; premium: boolean; onStarted: () => void }) {
+export function SummaryPanel({ itemId, onStarted }: { itemId: string; onStarted: () => void }) {
   const { toast } = useApp();
   const [status, setStatus] = useState<OllamaStatus | null>(null);
   const [detecting, setDetecting] = useState(false);
@@ -212,30 +212,28 @@ export function SummaryPanel({ itemId, premium, onStarted }: { itemId: string; p
     }
   };
 
-  if (!premium) return <p className="text-xs">Le résumé local est inclus dans l’offre Premium.</p>;
-
   return (
     <div className="space-y-3">
       {status === null ? (
-        <button className="btn-ghost px-3 py-1.5 text-sm" onClick={detect} disabled={detecting}>
+        <button className="btn-ghost px-3 py-1.5 text-small" onClick={detect} disabled={detecting}>
           {detecting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Résumer avec un modèle local…
         </button>
       ) : status.available && status.models.length ? (
         <div className="flex flex-wrap items-end gap-2">
           <label className="block min-w-[200px] flex-1">
-            <span className="text-xs font-semibold text-ink">Modèle Ollama (sur cet ordinateur)</span>
+            <span className="text-meta font-semibold text-ink">Modèle Ollama (sur cet ordinateur)</span>
             <select className="input mt-1 py-2" value={model} onChange={(e) => setModel(e.target.value)}>
               {status.models.map((m) => <option key={m.name} value={m.name}>{m.name}{m.parameterSize ? ` · ${m.parameterSize}` : ''}</option>)}
             </select>
           </label>
-          <button className="btn-primary px-4 py-2 text-sm" onClick={start} disabled={starting || !model}>
+          <button className="btn-primary px-4 py-2 text-small" onClick={start} disabled={starting || !model}>
             {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Résumer
           </button>
         </div>
       ) : (
         <div className="space-y-2">
           <OllamaHelp status={status} />
-          <button className="btn-ghost px-3 py-1.5 text-sm" onClick={detect} disabled={detecting}>{detecting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Détecter</button>
+          <button className="btn-ghost px-3 py-1.5 text-small" onClick={detect} disabled={detecting}>{detecting ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Détecter</button>
         </div>
       )}
     </div>
@@ -273,14 +271,14 @@ export function TranscribeButton({ itemId, onNeedSetup }: { itemId: string; onNe
 /** Affichage simple d'un Markdown produit par l'application (titres, puces, horodatages). */
 export function MarkdownView({ markdown }: { markdown: string }) {
   return (
-    <div className="space-y-2 text-sm leading-relaxed text-ink">
+    <div className="space-y-2 text-small leading-relaxed text-ink">
       {markdown.split('\n').filter((l) => l.trim() && !/^#\s/.test(l)).map((line, i) => {
         const ts = /^\*\*\[([^\]]+)\]\*\*\s?(.*)$/.exec(line);
-        if (ts) return <p key={i}><span className="mr-2 rounded bg-primary-soft px-1.5 py-0.5 font-mono text-xs font-bold text-primary dark:text-white">{ts[1]}</span>{ts[2]}</p>;
+        if (ts) return <p key={i}><span className="mr-2 rounded bg-primary-soft px-1.5 py-0.5 font-mono text-meta font-bold text-primary">{ts[1]}</span>{ts[2]}</p>;
         if (/^#{2,3}\s/.test(line)) return <h3 key={i} className="pt-2 font-display text-base font-bold">{line.replace(/^#+\s/, '')}</h3>;
         if (/^\s*[-*]\s/.test(line)) return <p key={i} className="pl-4 -indent-3">• {line.replace(/^\s*[-*]\s/, '').replace(/\*\*/g, '')}</p>;
-        if (line.startsWith('>')) return <p key={i} className="rounded-xl bg-surface px-3 py-2 text-xs text-body">{line.replace(/^>\s?/, '')}</p>;
-        if (/^(Source|Langue|Modèle)\s*:/.test(line)) return <p key={i} className="text-xs text-body">{line.replace(/\s+$/, '')}</p>;
+        if (line.startsWith('>')) return <p key={i} className="rounded-xl bg-surface px-3 py-2 text-meta text-body">{line.replace(/^>\s?/, '')}</p>;
+        if (/^(Source|Langue|Modèle)\s*:/.test(line)) return <p key={i} className="text-meta text-body">{line.replace(/\s+$/, '')}</p>;
         return <p key={i}>{line.replace(/\*\*/g, '')}</p>;
       })}
     </div>

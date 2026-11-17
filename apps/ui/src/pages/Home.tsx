@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Ban, Cpu, Film, Link2, ListVideo, Loader2, Lock, Music, ShieldCheck, Sparkles, Zap, ArrowRight, BadgeCheck } from 'lucide-react';
+import { BadgeCheck, Check as CheckIcon, Download, Film, FolderOpen, Link2, ListVideo, Loader2, Music } from 'lucide-react';
 import { api, ApiError } from '../api';
 import { duration, isActive } from '../format';
 import { useApp } from '../state';
-import type { MediaInfo, PresetId } from '../types';
+import type { MediaInfo, PresetId, PresetView } from '../types';
 import { JobCard } from '../components/JobCard';
 
 export function HomePage() {
   const { status, settings, jobs, toast, go, urlInputRef, pendingUrl, consumePendingUrl } = useApp();
-  const premium = status?.tier === 'premium';
   const [url, setUrl] = useState('');
   const [info, setInfo] = useState<MediaInfo | null>(null);
   const [loading, setLoading] = useState(false);
@@ -74,7 +73,9 @@ export function HomePage() {
         subtitles,
         playlist,
         info,
-        ...(premium ? { splitChapters, normalizeAudio: normalizeAudio && isAudio, transcript } : {}),
+        splitChapters,
+        normalizeAudio: normalizeAudio && isAudio,
+        transcript,
       });
       toast('Ajouté à la file de téléchargement.', 'success');
       setInfo(null);
@@ -111,144 +112,125 @@ export function HomePage() {
   });
 
   const recent = jobs.filter((j) => isActive(j.phase)).slice(0, 3);
-  const presets = status?.presets ?? [];
+  const presets = (status?.presets ?? []).filter((p) => p.kind === 'audio' || info?.hasVideo);
+  const selected = status?.presets.find((p) => p.id === preset);
+  const audioSelected = selected?.kind === 'audio';
+  const maxPlaylist = status?.limits?.maxPlaylistItems;
 
   return (
-    <div className="space-y-10">
-      <section className="text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border border-hairline bg-card px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-ink">
-          <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Moteur yt-dlp local · Rien ne passe par nos serveurs
-        </span>
-        <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-extrabold leading-[1.06] tracking-tight md:text-6xl">
-          Téléchargez et convertissez, <span className="font-display italic text-primary">sans pub ni pistage</span>.
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base md:text-lg">
-          Collez un lien vers une vidéo ou un son. KAYZEN Flux le récupère directement sur votre ordinateur, au format de votre choix.
-        </p>
-      </section>
+    <div className="space-y-12">
+      <section aria-labelledby="convert-title">
+        <h1 id="convert-title" className="max-w-3xl font-display text-hero font-bold text-ink">Collez un lien, récupérez le fichier.</h1>
+        <p className="page-lead">Vidéo, musique ou playlist : KAYZEN Flux télécharge et convertit directement sur cet ordinateur, au format de votre choix.</p>
 
-      <section className="card p-5 md:p-7" aria-labelledby="convert-title">
-        <h2 id="convert-title" className="sr-only">Convertisseur</h2>
-        <form
-          className="flex flex-col gap-3 sm:flex-row"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void analyse();
-          }}
-        >
-          <label className="relative flex-1">
-            <span className="sr-only">Adresse de la vidéo ou du son</span>
-            <Link2 className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-primary" />
-            <input
-              ref={urlInputRef}
-              className="input py-4 pl-12"
-              placeholder="Collez un lien (vidéo, musique, playlist…)"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onPaste={onPaste}
-              inputMode="url"
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </label>
-          <button type="submit" className="btn-primary px-7 py-4 text-base" disabled={!url.trim() || loading}>
-            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />} Analyser
-          </button>
-        </form>
-        <p className="mt-2 px-2 text-xs">Astuce : collez un lien n'importe où sur la page (ou <kbd className="rounded bg-surface px-1 font-semibold">Ctrl</kbd>+<kbd className="rounded bg-surface px-1 font-semibold">K</kbd> pour viser ce champ).</p>
-
-        {error && <p className="mt-4 rounded-2xl bg-danger/10 px-4 py-3 text-sm font-medium text-danger" role="alert">{error}</p>}
-
-        {info && (
-          <div className="mt-6 grid gap-6 md:grid-cols-[220px_1fr]">
-            <div className="relative aspect-video overflow-hidden rounded-2xl bg-surface">
-              {info.thumbnail ? <img src={info.thumbnail} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center"><Film className="h-8 w-8" /></div>}
-              {info.durationSec ? <span className="absolute bottom-2 right-2 rounded-md bg-black/75 px-1.5 py-0.5 text-[11px] font-bold text-white">{duration(info.durationSec)}</span> : null}
-            </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap gap-2">
-                <span className="chip">{info.site}</span>
-                {info.isPlaylist && <span className="chip"><ListVideo className="h-3 w-3" /> {info.entryCount} éléments</span>}
-                {info.maxHeight && <span className="chip">Jusqu'à {info.maxHeight}p</span>}
-                {info.bestAudioKbps && <span className="chip">Audio source ≈ {info.bestAudioKbps} kbps</span>}
-                {info.isCreativeCommons && <span className="chip text-ok"><BadgeCheck className="h-3 w-3" /> Creative Commons</span>}
-              </div>
-              <h3 className="mt-2 text-xl font-bold leading-snug">{info.title}</h3>
-              {info.author && <p className="text-sm">{info.author}</p>}
-
-              <p className="eyebrow mt-5">Format d'export</p>
-              <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Format d'export">
-                {presets
-                  .filter((p) => p.kind === 'audio' || info.hasVideo)
-                  .map((p) => (
-                    <button
-                      key={p.id}
-                      role="radio"
-                      aria-checked={preset === p.id}
-                      disabled={!p.allowed}
-                      title={p.allowed ? p.hint : 'Réservé à l’offre Premium'}
-                      onClick={() => setPreset(p.id)}
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] font-semibold transition ${
-                        preset === p.id ? 'border-primary bg-primary text-white shadow-md shadow-primary/25' : 'border-hairline bg-card text-ink hover:border-primary/40'
-                      } disabled:cursor-not-allowed disabled:opacity-55`}
-                    >
-                      {p.kind === 'audio' ? <Music className="h-3.5 w-3.5" /> : <Film className="h-3.5 w-3.5" />}
-                      {p.label}
-                      {!p.allowed && <Lock className="h-3 w-3" />}
-                    </button>
-                  ))}
-              </div>
-              <p className="mt-2 text-xs">{presets.find((p) => p.id === preset)?.hint}</p>
-
-              <div className="mt-5 grid gap-2 rounded-2xl bg-surface p-3 sm:grid-cols-2">
-                <Check label="Couper les segments sponsorisés (SponsorBlock)" checked={sponsorBlock} onChange={setSponsorBlock} />
-                <Check label="Ajouter titre, artiste et pochette" checked={embedMetadata} onChange={setEmbedMetadata} />
-                <Check label="Récupérer les sous-titres (fr, en)" checked={subtitles} onChange={setSubtitles} />
-                {info.isPlaylist && (
-                  <Check
-                    label={`Toute la playlist (max ${status?.limits.maxPlaylistItems ?? 25})`}
-                    checked={playlist}
-                    onChange={setPlaylist}
-                  />
-                )}
-              </div>
-              <p className="eyebrow mt-5 flex items-center gap-1.5">Options Premium {!premium && <Lock className="h-3 w-3" />}</p>
-              <div className={`mt-2 grid gap-2 rounded-2xl border border-dashed border-hairline p-3 sm:grid-cols-2 ${premium ? '' : 'opacity-60'}`}>
-                <Check label="Un fichier par chapitre" checked={splitChapters} onChange={setSplitChapters} disabled={!premium} />
-                <Check label="Normaliser le volume (audio)" checked={normalizeAudio} onChange={setNormalizeAudio} disabled={!premium || presets.find((p) => p.id === preset)?.kind !== 'audio'} />
-                <Check label="Transcription texte (Markdown)" checked={transcript} onChange={setTranscript} disabled={!premium} />
-                {!premium && (
-                  <button className="text-left text-xs font-bold text-primary" onClick={() => go('settings')}>Débloquer avec une licence Premium →</button>
-                )}
-              </div>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <button className="btn-primary px-7 py-3 text-base" onClick={download} disabled={submitting}>
-                  {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />} Télécharger
-                </button>
-                <span className="text-xs">Enregistré dans votre dossier : {settings?.downloadDir}</span>
-              </div>
-            </div>
+        <div className="mt-8 overflow-hidden rounded-2xl border border-hairline bg-card">
+          <div className="bg-navy px-5 pb-5 pt-6 md:px-7">
+            <form
+              className="flex flex-col gap-3 sm:flex-row"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void analyse();
+              }}
+            >
+              <label className="relative flex-1">
+                <span className="sr-only">Adresse de la vidéo ou du son</span>
+                <Link2 className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-rail-muted" aria-hidden="true" />
+                <input
+                  ref={urlInputRef}
+                  className="h-16 w-full rounded-xl border border-white/15 bg-white/[0.06] pl-14 pr-5 font-display text-lead text-rail-ink placeholder:text-rail-muted focus:border-primary focus:bg-white/[0.09] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  placeholder="https://… (vidéo, musique, playlist)"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  onPaste={onPaste}
+                  inputMode="url"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </label>
+              <button type="submit" className="btn-primary h-16 px-8 text-base focus-visible:outline-rail-ink disabled:bg-white/10 disabled:text-rail-muted disabled:opacity-100" disabled={!url.trim() || loading}>
+                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : null} {loading ? 'Analyse…' : 'Analyser'}
+              </button>
+            </form>
+            <p className="mt-3 text-meta text-rail-muted">
+              Collez un lien n’importe où dans l’application pour l’analyser, ou appuyez sur{' '}
+              <kbd className="rounded border border-white/20 px-1 font-display font-semibold text-rail-ink">Ctrl</kbd> + <kbd className="rounded border border-white/20 px-1 font-display font-semibold text-rail-ink">K</kbd> pour revenir à ce champ.
+            </p>
           </div>
-        )}
+
+          {error && <p className="flex items-start gap-2 border-t border-danger/30 bg-danger/[0.07] px-5 py-4 text-small font-medium text-danger md:px-7" role="alert">{error}</p>}
+
+          {loading && !info && <PreviewSkeleton />}
+
+          {info && (
+            <div className="grid gap-8 p-5 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:p-7">
+              <div className="min-w-0">
+                <div className="relative aspect-video overflow-hidden rounded-xl bg-surface">
+                  {info.thumbnail ? <img src={info.thumbnail} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-body/60"><Film className="h-8 w-8" /></div>}
+                  {info.durationSec ? <span className="absolute bottom-2 right-2 rounded-md bg-black/80 px-1.5 py-0.5 font-display text-meta font-semibold tabular-nums text-white">{duration(info.durationSec)}</span> : null}
+                </div>
+                <h2 className="mt-4 text-lead font-semibold leading-snug">{info.title}</h2>
+                {info.author && <p className="mt-0.5 text-small">{info.author}</p>}
+                <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 border-t border-hairline pt-4 text-small">
+                  <dt>Source</dt><dd className="font-semibold text-ink">{info.site}</dd>
+                  {info.maxHeight ? (<><dt>Vidéo</dt><dd className="font-semibold text-ink">jusqu’à {info.maxHeight}p</dd></>) : null}
+                  {info.bestAudioKbps ? (<><dt>Audio source</dt><dd className="font-semibold text-ink">≈ {info.bestAudioKbps} kbps</dd></>) : null}
+                  {info.isPlaylist && (<><dt>Playlist</dt><dd className="inline-flex items-center gap-1 font-semibold text-ink"><ListVideo className="h-3.5 w-3.5" /> {info.entryCount} éléments</dd></>)}
+                </dl>
+                {info.isCreativeCommons && <p className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-ok/10 px-2 py-1 text-meta font-semibold text-ok"><BadgeCheck className="h-3.5 w-3.5" /> Licence Creative Commons</p>}
+              </div>
+
+              <div className="min-w-0">
+                <FormatGroup title="Audio" icon={<Music className="h-4 w-4" />} presets={presets.filter((p) => p.kind === 'audio')} value={preset} onChange={setPreset} />
+                {info.hasVideo && <FormatGroup title="Vidéo" icon={<Film className="h-4 w-4" />} presets={presets.filter((p) => p.kind === 'video')} value={preset} onChange={setPreset} />}
+
+                <fieldset className="mt-6">
+                  <legend className="label">Options</legend>
+                  <div className="mt-2 grid gap-x-4 sm:grid-cols-2">
+                    <Check label="Couper les passages sponsorisés" checked={sponsorBlock} onChange={setSponsorBlock} />
+                    <Check label="Ajouter titre, artiste et pochette" checked={embedMetadata} onChange={setEmbedMetadata} />
+                    <Check label="Sous-titres (fr, en)" checked={subtitles} onChange={setSubtitles} />
+                    <Check label="Un fichier par chapitre" checked={splitChapters} onChange={setSplitChapters} />
+                    <Check label="Normaliser le volume" hint={audioSelected ? undefined : 'formats audio'} checked={normalizeAudio} onChange={setNormalizeAudio} disabled={!audioSelected} />
+                    <Check label="Transcription texte (Markdown)" checked={transcript} onChange={setTranscript} />
+                    {info.isPlaylist && (
+                      <Check label={maxPlaylist ? `Toute la playlist (max ${maxPlaylist})` : 'Toute la playlist'} checked={playlist} onChange={setPlaylist} />
+                    )}
+                  </div>
+                </fieldset>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-4 border-t border-hairline pt-5 md:col-span-2">
+                <p className="flex min-w-0 items-center gap-2 text-small">
+                  <FolderOpen className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="shrink-0">Enregistré dans</span>
+                  <span className="truncate font-semibold text-ink" title={settings?.downloadDir}>{settings?.downloadDir}</span>
+                </p>
+                <button className="btn-primary h-12 px-7 text-base" onClick={download} disabled={submitting}>
+                  {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />} Télécharger{selected ? ` en ${selected.label.replace(/\s*\(.*\)$/, '')}` : ''}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </section>
 
       {recent.length > 0 && (
         <section className="space-y-3" aria-labelledby="active-title">
-          <div className="flex items-center justify-between">
-            <h2 id="active-title" className="text-xl font-bold">En cours</h2>
-            <button className="text-sm font-semibold text-primary" onClick={() => go('downloads')}>Tout voir</button>
+          <div className="flex items-baseline justify-between">
+            <h2 id="active-title" className="text-lead font-semibold">En cours</h2>
+            <button className="text-small font-semibold text-primary underline-offset-4 hover:underline" onClick={() => go('downloads')}>Voir tous les téléchargements</button>
           </div>
           {recent.map((j) => <JobCard key={j.id} job={j} compact />)}
         </section>
       )}
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <Value icon={<Ban className="h-5 w-5" />} title="100 % sans publicité" text="Ni bannières, ni pop-ups, ni redirections douteuses. L'outil ne gagne pas d'argent sur votre attention." link="Zéro distraction" />
-        <Value icon={<Cpu className="h-5 w-5" />} title="Moteur yt-dlp local" text="Le téléchargement et la conversion se font sur votre ordinateur. Le moteur se met à jour en un clic." link="Voir le moteur" onClick={() => go('settings')} />
-        <Value icon={<ShieldCheck className="h-5 w-5" />} title="Vie privée" text="Aucun compte, aucun cookie de suivi. Votre historique reste dans un fichier sur cet ordinateur." link="Ma bibliothèque" onClick={() => go('library')} />
+      <section className="grid gap-x-10 gap-y-6 border-t border-hairline pt-8 md:grid-cols-3" aria-label="Engagements">
+        <Value title="Sans publicité" text="Ni bannières, ni fenêtres surgissantes, ni redirections. L’outil ne vit pas de votre attention." />
+        <Value title="Sur votre ordinateur" text="Le téléchargement et la conversion se font ici, avec le moteur yt-dlp. Rien ne passe par nos serveurs." />
+        <Value title="Gratuit et open source" text="Aucun compte, aucun cookie de suivi. Le code est publié sous licence MIT." />
       </section>
 
-      <p className="text-center text-xs leading-relaxed">
+      <p className="max-w-3xl text-meta leading-relaxed">
         Usage personnel uniquement, pour des contenus que vous avez le droit de copier (vos propres vidéos, licences libres, copie privée).
         Les contenus protégés par DRM ne sont jamais pris en charge.
       </p>
@@ -256,26 +238,69 @@ export function HomePage() {
   );
 }
 
-function Check({ label, checked, onChange, disabled = false }: { label: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+function FormatGroup({ title, icon, presets, value, onChange }: { title: string; icon: React.ReactNode; presets: PresetView[]; value: PresetId; onChange: (id: PresetId) => void }) {
+  if (!presets.length) return null;
   return (
-    <label className={`flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-sm font-medium text-ink ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
-      <input type="checkbox" disabled={disabled} checked={checked && !disabled} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 rounded accent-[rgb(var(--primary))]" />
-      {label}
+    <fieldset className="mb-5">
+      <legend className="label flex items-center gap-2">{icon} {title}</legend>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label={`Formats ${title.toLowerCase()}`}>
+        {presets.map((p) => {
+          const on = value === p.id;
+          return (
+            <button
+              key={p.id}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              onClick={() => onChange(p.id)}
+              className={`relative rounded-xl border px-3.5 py-2.5 text-left transition duration-150 ${
+                on ? 'border-primary bg-primary-soft/70 ring-1 ring-primary' : 'border-hairline bg-card hover:border-ink/30'
+              }`}
+            >
+              <span className="flex items-center justify-between gap-2">
+                <span className="font-display text-base font-semibold text-ink">{p.label}</span>
+                <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full ${on ? 'bg-primary text-on-primary' : 'border border-hairline'}`} aria-hidden="true">
+                  {on && <CheckIcon className="h-3 w-3" strokeWidth={3} />}
+                </span>
+              </span>
+              <span className="mt-0.5 block text-meta leading-snug">{p.hint}</span>
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
+function PreviewSkeleton() {
+  return (
+    <div className="grid gap-8 p-5 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:p-7" aria-hidden="true">
+      <div className="space-y-3">
+        <div className="aspect-video animate-pulse rounded-xl bg-surface" />
+        <div className="h-5 w-4/5 animate-pulse rounded bg-surface" />
+        <div className="h-4 w-2/5 animate-pulse rounded bg-surface" />
+      </div>
+      <div className="grid content-start gap-2 sm:grid-cols-2">
+        {[0, 1, 2, 3].map((i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-surface" />)}
+      </div>
+    </div>
+  );
+}
+
+function Check({ label, hint, checked, onChange, disabled = false }: { label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+  return (
+    <label className={`flex items-center gap-2.5 py-1.5 text-small font-medium text-ink ${disabled ? 'cursor-not-allowed opacity-55' : 'cursor-pointer'}`}>
+      <input type="checkbox" disabled={disabled} checked={checked && !disabled} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 shrink-0 rounded accent-[rgb(var(--primary))]" />
+      <span>{label}{hint && <span className="font-normal text-body"> ({hint})</span>}</span>
     </label>
   );
 }
 
-function Value({ icon, title, text, link, onClick }: { icon: React.ReactNode; title: string; text: string; link: string; onClick?: () => void }) {
+function Value({ title, text }: { title: string; text: string }) {
   return (
-    <div className="card p-6">
-      <div className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-primary dark:text-white">{icon}</div>
-      <h3 className="mt-4 text-lg font-bold">{title}</h3>
-      <p className="mt-1 text-sm leading-relaxed">{text}</p>
-      {onClick ? (
-        <button onClick={onClick} className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-primary">{link} <ArrowRight className="h-4 w-4" /></button>
-      ) : (
-        <p className="mt-4 text-sm font-bold text-primary">{link}</p>
-      )}
+    <div>
+      <h3 className="text-base font-semibold">{title}</h3>
+      <p className="mt-1 text-small leading-relaxed">{text}</p>
     </div>
   );
 }

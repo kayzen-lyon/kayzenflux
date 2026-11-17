@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Download, FolderOpen, HardDrive, Heart, Library, Music, Play, Search, ShieldCheck, Trash2, Film, FileJson, FileText, Copy, X, Sparkles } from 'lucide-react';
+import { Download, FolderOpen, Heart, Music, Play, Search, Trash2, Film, FileJson, FileText, Copy, X, Sparkles } from 'lucide-react';
 import { api } from '../api';
 import { bytes, duration, relative } from '../format';
 import { useApp } from '../state';
-import { EmptyState } from '../components/Shell';
+import { EmptyState, PageHeader } from '../components/Shell';
 import { PRESET_KIND } from '../components/presetKind';
 import { MarkdownView, SummaryPanel, TranscribeButton } from '../components/LocalAi';
 import type { LibraryItem } from '../types';
@@ -12,7 +12,6 @@ type Filter = 'all' | 'audio' | 'video' | 'fav';
 
 export function LibraryPage() {
   const { library, play, playing, toast, refreshLibrary, go, status } = useApp();
-  const premium = status?.tier === 'premium';
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [transcript, setTranscript] = useState<{ id: string; kind: 'transcript' | 'summary'; title: string; markdown: string } | null>(null);
@@ -64,85 +63,98 @@ export function LibraryPage() {
     void act(() => api.removeItem(item.id, deleteFile), deleteFile ? 'Fichier supprimé.' : 'Retiré de la bibliothèque.');
   };
 
+  const presetLabel = (id: string) => status?.presets.find((p) => p.id === id)?.label.replace(/\s*\((.*)\)$/, ' $1') ?? id.toUpperCase();
+
   return (
     <div className="space-y-8">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="eyebrow flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Stocké sur cet ordinateur uniquement</p>
-          <h1 className="mt-1 text-3xl font-extrabold tracking-tight md:text-4xl">Bibliothèque & Lecteur</h1>
-          <p className="mt-1">Vos fichiers téléchargés, lisibles hors connexion.</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button className="btn-ghost" onClick={exportJson} disabled={!library.length}><FileJson className="h-4 w-4" /> Exporter (JSON)</button>
-          <button
-            className="btn border border-danger/30 bg-danger/10 text-danger hover:bg-danger/15"
-            disabled={!library.length}
-            onClick={() => window.confirm('Vider la bibliothèque ? Les fichiers restent sur le disque.') && act(() => api.clearLibrary(), 'Bibliothèque vidée.')}
-          >
-            <Trash2 className="h-4 w-4" /> Vider l'historique
-          </button>
-        </div>
-      </header>
+      <PageHeader
+        title="Bibliothèque"
+        lead="Vos fichiers téléchargés, lisibles hors connexion. Rien n’est envoyé en ligne."
+        meta={library.length ? (
+          <>
+            <span><strong className="font-semibold text-ink">{library.length}</strong> fichier{library.length > 1 ? 's' : ''}</span>
+            <span><strong className="font-semibold text-ink">{bytes(total)}</strong> sur le disque</span>
+            <span><strong className="font-semibold text-ink">{favs}</strong> favori{favs > 1 ? 's' : ''}</span>
+          </>
+        ) : undefined}
+        actions={
+          <>
+            <button className="btn-ghost" onClick={exportJson} disabled={!library.length}><FileJson className="h-4 w-4" /> Exporter (JSON)</button>
+            <button
+              className="btn-quiet text-danger hover:bg-danger/10"
+              disabled={!library.length}
+              onClick={() => window.confirm('Vider la bibliothèque ? Les fichiers restent sur le disque.') && act(() => api.clearLibrary(), 'Bibliothèque vidée.')}
+            >
+              <Trash2 className="h-4 w-4" /> Vider l’historique
+            </button>
+          </>
+        }
+      />
 
-      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4" aria-label="Statistiques">
-        <Stat icon={<Library className="h-5 w-5" />} value={String(library.length)} label="Fichiers enregistrés" />
-        <Stat icon={<HardDrive className="h-5 w-5" />} value={bytes(total)} label="Sur le disque" />
-        <Stat icon={<Heart className="h-5 w-5" />} value={String(favs)} label="Favoris" />
-        <Stat icon={<ShieldCheck className="h-5 w-5" />} value="0" label="Donnée envoyée en ligne" />
-      </section>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex rounded-full border border-hairline bg-card p-1" role="tablist" aria-label="Filtrer">
-          {([['all', 'Tout'], ['audio', 'Audio'], ['video', 'Vidéo'], ['fav', 'Favoris']] as const).map(([id, label]) => (
-            <button key={id} role="tab" aria-selected={filter === id} onClick={() => setFilter(id)}
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${filter === id ? 'bg-primary text-white' : 'text-ink hover:bg-surface'}`}>{label}</button>
-          ))}
+      {library.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex rounded-xl bg-surface p-1" role="tablist" aria-label="Filtrer la bibliothèque">
+            {([['all', 'Tout'], ['audio', 'Audio'], ['video', 'Vidéo'], ['fav', 'Favoris']] as const).map(([id, label]) => (
+              <button key={id} role="tab" aria-selected={filter === id} onClick={() => setFilter(id)}
+                className={`rounded-lg px-4 py-1.5 font-display text-small font-semibold transition duration-150 ${filter === id ? 'bg-card text-ink shadow-soft' : 'text-body hover:text-ink'}`}>{label}</button>
+            ))}
+          </div>
+          <label className="relative ml-auto w-full sm:w-72">
+            <span className="sr-only">Rechercher dans la bibliothèque</span>
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2" aria-hidden="true" />
+            <input className="input pl-10" type="search" placeholder="Titre, auteur, site…" value={q} onChange={(e) => setQ(e.target.value)} />
+          </label>
         </div>
-        <label className="relative ml-auto w-full sm:w-72">
-          <span className="sr-only">Rechercher</span>
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" />
-          <input className="input py-2 pl-10" placeholder="Rechercher un titre, un auteur…" value={q} onChange={(e) => setQ(e.target.value)} />
-        </label>
-      </div>
+      )}
 
       {library.length === 0 ? (
-        <EmptyState icon={<Download className="h-6 w-6" />} title="Votre bibliothèque est vide" text="Les fichiers que vous téléchargez apparaîtront ici, prêts à être lus hors connexion." action={<button className="btn-primary" onClick={() => go('home')}>Télécharger un premier fichier</button>} />
+        <EmptyState icon={<Download className="h-5 w-5" />} title="Votre bibliothèque est vide" text="Les fichiers téléchargés apparaîtront ici, prêts à être lus hors connexion." action={<button className="btn-primary" onClick={() => go('home')}>Télécharger un premier fichier</button>} />
       ) : list.length === 0 ? (
-        <p className="py-10 text-center">Aucun résultat pour ce filtre.</p>
+        <EmptyState icon={<Search className="h-5 w-5" />} title="Aucun résultat" text="Aucun fichier ne correspond à ce filtre ou à cette recherche." action={<button className="btn-ghost" onClick={() => { setQ(''); setFilter('all'); }}>Tout afficher</button>} />
       ) : (
-        <ul className="card divide-y divide-hairline overflow-hidden">
+        <ul className="card divide-y divide-hairline overflow-hidden" aria-label="Fichiers">
           {list.map((item) => {
             const kind = PRESET_KIND[item.preset];
             const current = playing?.id === item.id;
             return (
-              <li key={item.id} className={`flex items-center gap-3 p-3 sm:gap-4 sm:p-4 transition ${current ? 'bg-primary-soft/60' : 'hover:bg-surface/60'}`}>
-                <button onClick={() => play(item)} className="group relative h-12 w-16 shrink-0 sm:h-14 sm:w-24 overflow-hidden rounded-xl bg-surface" aria-label={`Lire ${item.title}`}>
+              <li key={item.id} className={`group/row relative flex items-center gap-4 px-3 py-3 transition-colors duration-150 sm:px-4 ${current ? 'bg-primary-soft/50' : 'hover:bg-surface/70'}`}>
+                {current && <span className="absolute inset-y-0 left-0 w-[3px] bg-primary" aria-hidden="true" />}
+                <button onClick={() => play(item)} className="group relative aspect-video w-24 shrink-0 overflow-hidden rounded-lg bg-surface sm:w-28" aria-label={`Lire ${item.title}`} data-shot="play">
                   {item.thumbnail ? <img src={item.thumbnail} alt="" className="h-full w-full object-cover" loading="lazy" /> : (
-                    <span className="grid h-full place-items-center">{kind === 'audio' ? <Music className="h-5 w-5" /> : <Film className="h-5 w-5" />}</span>
+                    <span className="grid h-full place-items-center text-body/70">{kind === 'audio' ? <Music className="h-5 w-5" /> : <Film className="h-5 w-5" />}</span>
                   )}
-                  <span className="absolute inset-0 grid place-items-center bg-black/40 opacity-0 transition group-hover:opacity-100"><Play className="h-5 w-5 text-white" /></span>
+                  {item.durationSec ? <span className="absolute bottom-1 right-1 rounded bg-black/80 px-1 font-display text-[0.6875rem] font-semibold tabular-nums leading-4 text-white">{duration(item.durationSec)}</span> : null}
+                  <span className="absolute inset-0 grid place-items-center bg-black/45 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"><Play className="h-5 w-5 fill-white text-white" /></span>
                 </button>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-display font-semibold text-ink" title={item.title}>{item.title}</p>
-                  <p className="truncate text-xs">
-                    {[item.author, item.site, item.preset.toUpperCase(), bytes(item.sizeBytes), duration(item.durationSec), relative(item.createdAt)].filter(Boolean).join(' · ')}
+                  <p className="truncate font-display text-base font-semibold text-ink" title={item.title}>{item.title}</p>
+                  <p className="mt-0.5 flex min-w-0 items-center gap-x-3 text-meta">
+                    {current && (
+                      <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap font-semibold text-primary"><span className="eq flex h-3 items-end gap-[2px]" aria-hidden="true"><span className="h-3" /><span className="h-3" /><span className="h-3" /></span> En lecture</span>
+                    )}
+                    <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap font-semibold text-ink">{kind === 'audio' ? <Music className="h-3.5 w-3.5" aria-hidden="true" /> : <Film className="h-3.5 w-3.5" aria-hidden="true" />}{presetLabel(item.preset)}</span>
+                    <span className="shrink-0 whitespace-nowrap tabular-nums">{bytes(item.sizeBytes)}</span>
+                    <span className="truncate">{[item.author, item.site].filter(Boolean).join(' – ')}</span>
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
-                  <button className={`icon-btn hidden sm:inline-flex ${item.favorite ? 'text-primary' : ''}`} aria-pressed={item.favorite} aria-label={item.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'} onClick={() => act(() => api.favorite(item.id, !item.favorite))}>
+                <p className="hidden w-32 shrink-0 truncate text-right text-meta xl:block" title={new Date(item.createdAt).toLocaleString('fr-FR')}>{relative(item.createdAt)}</p>
+                <div className="flex shrink-0 items-center gap-0.5">
+                  <div className={`flex items-center gap-0.5 transition-opacity duration-150 focus-within:opacity-100 group-hover/row:opacity-100 ${current ? 'opacity-100' : 'opacity-0'}`}>
+                  {item.transcriptPath ? (
+                    <button className="icon-btn" aria-label="Lire la transcription" title="Lire la transcription" onClick={() => openTranscript(item)}><FileText className="h-4 w-4" /></button>
+                  ) : (
+                    <TranscribeButton itemId={item.id} onNeedSetup={() => go('settings')} />
+                  )}
+                  {item.summaryPath && (
+                    <button className="icon-btn" aria-label="Lire le résumé" title="Lire le résumé" onClick={() => openTranscript(item, 'summary')}><Sparkles className="h-4 w-4" /></button>
+                  )}
+                  <button className="icon-btn hidden sm:inline-flex" aria-label="Ouvrir le dossier" title="Ouvrir le dossier" onClick={() => act(() => api.reveal(item.id))}><FolderOpen className="h-4 w-4" /></button>
+                  <button className="icon-btn hover:text-danger" aria-label="Supprimer" title="Supprimer" onClick={() => remove(item)}><Trash2 className="h-4 w-4" /></button>
+                  </div>
+                  <button className={`icon-btn hidden sm:inline-flex ${item.favorite ? 'text-primary hover:text-primary' : ''}`} aria-pressed={item.favorite} aria-label={item.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'} title={item.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'} onClick={() => act(() => api.favorite(item.id, !item.favorite))}>
                     <Heart className={`h-4 w-4 ${item.favorite ? 'fill-current' : ''}`} />
                   </button>
-                  {item.transcriptPath ? (
-                    <button className="icon-btn" aria-label="Lire la transcription" onClick={() => openTranscript(item)}><FileText className="h-4 w-4" /></button>
-                  ) : premium ? (
-                    <TranscribeButton itemId={item.id} onNeedSetup={() => go('settings')} />
-                  ) : null}
-                  {item.summaryPath && (
-                    <button className="icon-btn" aria-label="Lire le résumé" onClick={() => openTranscript(item, 'summary')}><Sparkles className="h-4 w-4" /></button>
-                  )}
-                  <button className="icon-btn hidden sm:inline-flex" aria-label="Ouvrir le dossier" onClick={() => act(() => api.reveal(item.id))}><FolderOpen className="h-4 w-4" /></button>
-                  <button className="icon-btn hover:text-danger" aria-label="Supprimer" onClick={() => remove(item)}><Trash2 className="h-4 w-4" /></button>
-                  <button className="ml-1 grid h-10 w-10 place-items-center rounded-full bg-primary text-white" aria-label={`Lire ${item.title}`} onClick={() => play(item)}><Play className="h-4 w-4 translate-x-px" /></button>
+                  <button className="play-btn ml-2" aria-label={`Lire ${item.title}`} title="Lire" onClick={() => play(item)}><Play className="h-4 w-4 translate-x-px fill-current" /></button>
                 </div>
               </li>
             );
@@ -150,11 +162,11 @@ export function LibraryPage() {
         </ul>
       )}
       {transcript && (
-        <div className="fixed inset-0 z-40 grid place-items-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="tr-title" onClick={() => setTranscript(null)}>
-          <div className="card flex max-h-[85vh] w-full max-w-2xl flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-40 grid place-items-center bg-navy/60 p-4 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-labelledby="tr-title" onClick={() => setTranscript(null)}>
+          <div className="card flex max-h-[85vh] w-full max-w-2xl flex-col shadow-lift" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2 border-b border-hairline p-4">
               {transcript.kind === 'summary' ? <Sparkles className="h-5 w-5 text-primary" /> : <FileText className="h-5 w-5 text-primary" />}
-              <h2 id="tr-title" className="flex-1 truncate text-lg font-bold">{transcript.kind === 'summary' ? 'Résumé' : 'Transcription'} : {transcript.title}</h2>
+              <h2 id="tr-title" className="flex-1 truncate text-lead font-semibold">{transcript.kind === 'summary' ? 'Résumé' : 'Transcription'} : {transcript.title}</h2>
               <button className="btn-ghost px-3 py-1.5" onClick={() => navigator.clipboard?.writeText(transcript.markdown).then(() => toast('Texte copié.', 'success'))}><Copy className="h-4 w-4" /> Copier</button>
               <button className="icon-btn" aria-label="Fermer" onClick={() => setTranscript(null)}><X className="h-4 w-4" /></button>
             </div>
@@ -164,26 +176,14 @@ export function LibraryPage() {
             {transcript.kind === 'transcript' && (
               <div className="space-y-2 border-t border-hairline p-4">
                 {openItem?.summaryPath && (
-                  <button className="btn-ghost px-3 py-1.5 text-sm" onClick={() => openItem && openTranscript(openItem, 'summary')}><Sparkles className="h-4 w-4" /> Voir le résumé existant</button>
+                  <button className="btn-ghost px-3 py-1.5" onClick={() => openItem && openTranscript(openItem, 'summary')}><Sparkles className="h-4 w-4" /> Voir le résumé existant</button>
                 )}
-                <SummaryPanel itemId={transcript.id} premium={premium} onStarted={() => setTranscript(null)} />
+                <SummaryPanel itemId={transcript.id} onStarted={() => setTranscript(null)} />
               </div>
             )}
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function Stat({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
-  return (
-    <div className="card flex items-center gap-4 p-5">
-      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary dark:text-white">{icon}</div>
-      <div>
-        <p className="font-display text-2xl font-extrabold text-ink">{value}</p>
-        <p className="text-xs">{label}</p>
-      </div>
     </div>
   );
 }
