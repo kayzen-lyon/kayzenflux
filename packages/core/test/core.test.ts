@@ -198,6 +198,8 @@ describe('classifyEngineError', () => {
     ['Sign in to confirm your age', 'age'],
     ['Unsupported URL: https://x', 'unsupported'],
     ['HTTP Error 429: Too Many Requests', 'rate_limited'],
+    ["Sign in to confirm you're not a bot. This helps protect our community", 'rate_limited'],
+    ['This video is available to members only. Join this channel', 'login'],
     ['Video unavailable', 'unavailable'],
     ['quelque chose d’inconnu', 'unknown'],
   ])('%s → %s', (msg, code) => {

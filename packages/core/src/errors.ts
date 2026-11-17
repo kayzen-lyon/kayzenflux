@@ -23,6 +23,8 @@ const RULES: Array<[RegExp, EngineErrorCode, string]> = [
   [/private video|is private/i, 'private', 'Cette vidéo est privée.'],
   [/sign in to confirm your age|age[- ]restricted|inappropriate for some users/i, 'age', 'Contenu soumis à une restriction d’âge : non pris en charge.'],
   [/not available in your country|geo.?restrict|blocked in your country/i, 'geo', 'Contenu indisponible dans votre pays.'],
+  // Contrôle anti-robot du site : ce n'est pas un contenu réservé aux membres, il faut simplement réessayer plus tard.
+  [/confirm you.?re not a bot|not a robot|unusual traffic/i, 'rate_limited', 'Le site a temporairement bloqué les requêtes automatiques. Réessayez dans quelques minutes ou mettez à jour le moteur.'],
   [/members[- ]only|join this channel|login required|requires (a )?login|sign in/i, 'login', 'Ce contenu nécessite un compte ou un abonnement : non pris en charge.'],
   [/unsupported url|no suitable (info)?extractor/i, 'unsupported', 'Ce site n’est pas pris en charge.'],
   [/http error 429|too many requests|rate.?limit/i, 'rate_limited', 'Le site limite temporairement les requêtes. Réessayez dans quelques minutes.'],
