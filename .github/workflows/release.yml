@@ -2,7 +2,8 @@
 # Déclenchement : pousser une étiquette « v1.2.3 » ou lancer manuellement depuis l'onglet Actions.
 #
 # Secrets à créer dans le dépôt (Settings > Secrets and variables > Actions) :
-#   KAYZEN_LICENSE_PUBLIC_KEY_TS  contenu complet de apps/daemon/src/license-key.ts (clé PUBLIQUE de production)
+#   (facultatif) KAYZEN_LICENSE_PUBLIC_KEY_TS  remplace apps/daemon/src/license-key.ts ; sinon la clé publique
+#                 de production déjà présente dans le dépôt est utilisée (le build refuse une clé de développement).
 #   WIN_CSC_LINK, WIN_CSC_KEY_PASSWORD               certificat de signature Windows (.pfx en base64)
 #   CSC_LINK, CSC_KEY_PASSWORD                       certificat « Developer ID Application » Apple (.p12 en base64)
 #   APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID  notarisation Apple
@@ -55,8 +56,8 @@ jobs:
         env:
           KEY_TS: ${{ secrets.KAYZEN_LICENSE_PUBLIC_KEY_TS }}
         run: |
-          if [ -z "$KEY_TS" ]; then echo "::error::Secret KAYZEN_LICENSE_PUBLIC_KEY_TS manquant"; exit 1; fi
-          printf '%s\n' "$KEY_TS" > apps/daemon/src/license-key.ts
+          if [ -n "$KEY_TS" ]; then printf '%s\n' "$KEY_TS" > apps/daemon/src/license-key.ts; fi
+          grep -q "LICENSE_KEY_IS_DEV = false" apps/daemon/src/license-key.ts || { echo "::error::Clé de licence de développement : lancer « node tools/license.mjs keygen »"; exit 1; }
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @kayzen-flux/ui build
       - name: Installeurs
