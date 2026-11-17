@@ -4,14 +4,12 @@ import { readFile, stat, unlink } from 'node:fs/promises';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { FILENAME_TEMPLATES, PRESETS, PRESET_IDS, TIER_LIMITS, UPDATE_UNAVAILABLE, isPresetAllowed, isPresetId, validateUrl } from '@kayzen-flux/core';
+import { FILENAME_TEMPLATES, LIMITS, PRESETS, PRESET_IDS, UPDATE_UNAVAILABLE, isPresetId, validateUrl } from '@kayzen-flux/core';
 import type { DaemonConfig } from './config.js';
 import { EngineError, engineVersion, fetchInfo, ffmpegVersion, updateEngine } from './engine.js';
 import { JobQueue } from './jobs.js';
 import { JsonStore } from './store.js';
-import { LicenseManager } from './license.js';
 import { SubscriptionManager } from './subscriptions.js';
-import { LICENSE_KEY_IS_DEV } from './license-key.js';
 import type { DaemonHooks } from './updates.js';
 import { TranscriptionError, WhisperManager, isWhisperTarget } from './whisper.js';
 import { OllamaClient, SummaryError } from './ollama.js';
@@ -71,9 +69,6 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
   const updater = hooks.updater;
   // Aucune vérification de mise à jour tant que l'utilisateur n'a pas dit oui.
   updater?.setConsent(store.getSettings().autoUpdate);
-  const license = new LicenseManager(config.dataDir, config.envTier, config.licensePublicKey);
-  await license.init();
-  const getTier = () => license.tier;
   const whisper = new WhisperManager({
     dataDir: config.dataDir,
     ffmpegPath: config.ffmpegPath,
@@ -88,7 +83,6 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
     ollama,
     binary: config.ytdlpPath,
     ffmpegPath: config.ffmpegPath,
-    getTier,
     allowLocal: config.allowLocalUrls,
     store,
     dataDir: config.dataDir,
@@ -97,7 +91,6 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
     binary: config.ytdlpPath,
     store,
     queue,
-    getTier,
     allowLocal: config.allowLocalUrls,
     tickMs: config.subscriptionTickMs,
   });
@@ -158,11 +151,9 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
         app: config.appVersion,
         engine: ytdlp,
         ffmpeg,
-        tier: getTier(),
-        limits: TIER_LIMITS[getTier()],
-        license: license.getState(),
-        devLicenseKey: LICENSE_KEY_IS_DEV,
-        presets: PRESET_IDS.map((id) => ({ ...PRESETS[id], args: undefined, allowed: isPresetAllowed(id, getTier()) })),
+        limits: LIMITS,
+        // « allowed » reste présent pour compatibilité : tout est disponible pour tous.
+        presets: PRESET_IDS.map((id) => ({ ...PRESETS[id], args: undefined, allowed: true })),
         templates: Object.entries(FILENAME_TEMPLATES).map(([id, t]) => ({ id, label: t.label })),
       });
     }
@@ -195,7 +186,6 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
       const body = await readBody(req);
       const settings = store.getSettings();
       const preset = isPresetId(body.preset) ? body.preset : settings.defaultPreset;
-      const premium = getTier() === 'premium';
       try {
         const job = queue.enqueue({
           url: String(body.url ?? ''),
@@ -204,8 +194,8 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
           embedMetadata: bool(body.embedMetadata, settings.embedMetadata),
           subtitles: bool(body.subtitles, settings.subtitles),
           splitChapters: bool(body.splitChapters, false),
-          normalizeAudio: bool(body.normalizeAudio, premium && settings.normalizeAudio),
-          transcript: bool(body.transcript, premium && settings.transcript),
+          normalizeAudio: bool(body.normalizeAudio, settings.normalizeAudio),
+          transcript: bool(body.transcript, settings.transcript),
           playlist: body.playlist === true,
           info: sanitizeInfo(body.info),
         });
@@ -252,12 +242,6 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
     if (m === 'GET' && p === '/api/settings') return json(res, 200, store.getSettings());
     if (m === 'PUT' && p === '/api/settings') {
       const body = await readBody(req);
-      if (isPresetId(body.defaultPreset) && !isPresetAllowed(body.defaultPreset, getTier())) {
-        throw new HttpError(400, 'Ce format est réservé à l’offre Premium.');
-      }
-      if (getTier() !== 'premium' && (body.normalizeAudio === true || body.transcript === true)) {
-        throw new HttpError(400, 'Cette option est réservée à l’offre Premium.');
-      }
       const before = store.getSettings().autoUpdate;
       const saved = await store.updateSettings(body);
       if (saved.autoUpdate !== before) updater?.setConsent(saved.autoUpdate);
@@ -274,22 +258,6 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
     if (m === 'POST' && p === '/api/update/install') {
       if (!updater?.install()) throw new HttpError(409, 'Aucune mise à jour prête à installer.', 'update_not_ready');
       return json(res, 200, { ok: true });
-    }
-    if (m === 'GET' && p === '/api/license') return json(res, 200, license.getState());
-    if (m === 'POST' && p === '/api/license') {
-      const body = await readBody(req);
-      try {
-        const state = await license.activate(String(body.key ?? ''));
-        broadcast('license', state);
-        return json(res, 200, state);
-      } catch (err) {
-        throw new HttpError(400, (err as Error).message, 'invalid_license');
-      }
-    }
-    if (m === 'DELETE' && p === '/api/license') {
-      const state = await license.deactivate();
-      broadcast('license', state);
-      return json(res, 200, state);
     }
     if (p.startsWith('/api/subscriptions')) {
       try {
@@ -309,7 +277,7 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
           return json(res, 200, { ok: true });
         }
       } catch (err) {
-        if (err instanceof EngineError) throw new HttpError(err.code === 'not_found' ? 404 : err.code === 'premium' ? 403 : 400, err.message, err.code);
+        if (err instanceof EngineError) throw new HttpError(err.code === 'not_found' ? 404 : 400, err.message, err.code);
         throw err;
       }
     }
@@ -327,16 +295,12 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
     throw new HttpError(404, 'Route inconnue.');
   };
 
-  /** Transcription locale (whisper.cpp) et résumé local (Ollama) : fonctions Premium, rien ne quitte l'ordinateur. */
+  /** Transcription locale (whisper.cpp) et résumé local (Ollama) : rien ne quitte l'ordinateur. */
   const routeLocalAi = async (req: IncomingMessage, res: ServerResponse, m: string, p: string) => {
     let match: RegExpExecArray | null;
-    const requirePremium = (what: 'transcription' | 'summary') => {
-      if (getTier() !== 'premium') throw new HttpError(403, what === 'summary' ? 'Le résumé est réservé à l’offre Premium.' : 'La transcription locale est réservée à l’offre Premium.', 'premium');
-    };
     try {
       if (m === 'GET' && p === '/api/whisper') return json(res, 200, await whisper.status());
       if (m === 'POST' && p === '/api/whisper/install') {
-        requirePremium('transcription');
         const body = await readBody(req);
         if (!isWhisperTarget(body.target)) throw new HttpError(400, 'Composant inconnu.');
         whisper.install(body.target, body.confirmedBytes);
@@ -354,13 +318,11 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
       // Détection explicite d'Ollama sur 127.0.0.1 uniquement.
       if (m === 'GET' && p === '/api/ollama') return json(res, 200, await ollama.status());
       if (m === 'POST' && (match = /^\/api\/library\/([\w-]+)\/transcribe$/.exec(p))) {
-        requirePremium('transcription');
         const item = store.getItem(match[1]!);
         if (!item) throw new HttpError(404, 'Élément introuvable.');
         return json(res, 202, await queue.transcribeItem(item));
       }
       if (m === 'POST' && (match = /^\/api\/library\/([\w-]+)\/summarize$/.exec(p))) {
-        requirePremium('summary');
         const item = store.getItem(match[1]!);
         if (!item) throw new HttpError(404, 'Élément introuvable.');
         const body = await readBody(req);
@@ -375,7 +337,7 @@ export async function startDaemon(config: DaemonConfig, hooks: DaemonHooks = {})
       }
     } catch (err) {
       if (err instanceof TranscriptionError) {
-        const status = err.code === 'busy' ? 409 : err.code === 'unsupported_platform' ? 501 : err.code === 'premium' ? 403 : 400;
+        const status = err.code === 'busy' ? 409 : err.code === 'unsupported_platform' ? 501 : 400;
         throw new HttpError(status, err.message, err.code);
       }
       if (err instanceof SummaryError) throw new HttpError(err.code === 'unavailable' ? 503 : 400, err.message, err.code);

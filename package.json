@@ -2,6 +2,7 @@
   "name": "kayzen-flux",
   "private": true,
   "version": "1.0.0",
+  "license": "MIT",
   "description": "KAYZEN Flux — téléchargeur et convertisseur multimédia local-first (moteur yt-dlp)",
   "type": "module",
   "scripts": {
@@ -10,8 +11,7 @@
     "typecheck": "pnpm -r typecheck",
     "start": "node apps/daemon/dist/server.js",
     "dev": "pnpm --parallel -r dev",
-    "dist:linux": "pnpm --filter @kayzen-flux/ui build && pnpm --filter @kayzen-flux/desktop dist:linux",
-    "license": "node tools/license.mjs"
+    "dist:linux": "pnpm --filter @kayzen-flux/ui build && pnpm --filter @kayzen-flux/desktop dist:linux"
   },
   "engines": {
     "node": ">=22"

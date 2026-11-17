@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { buildFeedArgs, isPresetId, parseFeed, validateUrl, type PresetId, type Tier } from '@kayzen-flux/core';
+import { buildFeedArgs, isPresetId, parseFeed, validateUrl, type PresetId } from '@kayzen-flux/core';
 import { capture, EngineError } from './engine.js';
 import type { JobQueue } from './jobs.js';
 import type { JsonStore } from './store.js';
 
 /**
- * Abonnements (Premium) : surveille une chaîne, une playlist ou un flux RSS et
+ * Abonnements : surveille une chaîne, une playlist ou un flux RSS et
  * télécharge automatiquement les nouveautés, localement.
  */
 export interface Subscription {
@@ -30,7 +30,6 @@ interface Deps {
   binary: string;
   store: JsonStore;
   queue: JobQueue;
-  getTier: () => Tier;
   allowLocal: boolean;
   /** Pour les tests : intervalle de la boucle de vérification (ms). */
   tickMs?: number;
@@ -58,12 +57,7 @@ export class SubscriptionManager {
     return this.subs.map((s) => ({ ...s, seen: [] }));
   }
 
-  private requirePremium(): void {
-    if (this.deps.getTier() !== 'premium') throw new EngineError('premium', 'Les abonnements sont réservés à l’offre Premium.');
-  }
-
   async add(input: { url: string; preset?: unknown; intervalHours?: unknown; downloadLatest?: unknown }): Promise<Subscription> {
-    this.requirePremium();
     const check = validateUrl(input.url, { allowLocal: this.deps.allowLocal });
     if (!check.ok) throw new EngineError('invalid_url', check.reason);
     if (this.subs.some((s) => s.url === check.url)) throw new EngineError('exists', 'Vous êtes déjà abonné à cette adresse.');
@@ -110,7 +104,6 @@ export class SubscriptionManager {
 
   /** Vérifie un abonnement maintenant. Renvoie le nombre de nouveautés mises en file. */
   async checkNow(id: string): Promise<number> {
-    this.requirePremium();
     return this.check(this.get(id));
   }
 
@@ -121,7 +114,6 @@ export class SubscriptionManager {
   }
 
   private async tick(): Promise<void> {
-    if (this.deps.getTier() !== 'premium') return;
     const now = Date.now();
     for (const sub of this.subs) {
       if (!sub.enabled) continue;

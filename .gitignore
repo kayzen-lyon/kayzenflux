@@ -7,5 +7,4 @@ apps/desktop/sidecars/
 apps/desktop/release/
 apps/extension/dist/
 apps/extension/release/
-tools/dev-keys/
 coverage/

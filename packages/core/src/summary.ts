@@ -154,10 +154,9 @@ export function summaryPathFor(transcriptPath: string): string {
     : transcriptPath.replace(/(\.md)?$/i, '.resume.md');
 }
 
-export type SummaryErrorCode = 'premium' | 'unavailable' | 'model_missing' | 'no_transcript' | 'timeout' | 'bad_response' | 'cancelled';
+export type SummaryErrorCode = 'unavailable' | 'model_missing' | 'no_transcript' | 'timeout' | 'bad_response' | 'cancelled';
 
 export const SUMMARY_MESSAGES: Record<SummaryErrorCode, string> = {
-  premium: 'Le résumé est réservé à l’offre Premium.',
   unavailable: 'Ollama ne répond pas sur cet ordinateur (127.0.0.1:11434). Lancez Ollama puis réessayez.',
   model_missing: 'Ce modèle n’est pas installé dans Ollama.',
   no_transcript: 'Aucune transcription à résumer pour ce fichier.',

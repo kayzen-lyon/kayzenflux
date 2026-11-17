@@ -19,6 +19,8 @@ Visuels : dossier `docs/store-assets/`.
 
 Prérequis : la page `https://flux.kayzen-lyon.com/confidentialite` doit être en ligne (URL de politique de confidentialité demandée par les trois stores).
 
+**Prix** : gratuit partout, sans achat intégré, sans formule payante ni publicité. KAYZEN Flux est open source sous licence MIT (https://github.com/kayzen-lyon/kayzenflux).
+
 ---
 
 ## Textes de la fiche
@@ -53,8 +55,9 @@ RESPECT DE LA VIE PRIVÉE
 IMPORTANT
 L'extension ne télécharge aucun contenu. Le téléchargement et la conversion se font, si vous le souhaitez, dans l'application de bureau KAYZEN Flux, pour des contenus que vous avez le droit de copier.
 
+Gratuit et open source (licence MIT) : https://github.com/kayzen-lyon/kayzenflux
 Éditeur : KAYZEN (Lyon, France) — contact@kayzen-lyon.fr
-Données de segments : SponsorBlock (sponsor.ajay.app), licence CC BY-NC-SA 4.0.
+Données de segments : SponsorBlock (sponsor.ajay.app, Ajay Ramachandran et contributeurs), licence CC BY-NC-SA 4.0, usage non commercial.
 Les noms de plateformes cités appartiennent à leurs propriétaires ; KAYZEN Flux n'est affilié à aucune d'elles.
 ```
 
@@ -88,7 +91,16 @@ Améliorer la lecture de vidéos en ligne : retirer les publicités, sauter les 
 
 - **Code source** : AMO peut demander les sources si le code est minifié. Le build n'est pas minifié ; en cas de demande, téléverser l'archive du dépôt avec la commande `pnpm install && pnpm --filter @kayzen-flux/extension build`.
 - **Collecte de données** : « aucune » (déjà déclarée dans le manifeste, `data_collection_permissions: none`).
-- **Licence** : « Tous droits réservés ».
+- **Licence** : « MIT License ».
+- **Code source** : lien vers https://github.com/kayzen-lyon/kayzenflux.
+
+## Microsoft Store (application de bureau Windows)
+
+- Inscription **gratuite** pour les développeurs individuels (compte Partner Center, https://partner.microsoft.com/dashboard). Le Store signe les paquets qu'il distribue.
+- Type de produit : application (installeur `.exe` hébergé sur https://telechargements.kayzen-lyon.com/ ou paquet MSIX).
+- **Prix** : gratuit ; aucun achat intégré ni formule payante.
+- Description : reprendre celle du site, en précisant « usage personnel, pour des contenus que vous avez le droit de copier ; contenus protégés par DRM refusés ».
+- Politique de confidentialité : https://flux.kayzen-lyon.com/confidentialite.
 
 ## Points de vigilance à l'examen
 

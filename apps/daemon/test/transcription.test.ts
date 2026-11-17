@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createServer, request, type Server } from 'node:http';
-import { createHash, generateKeyPairSync, randomBytes, sign } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { chmod, mkdir, mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -19,13 +19,6 @@ import { OllamaClient, SummaryError } from '../src/ollama.js';
  *  - un faux serveur Ollama sur 127.0.0.1.
  * Aucun gros modèle n'est téléchargé. ffmpeg (réel) extrait l'audio.
  */
-const { privateKey, publicKey } = generateKeyPairSync('ed25519');
-const PUB = publicKey.export({ type: 'spki', format: 'pem' }).toString();
-function issue(): string {
-  const body = Buffer.from(JSON.stringify({ v: 1, id: 't', plan: 'premium', email: 'test@exemple.fr', issuedAt: new Date().toISOString(), expiresAt: null })).toString('base64url');
-  return `KZF1.${body}.${sign(null, Buffer.from(`KZF1.${body}`), privateKey).toString('base64url')}`;
-}
-
 const FAKE_WHISPER = `#!/usr/bin/env node
 const fs = require('fs');
 const args = process.argv.slice(2);
@@ -161,7 +154,6 @@ beforeAll(async () => {
   const config = loadConfig({ KAYZEN_PORT: '0', KAYZEN_DATA_DIR: join(root, 'data'), KAYZEN_DOWNLOAD_DIR: join(root, 'out'), KAYZEN_ALLOW_LOCAL: '1' }, ui);
   daemon = await startDaemon({
     ...config,
-    licensePublicKey: PUB,
     subscriptionTickMs: 3_600_000,
     ollamaUrl,
     whisperPlatform: { platform: 'linux', arch: 'x64' },
@@ -193,11 +185,10 @@ describe('transcription locale : installation à la demande', () => {
     expect(s.models.map((m: any) => m.id)).toEqual(['base', 'small']);
   });
 
-  it('réserve l’installation à l’offre Premium', async () => {
-    const r = await call('POST', '/api/whisper/install', { target: 'base', confirmedBytes: MODEL.length });
-    expect(r.status).toBe(403);
-    expect((await call('POST', '/api/library/x/transcribe', {})).status).toBe(403);
-    expect((await call('POST', '/api/license', { key: issue() })).status).toBe(200);
+  it('est accessible à tous, sans licence', async () => {
+    // Plus aucun 403 « premium » : l'élément inconnu donne simplement 404.
+    expect((await call('POST', '/api/library/x/transcribe', {})).status).toBe(404);
+    expect((await call('POST', '/api/library/x/summarize', { model: 'm' })).status).toBe(404);
   });
 
   it('exige la confirmation de la taille exacte annoncée', async () => {

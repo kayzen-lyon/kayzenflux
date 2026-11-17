@@ -1,5 +1,7 @@
 # KAYZEN Flux — dossier de consultation juridique
 
+> **Mise à jour du 17/11/2026 — changement de modèle.** KAYZEN Flux devient entièrement gratuit et open source (licence MIT, dépôt public `kayzen-lyon/kayzenflux`). L'offre Premium, la vente, Stripe, Resend, les clés de licence, les CGV et la page `merci` ont été supprimés du code. Les passages de ce dossier qui portent sur la vente, le paiement, le droit de rétractation, le médiateur de la consommation et l'envoi des licences sont donc **sans objet** ; les questions sur le positionnement du produit, le DRM, SponsorBlock (désormais usage non commercial), FFmpeg, l'extension et la confidentialité restent d'actualité. Ce dossier sera à réviser avant envoi.
+
 **Destinataire** : avocat(e) en propriété intellectuelle / droit du numérique
 **Client** : Tarek BELHADJ EI (entrepreneur individuel, micro-entreprise), nom commercial KAYZEN — 6 rue Pierre Termier, 69009 Lyon — SIRET 493 857 262 00098 — TVA non applicable, art. 293 B CGI — contact@kayzen-lyon.fr
 **Date** : 17 novembre 2026
