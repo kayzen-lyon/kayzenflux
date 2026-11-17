@@ -3,7 +3,8 @@
  * Tout élément portant data-link="groupe.cle" reçoit l'URL correspondante.
  * Tant qu'un lien contient « A_CONFIGURER » (ou est absent), le bouton s'affiche « Bientôt disponible ».
  */
-const DOWNLOAD_BASE = 'https://telechargements.kayzen-lyon.com/';
+// Servi en HTTPS par le site (réécriture Vercel vers l'espace web IONOS, voir vercel.json).
+const DOWNLOAD_BASE = 'https://flux.kayzen-lyon.com/telechargements/';
 
 window.KAYZEN_FLUX = {
   // Fichiers publiés sur telechargements.kayzen-lyon.com (version 1.0.0).

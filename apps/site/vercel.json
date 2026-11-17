@@ -53,5 +53,15 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/telechargements/:path*",
+      "destination": "http://telechargements.kayzen-lyon.com/:path*"
+    },
+    {
+      "source": "/updates/:path*",
+      "destination": "http://telechargements.kayzen-lyon.com/updates/:path*"
+    }
   ]
 }
