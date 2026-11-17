@@ -63,7 +63,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 .top .wrap { display: flex; align-items: center; gap: 28px; min-height: 68px; }
 .logo { display: inline-flex; align-items: center; gap: 10px; font: 800 20px/1 'Outfit', sans-serif; color: var(--marine); text-decoration: none; letter-spacing: -0.02em; white-space: nowrap; }
 .logo:hover { color: var(--marine); }
-.logo img { width: 34px; height: 34px; border-radius: 9px; }
+.logo img { width: auto; height: 34px; }
+.bottom .logo img { height: 28px; }
 .logo span { color: var(--clay); }
 .main-nav { display: flex; gap: 26px; margin-left: auto; }
 .main-nav a { color: var(--marine); text-decoration: none; font: 600 15px 'Outfit', sans-serif; padding: 6px 0; border-bottom: 2px solid transparent; }
