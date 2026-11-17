@@ -25,12 +25,13 @@ node tools/license.mjs keygen
 
 ## 2. Dépôt GitHub et installeurs — FAIT (17/11/2026)
 
-- Dépôt privé : https://github.com/kayzenlyon-ai/kayzen-flux
+- Dépôt privé : https://github.com/kayzen-lyon/kayzenflux (l'ancien dépôt kayzenlyon-ai n'est plus utilisé).
+- **À refaire** : les installeurs du brouillon v1.0.0 étaient dans l'ancien dépôt et utilisaient Electron 33. Relancer *Actions > release* sur le nouveau dépôt (Electron 45).
 - La chaîne GitHub Actions (`.github/workflows/release.yml`) teste puis fabrique Windows (.exe), macOS Apple Silicon et Intel (.dmg), Linux (.AppImage, .deb) et l'extension, et dépose le tout dans un **brouillon de version**.
 - Nouvelle version : augmenter `version` dans `apps/desktop/package.json` (et `apps/extension/package.json`), pousser, puis *Actions > release > Run workflow* (ou pousser une étiquette `vX.Y.Z`).
 - La clé publique de production est dans le dépôt : aucun secret n'est obligatoire.
 - Signature (recommandée, sinon avertissements Windows SmartScreen / macOS Gatekeeper) : ajouter les secrets `WIN_CSC_LINK`, `WIN_CSC_KEY_PASSWORD` (certificat Windows), `CSC_LINK`, `CSC_KEY_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` (Apple Developer Program). Ils sont pris en compte automatiquement.
-- Le dépôt étant privé, ses fichiers de version ne sont pas téléchargeables par le public : pour le site, publier les installeurs dans un dépôt public dédié (ex. `kayzenlyon-ai/kayzen-flux-releases`) ou un stockage public, puis renseigner les liens dans `apps/site/public/assets/config.js`.
+- Le dépôt étant privé, ses fichiers de version ne sont pas téléchargeables par le public : pour le site, publier les installeurs dans un dépôt public dédié (ex. `kayzen-lyon/kayzenflux-releases`) ou un stockage public, puis renseigner les liens dans `apps/site/public/assets/config.js`.
 
 ## 3. Paiement (Stripe)
 
@@ -52,9 +53,9 @@ node tools/license.mjs keygen
    RESEND_API_KEY=re_xxx MAIL_FROM="KAYZEN Flux <licences@kayzen-lyon.fr>" node tools/test-mail.mjs tarek@ton-adresse.fr
    ```
 
-## 5. Site (Vercel)
+## 5. Site (Vercel) — EN LIGNE, PROTÉGÉ (17/11/2026)
 
-1. Nouveau projet Vercel depuis le dépôt, **dossier racine `apps/site`**.
+1. FAIT : projet Vercel `kayzenflux`, dossier racine `apps/site`, déploiement automatique à chaque envoi sur `main`. Accès réservé au compte Vercel (protection « All Deployments ») et en-tête `noindex` : retirer les deux au lancement.
 2. Variables d'environnement : `STRIPE_WEBHOOK_SECRET`, `KAYZEN_LICENSE_PRIVATE_KEY` (contenu complet de `keys/private.pem`), `RESEND_API_KEY`, `MAIL_FROM` (ex. `KAYZEN Flux <licences@kayzen-lyon.fr>`).
 3. Domaine `flux.kayzen-lyon.com` : enregistrement CNAME chez IONOS vers la cible indiquée par Vercel.
 4. Test de bout en bout en mode test Stripe : achat → e-mail reçu → clé collée dans l'application → Premium actif.
