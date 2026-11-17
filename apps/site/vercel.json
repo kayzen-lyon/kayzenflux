@@ -73,7 +73,7 @@
     },
     {
       "source": "/updates/:path*",
-      "destination": "http://telechargements.kayzen-lyon.com/updates/:path*"
+      "destination": "http://telechargements.kayzen-lyon.com/:path*"
     }
   ]
 }
