@@ -8,9 +8,10 @@ const DOWNLOAD_BASE = 'https://flux.kayzen-lyon.com/telechargements/';
 
 window.KAYZEN_FLUX = {
   // Fichiers publiés sur telechargements.kayzen-lyon.com (version 1.0.0).
-  // macOS : pas encore de version publiée, la page affiche « Bientôt disponible » sans lien.
   downloads: {
     windows: DOWNLOAD_BASE + 'kayzen-flux-1.0.0-win-x64.exe',
+    macArm: DOWNLOAD_BASE + 'kayzen-flux-1.0.0-mac-arm64.dmg',
+    macIntel: DOWNLOAD_BASE + 'kayzen-flux-1.0.0-mac-x64.dmg',
     linuxAppImage: DOWNLOAD_BASE + 'kayzen-flux-1.0.0-linux-x86_64.AppImage',
     linuxDeb: DOWNLOAD_BASE + 'kayzen-flux-1.0.0-linux-amd64.deb',
     android: DOWNLOAD_BASE + 'kayzen-flux-1.0.0-android.apk',
