@@ -159,8 +159,20 @@ html.dark .theme-toggle .i-sun { display: block; }
 html.dark .theme-toggle .i-moon { display: none; }
 
 /* ---------- Héros ---------- */
-.hero { padding: clamp(40px, 6vw, 88px) 0 clamp(48px, 6vw, 96px); background: linear-gradient(180deg, var(--canvas) 0%, var(--canvas) 60%, var(--surface) 100%); }
-.hero .wrap { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(32px, 5vw, 64px); align-items: center; }
+/* Texte à gauche, mur des captures de l'application à droite, coupé net en biais.
+   Le mur est décoratif et monté par assets/immersif.js après le premier affichage. */
+.hero { position: relative; overflow: hidden; display: grid; align-items: center; min-height: clamp(34rem, calc(100svh - 116px), 46rem); padding: clamp(40px, 6vw, 88px) 0 clamp(48px, 6vw, 96px); background: var(--canvas); border-bottom: 1px solid var(--hairline); }
+.hero .wrap { position: relative; }
+.hero-copy { max-width: min(38rem, 46%); }
+.im-wall { position: absolute; inset: 0 0 0 50%; clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%); background: var(--navy-deep); overflow: hidden; }
+.im-wall-stage { position: absolute; left: 50%; top: 50%; width: 2000px; height: 2000px; translate: -50% -50%; opacity: 0; transition: opacity .8s ease; }
+.im-wall-stage.is-ready { opacity: 1; }
+.im-wall-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 24px; width: 100%; height: 100%; transform: rotateX(55deg) rotateZ(-45deg); transform-origin: center; }
+.im-wall-col { display: flex; flex-direction: column; gap: 24px; animation: im-drift 14s ease-in-out infinite alternate; }
+.im-wall-col:nth-child(even) { animation-name: im-drift-back; animation-duration: 19s; }
+.im-wall-col img { width: 100%; height: auto; aspect-ratio: 16 / 10; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.14); }
+@keyframes im-drift { to { transform: translateY(140px); } }
+@keyframes im-drift-back { to { transform: translateY(-140px); } }
 .hero h1 { max-width: 13ch; }
 .hero h1 .accent { color: var(--primary-text); }
 .hero .lead { margin-top: 24px; font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem); max-width: 44ch; }
@@ -227,13 +239,29 @@ table.cmp tbody th { font-weight: 600; color: var(--ink); width: 34%; }
 table.cmp td.us { background: rgba(183, 72, 31, .07); color: var(--ink); font-weight: 700; }
 html.dark table.cmp td.us { background: rgba(225, 109, 71, .12); }
 
-/* Bibliothèque */
-.library { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
-.library .lead { margin-top: 18px; max-width: 44ch; }
-.library ul { margin: 24px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
-.library li { position: relative; padding-left: 28px; }
-.library li::before { content: ''; position: absolute; left: 0; top: .55em; width: 14px; height: 8px; border-left: 2px solid var(--primary); border-bottom: 2px solid var(--primary); transform: rotate(-45deg); }
-.library .frame { min-width: 0; }
+/* Scène fixe : la capture reste à l'écran pendant que la liste des écrans défile (assets/immersif.js).
+   Sous 1024 px, la scène est masquée et chaque écran devient une carte avec sa capture. */
+.im-scene { margin-top: 56px; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: clamp(32px, 4vw, 72px); align-items: start; }
+.im-stage { position: sticky; top: calc(var(--header-h) + 24px); display: grid; gap: 14px; }
+.im-stage-media { position: relative; aspect-ratio: 16 / 10; border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
+.im-stage-media img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility .35s; }
+.im-stage-media img.is-on { opacity: 1; visibility: visible; }
+.im-stage-foot { font: 600 0.8125rem/1.33 'Outfit', sans-serif; letter-spacing: 0.06em; color: var(--body); }
+.im-stage-foot b { font-size: 1rem; color: var(--primary-text); }
+.im-list { list-style: none; margin: 0; padding: 0 0 8vh; display: grid; }
+.im-item { min-height: 24rem; padding: 36px 0 36px 24px; border-left: 3px solid var(--hairline); display: grid; gap: 12px; align-content: center; opacity: .45; transition: opacity .35s ease, border-color .35s ease; }
+.im-item.is-on { opacity: 1; border-left-color: var(--primary); }
+html.high-contrast .im-item { opacity: 1; }
+.im-item h3 { font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.5rem); line-height: 1.06; letter-spacing: -0.03em; font-weight: 800; }
+.im-item > p:not(.im-kind) { max-width: 44ch; }
+.im-kind { font: 600 0.75rem/1.33 'Outfit', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: var(--body); }
+.im-kind b { color: var(--primary-text); font-size: 0.9375rem; letter-spacing: 0; }
+.im-thumb { display: none; }
+.im-checks { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.im-checks li { position: relative; padding-left: 28px; }
+.im-checks li::before { content: ''; position: absolute; left: 0; top: .55em; width: 14px; height: 8px; border-left: 2px solid var(--primary); border-bottom: 2px solid var(--primary); transform: rotate(-45deg); }
+.im-benefits { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.im-benefits li { padding: 28px; }
 
 /* Libre et gratuit */
 .free { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 40px clamp(32px, 6vw, 96px); align-items: start; }
@@ -364,6 +392,7 @@ html.dark .legal .note { background: #2a2210; border-color: #7a6024; color: #f3d
 @media (max-width: 1180px) {
   .main-nav a { padding: 12px 8px; }
   .main-nav a::after { left: 8px; right: 8px; }
+  .im-benefits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dl { grid-template-columns: minmax(0, 1fr) auto; }
   .dl .info { grid-column: 1 / -1; grid-row: 2; }
   .dl .actions { grid-row: 1; grid-column: 2; }
@@ -373,18 +402,25 @@ html.dark .legal .note { background: #2a2210; border-color: #7a6024; color: #f3d
 @media (max-width: 1023px) {
   .main-nav { display: none; }
   .benefits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hero .wrap, .ext, .library, .faq, .section-head, .free, .kayzen-cta { grid-template-columns: minmax(0, 1fr); }
-  .hero .wrap { gap: 40px; }
+  .ext, .faq, .section-head, .free, .kayzen-cta { grid-template-columns: minmax(0, 1fr); }
+  .hero { display: flex; flex-direction: column; align-items: stretch; min-height: 0; padding-bottom: 0; }
+  .hero-copy { max-width: none; }
   .hero h1 { max-width: 16ch; }
-  .hero-shot { max-width: 720px; }
+  .im-wall { order: 2; position: relative; inset: auto; height: 34vh; margin-top: 40px; clip-path: polygon(0 14%, 100% 0, 100% 100%, 0 100%); }
+  .im-scene { grid-template-columns: minmax(0, 1fr); margin-top: 40px; }
+  .im-stage { display: none; }
+  .im-list { padding: 0; gap: 16px; }
+  .im-item { min-height: 0; opacity: 1; padding: 0 0 24px; border: 1px solid var(--hairline); border-radius: var(--r-lg); background: var(--canvas); overflow: hidden; }
+  .im-item.is-on { border-color: var(--hairline); }
+  .im-item > *:not(.im-thumb) { margin-inline: 20px; }
+  .im-thumb { display: block; width: 100%; height: auto; border-bottom: 1px solid var(--hairline); }
   .ext-shot { justify-self: start; max-width: 280px; }
-  .library .frame { order: 2; }
   .dl-help { grid-template-columns: minmax(0, 1fr); }
   .route-line { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 32px 24px; }
   .vcard { justify-self: start; }
 }
 @media (max-width: 767px) {
-  .benefits { grid-template-columns: minmax(0, 1fr); }
+  .benefits, .im-benefits { grid-template-columns: minmax(0, 1fr); }
   .benefits li { padding: 24px; }
   table.cmp { min-width: 0; font-size: 0.875rem; }
   table.cmp th, table.cmp td { padding: 12px 10px; }
