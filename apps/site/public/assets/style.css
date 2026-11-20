@@ -246,9 +246,9 @@ html.dark table.cmp td.us { background: rgba(225, 109, 71, .12); }
 .im-stage-foot { font: 600 0.8125rem/1.33 'Outfit', sans-serif; letter-spacing: 0.06em; color: var(--body); }
 .im-stage-foot b { font-size: 1rem; color: var(--primary-text); }
 .im-list { list-style: none; margin: 0; padding: 0 0 8vh; display: grid; }
-.im-item { min-height: 24rem; padding: 36px 0 36px 24px; border-left: 3px solid var(--hairline); display: grid; gap: 12px; align-content: center; opacity: .45; transition: opacity .35s ease, border-color .35s ease; }
-.im-item.is-on { opacity: 1; border-left-color: var(--primary); }
-html.high-contrast .im-item { opacity: 1; }
+.im-item { min-height: 24rem; padding: 36px 0 36px 24px; border-left: 3px solid var(--hairline); display: grid; gap: 12px; align-content: center; transition: border-color .35s ease; }
+/* L'écran affiché est signalé par le filet de gauche ; le texte des autres reste pleinement lisible. */
+.im-item.is-on { border-left-color: var(--primary); }
 .im-item h3 { font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.5rem); line-height: 1.06; letter-spacing: -0.03em; font-weight: 800; }
 .im-item > p:not(.im-kind) { max-width: 44ch; }
 .im-kind { font: 600 0.75rem/1.33 'Outfit', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: var(--body); }
@@ -310,7 +310,8 @@ details > p { padding: 0 24px 22px; max-width: 64ch; }
 
 /* ---------- Pied de page (colonnes marine, cf. kayzen-lyon.com) ---------- */
 .bottom { background: var(--footer-bg); color: var(--on-dark-body); padding: 64px 0 0; font-size: 0.875rem; overflow: hidden; }
-/* Ouverture : le contact en très grand ; fermeture : le nom de la marque en filigrane (décoratif). */
+/* Ouverture : le contact en très grand ; fermeture : le nom de la marque en filigrane.
+   Le filigrane est un pseudo-élément : purement décoratif, il n'ajoute aucun texte à la page. */
 .im-foot-open { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 32px; align-items: end; padding-bottom: 56px; margin-bottom: 56px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 .bottom .im-foot-mail { display: block; font: 800 clamp(1.6rem, 4.6vw, 3.9rem)/1 'Outfit', sans-serif; letter-spacing: -0.03em; color: #fff; overflow-wrap: anywhere; }
 .bottom .im-foot-mail:hover { color: var(--gold); }
@@ -318,7 +319,7 @@ details > p { padding: 0 24px 22px; max-width: 64ch; }
 .im-foot-side { display: grid; gap: 20px; justify-items: end; text-align: right; }
 .bottom .im-foot-side .btn-primary { color: #fff; }
 .im-foot-mark { margin-top: 24px; overflow: hidden; user-select: none; pointer-events: none; }
-.im-foot-mark p { margin-bottom: -1.2vw; text-align: center; white-space: nowrap; font: 800 15.5vw/0.8 'Outfit', sans-serif; letter-spacing: -0.04em; color: rgba(255, 255, 255, 0.06); }
+.im-foot-mark::before { content: attr(data-mark); display: block; margin-bottom: -1.2vw; text-align: center; white-space: nowrap; font: 800 15.5vw/0.8 'Outfit', sans-serif; letter-spacing: -0.04em; color: rgba(255, 255, 255, 0.06); }
 html.dark .bottom { border-top: 1px solid var(--hairline); }
 .foot-grid { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 48px; }
 .bottom .logo { color: #fff; margin-bottom: 20px; }
@@ -415,7 +416,7 @@ html.dark .legal .note { background: #2a2210; border-color: #7a6024; color: #f3d
   .im-scene { grid-template-columns: minmax(0, 1fr); margin-top: 40px; }
   .im-stage { display: none; }
   .im-list { padding: 0; gap: 16px; }
-  .im-item { min-height: 0; opacity: 1; padding: 0 0 24px; border: 1px solid var(--hairline); border-radius: var(--r-lg); background: var(--canvas); overflow: hidden; }
+  .im-item { min-height: 0; padding: 0 0 24px; border: 1px solid var(--hairline); border-radius: var(--r-lg); background: var(--canvas); overflow: hidden; }
   .im-item.is-on { border-color: var(--hairline); }
   .im-item > *:not(.im-thumb) { margin-inline: 20px; }
   .im-thumb { display: block; width: 100%; height: auto; border-bottom: 1px solid var(--hairline); }

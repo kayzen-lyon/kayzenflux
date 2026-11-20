@@ -77,3 +77,10 @@ describe('aperçu de travail', () => {
     for (const page of pages) expect(read(page)).not.toMatch(/\/apercu\//);
   });
 });
+
+describe('scène fixe : lisibilité', () => {
+  it('n’atténue pas le texte des écrans non affichés (contraste WCAG 1.4.3)', () => {
+    const css = read('assets/style.css');
+    for (const rule of css.match(/\.im-item[^{]*\{[^}]*\}/g) ?? []) expect(rule).not.toMatch(/opacity/);
+  });
+});

@@ -26,7 +26,7 @@ describe('pied de page : contact en grand et marque en filigrane', () => {
     const html = read(page);
     expect(html).toMatch(/<a class="im-foot-mail" href="mailto:contact@kayzen-lyon\.fr">contact@kayzen-lyon\.fr<\/a>/);
     expect(html).toMatch(/<a class="im-foot-tel" href="tel:\+33487776861">04 87 77 68 61<\/a>/);
-    expect(html).toMatch(/<div class="im-foot-mark" aria-hidden="true"><p>KAYZEN Flux<\/p><\/div>/);
+    expect(html).toMatch(/<div class="im-foot-mark" aria-hidden="true" data-mark="KAYZEN Flux"><\/div>/);
     // Le contenu existant du pied de page reste en place.
     expect(html).toMatch(/class="foot-contact"/);
     expect(html).toMatch(/SIRET 493 857 262 00098/);
