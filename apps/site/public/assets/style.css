@@ -31,7 +31,7 @@
   --hairline: #E0E5EB;
   --ghost-border: rgba(31, 41, 55, 0.15);
   --footer-bg: #132944;
-  --band-bg: linear-gradient(135deg, #1F3B61 0%, #132944 100%);
+  --band-bg: #1F3B61;          /* bandes marine : aplat, aucun dégradé */
   /* Élévation (§6) */
   --shadow-1: 0 4px 12px 0 rgba(36, 49, 66, 0.06), 0 1px 3px 0 rgba(36, 49, 66, 0.04);
   --shadow-2: 0 12px 36px 0 rgba(31, 59, 97, 0.08);
@@ -61,7 +61,7 @@ html.dark {
   --hairline: #2a3747;
   --ghost-border: rgba(235, 239, 244, 0.22);
   --footer-bg: #091019;
-  --band-bg: linear-gradient(135deg, #1a3150 0%, #0f2036 100%);
+  --band-bg: #1a3150;
   --shadow-1: 0 4px 12px 0 rgba(0, 0, 0, 0.3);
   --shadow-2: 0 12px 36px 0 rgba(0, 0, 0, 0.35);
   --shadow-3: 0 24px 48px -16px rgba(0, 0, 0, 0.6), 0 4px 12px 0 rgba(0, 0, 0, 0.3);
@@ -135,9 +135,7 @@ html.dark .topbar { background: #091019; border-bottom: 1px solid var(--hairline
 .topbar a::after { content: ' →'; }
 .topbar a:hover { color: #fff; text-decoration: underline; }
 
-.top { position: sticky; top: 0; z-index: 70; background: rgba(255, 255, 255, 0.92); border-bottom: 1px solid var(--hairline); }
-html.dark .top { background: rgba(13, 22, 33, 0.92); }
-@supports (backdrop-filter: blur(8px)) { .top { backdrop-filter: saturate(1.4) blur(12px); } }
+.top { position: sticky; top: 0; z-index: 70; background: var(--canvas); border-bottom: 1px solid var(--hairline); }
 .top .wrap { display: flex; align-items: center; gap: 24px; min-height: var(--header-h); }
 .logo { display: inline-flex; align-items: center; gap: 10px; font: 700 1.25rem/1 'Outfit', sans-serif; color: var(--ink); text-decoration: none; letter-spacing: -0.02em; white-space: nowrap; text-transform: uppercase; }
 .logo:hover { color: var(--ink); }
@@ -204,7 +202,6 @@ html.dark .theme-toggle .i-moon { display: none; }
 .section-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 64px; align-items: end; }
 .section-head p { max-width: 52ch; }
 .section-dark { background: var(--band-bg); color: var(--on-dark-body); position: relative; overflow: hidden; }
-.section-dark::before { content: ''; position: absolute; inset: auto -10% -40% auto; width: 60%; height: 120%; background: radial-gradient(closest-side, rgba(243, 189, 73, 0.12), transparent 70%); pointer-events: none; }
 .section-dark .wrap { position: relative; }
 .section-dark h2, .section-dark h3 { color: #fff; }
 .section-paper { background: var(--surface); }
@@ -300,7 +297,6 @@ details > p { padding: 0 24px 22px; max-width: 64ch; }
 /* ---------- CTA KAYZEN Lyon + carte de visite ---------- */
 .kayzen-cta-section { padding-top: 0; }
 .kayzen-cta { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 40px 56px; align-items: center; padding: clamp(32px, 5vw, 56px); background: var(--band-bg); border-radius: var(--r-lg); box-shadow: var(--shadow-3); color: var(--on-dark-body); position: relative; overflow: hidden; }
-.kayzen-cta::before { content: ''; position: absolute; inset: -30% auto auto -10%; width: 50%; height: 120%; background: radial-gradient(closest-side, rgba(183, 72, 31, 0.28), transparent 70%); pointer-events: none; }
 .kayzen-cta > * { position: relative; }
 .kayzen-cta h2 { color: #fff; max-width: 22ch; }
 .kayzen-cta-copy > p:not(.eyebrow) { margin-top: 18px; max-width: 56ch; font-size: 1.0625rem; }
@@ -313,7 +309,16 @@ details > p { padding: 0 24px 22px; max-width: 64ch; }
 .vcard a:focus-visible { outline-color: #B7481F; }
 
 /* ---------- Pied de page (colonnes marine, cf. kayzen-lyon.com) ---------- */
-.bottom { background: var(--footer-bg); color: var(--on-dark-body); padding: 64px 0 40px; font-size: 0.875rem; }
+.bottom { background: var(--footer-bg); color: var(--on-dark-body); padding: 64px 0 0; font-size: 0.875rem; overflow: hidden; }
+/* Ouverture : le contact en très grand ; fermeture : le nom de la marque en filigrane (décoratif). */
+.im-foot-open { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 32px; align-items: end; padding-bottom: 56px; margin-bottom: 56px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.bottom .im-foot-mail { display: block; font: 800 clamp(1.6rem, 4.6vw, 3.9rem)/1 'Outfit', sans-serif; letter-spacing: -0.03em; color: #fff; overflow-wrap: anywhere; }
+.bottom .im-foot-mail:hover { color: var(--gold); }
+.bottom .im-foot-tel { display: inline-block; margin-top: 20px; padding: 4px 0; font: 700 clamp(1.25rem, 2.4vw, 2.1rem)/1.2 'Outfit', sans-serif; letter-spacing: -0.02em; color: rgba(255, 255, 255, 0.85); }
+.im-foot-side { display: grid; gap: 20px; justify-items: end; text-align: right; }
+.bottom .im-foot-side .btn-primary { color: #fff; }
+.im-foot-mark { margin-top: 24px; overflow: hidden; user-select: none; pointer-events: none; }
+.im-foot-mark p { margin-bottom: -1.2vw; text-align: center; white-space: nowrap; font: 800 15.5vw/0.8 'Outfit', sans-serif; letter-spacing: -0.04em; color: rgba(255, 255, 255, 0.06); }
 html.dark .bottom { border-top: 1px solid var(--hairline); }
 .foot-grid { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 48px; }
 .bottom .logo { color: #fff; margin-bottom: 20px; }
@@ -416,6 +421,8 @@ html.dark .legal .note { background: #2a2210; border-color: #7a6024; color: #f3d
   .im-thumb { display: block; width: 100%; height: auto; border-bottom: 1px solid var(--hairline); }
   .ext-shot { justify-self: start; max-width: 280px; }
   .dl-help { grid-template-columns: minmax(0, 1fr); }
+  .im-foot-open { grid-template-columns: minmax(0, 1fr); padding-bottom: 40px; margin-bottom: 40px; }
+  .im-foot-side { justify-items: start; text-align: left; }
   .route-line { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 32px 24px; }
   .vcard { justify-self: start; }
 }
@@ -446,6 +453,7 @@ html.dark .legal .note { background: #2a2210; border-color: #7a6024; color: #f3d
   .foot-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px 24px; }
   .foot-grid nav:last-child { grid-column: 1 / -1; }
   .foot-card { flex-direction: column; align-items: flex-start; }
+  .im-foot-side .btn { width: 100%; }
   .foot-legal-right { text-align: left; }
   .vcard { width: 100%; max-width: 280px; }
   html { scroll-padding-top: 80px; }
