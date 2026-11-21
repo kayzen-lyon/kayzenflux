@@ -2,7 +2,7 @@
 > Téléchargez et convertissez vos vidéos et vos musiques en MP3, M4A, Opus, FLAC ou MP4, directement sur votre ordinateur.
 
 ## Pages principales
-- [KAYZEN Flux](https://flux.kayzen-lyon.com/) : KAYZEN Flux : application libre et gratuite pour télécharger et convertir vidéos et musiques en MP3, M4A, Opus, FLAC ou MP4, sans publicité ni pistage. Tout se passe sur votre ordinateur. Extension de lecture sans pub incluse.
+- [KAYZEN Flux — Téléchargez et convertissez vos vidéos et musiques, sans pub ni pistage](https://flux.kayzen-lyon.com/) : KAYZEN Flux : application libre et gratuite pour télécharger et convertir vidéos et musiques en MP3, M4A, Opus, FLAC ou MP4, sans publicité ni pistage. Tout se passe sur votre ordinateur. Extension de lecture sans pub incluse.
 - [Installer l'extension et l'application](https://flux.kayzen-lyon.com/installer-extension) : Installer manuellement l'extension KAYZEN Flux dans Chrome, Edge ou Firefox, l'APK Android, et passer l'avertissement Windows SmartScreen.
 - [Mentions légales](https://flux.kayzen-lyon.com/mentions-legales)
 - [Conditions générales d'utilisation](https://flux.kayzen-lyon.com/cgu)
